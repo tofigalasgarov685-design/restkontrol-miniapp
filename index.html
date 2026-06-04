@@ -72,8 +72,16 @@
       font-weight: 600;
       cursor: pointer;
       margin-top: 10px;
+    }
+
+    .btn-primary {
       background: #111827;
       color: white;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
     }
 
     .info {
@@ -83,46 +91,118 @@
       text-align: center;
       font-weight: 600;
     }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .zone-box {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+
+    .zone-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row .field {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>İşletme Oluştur</h1>
-    <p>
-      Hızlı başlangıç için temel bilgileri girin.
-    </p>
+    <div id="step1" class="step active">
+      <h1>İşletme Oluştur</h1>
+      <p>Hızlı başlangıç için temel bilgileri girin.</p>
 
-    <div class="field">
-      <label>İşletme adı</label>
-      <input type="text" id="businessName" placeholder="Örn: Matryoshka Cafe" />
+      <div class="field">
+        <label>İşletme adı</label>
+        <input type="text" id="businessName" placeholder="Örn: Matryoshka Cafe" />
+      </div>
+
+      <div class="field">
+        <label>İşletme türü</label>
+        <select id="businessType">
+          <option value="">Seçiniz</option>
+          <option>Restoran</option>
+          <option>Kafe</option>
+          <option>Fırın / Bakery</option>
+          <option>Delivery Kitchen</option>
+          <option>Fast Food</option>
+          <option>Coffee Shop</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Açılış saati</label>
+          <input type="time" id="openTime" />
+        </div>
+
+        <div class="field">
+          <label>Kapanış saati</label>
+          <input type="time" id="closeTime" />
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="goToStep2()">Devam Et</button>
+      <div class="info">7 gün ücretsiz deneme</div>
     </div>
 
-    <div class="field">
-      <label>İşletme türü</label>
-      <select id="businessType">
-        <option value="">Seçiniz</option>
-        <option>Restoran</option>
-        <option>Kafe</option>
-        <option>Fırın / Bakery</option>
-        <option>Delivery Kitchen</option>
-        <option>Fast Food</option>
-        <option>Coffee Shop</option>
-      </select>
+    <div id="step2" class="step">
+      <h1>Bölümler</h1>
+      <p>Her bölüm için minimum vardiya personel sayısını girin.</p>
+
+      <div class="zone-box">
+        <div class="zone-title">Mutfak</div>
+        <div class="field">
+          <label>Minimum personel</label>
+          <input type="number" id="kitchenMin" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="zone-box">
+        <div class="zone-title">Salon</div>
+        <div class="field">
+          <label>Minimum personel</label>
+          <input type="number" id="hallMin" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="zone-box">
+        <div class="zone-title">Bar</div>
+        <div class="field">
+          <label>Minimum personel</label>
+          <input type="number" id="barMin" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="zone-box">
+        <div class="zone-title">Paket Servis</div>
+        <div class="field">
+          <label>Minimum personel</label>
+          <input type="number" id="deliveryMin" min="0" value="0" />
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="goToStep1()">Geri</button>
+      <button class="btn btn-primary" onclick="finishSetup()">Kurulumu Tamamla</button>
     </div>
-
-    <div class="field">
-      <label>Açılış saati</label>
-      <input type="time" id="openTime" />
-    </div>
-
-    <div class="field">
-      <label>Kapanış saati</label>
-      <input type="time" id="closeTime" />
-    </div>
-
-    <button class="btn" onclick="createBusiness()">Devam Et</button>
-
-    <div class="info">7 gün ücretsiz deneme</div>
   </div>
 
   <script>
@@ -130,8 +210,13 @@
     tg.expand();
     tg.ready();
 
-    function createBusiness() {
-      const name = document.getElementById("businessName").value;
+    function showStep(stepId) {
+      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
+      document.getElementById(stepId).classList.add("active");
+    }
+
+    function goToStep2() {
+      const name = document.getElementById("businessName").value.trim();
       const type = document.getElementById("businessType").value;
       const openTime = document.getElementById("openTime").value;
       const closeTime = document.getElementById("closeTime").value;
@@ -141,12 +226,33 @@
         return;
       }
 
+      showStep("step2");
+    }
+
+    function goToStep1() {
+      showStep("step1");
+    }
+
+    function finishSetup() {
+      const name = document.getElementById("businessName").value.trim();
+      const type = document.getElementById("businessType").value;
+      const openTime = document.getElementById("openTime").value;
+      const closeTime = document.getElementById("closeTime").value;
+
+      const kitchenMin = document.getElementById("kitchenMin").value;
+      const hallMin = document.getElementById("hallMin").value;
+      const barMin = document.getElementById("barMin").value;
+      const deliveryMin = document.getElementById("deliveryMin").value;
+
       alert(
-        "İşletme oluşturuldu:\n\n" +
-        "Ad: " + name + "\n" +
-        "Tür: " + type + "\n" +
-        "Açılış: " + openTime + "\n" +
-        "Kapanış: " + closeTime
+        "Kurulum tamamlandı:\\n\\n" +
+        "İşletme: " + name + "\\n" +
+        "Tür: " + type + "\\n" +
+        "Saat: " + openTime + " - " + closeTime + "\\n\\n" +
+        "Mutfak: " + kitchenMin + "\\n" +
+        "Salon: " + hallMin + "\\n" +
+        "Bar: " + barMin + "\\n" +
+        "Paket Servis: " + deliveryMin
       );
     }
   </script>
