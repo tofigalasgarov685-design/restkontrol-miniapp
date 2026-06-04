@@ -28,20 +28,6 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
-    .logo {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 18px;
-      border-radius: 18px;
-      background: #111827;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 26px;
-      font-weight: bold;
-    }
-
     h1 {
       font-size: 28px;
       text-align: center;
@@ -52,7 +38,29 @@
       text-align: center;
       color: #4b5563;
       line-height: 1.5;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      outline: none;
+      background: white;
     }
 
     .btn {
@@ -63,52 +71,84 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      margin-bottom: 12px;
-    }
-
-    .btn-primary {
+      margin-top: 10px;
       background: #111827;
       color: white;
     }
 
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .trial {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 14px;
+    .info {
+      margin-top: 16px;
+      font-size: 13px;
       color: #16a34a;
+      text-align: center;
       font-weight: 600;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo">R</div>
-    <h1>RestKontrol</h1>
+    <h1>İşletme Oluştur</h1>
     <p>
-      Yeme-içme işletmeleri için dijital kontrol sistemi.<br>
-      Açılış, kapanış, görev ve fotoğraflı doğrulamaları yönetin.
+      Hızlı başlangıç için temel bilgileri girin.
     </p>
 
-    <button class="btn btn-primary" onclick="alert('İşletme oluşturma ekranı sonra eklenecek')">
-      İşletme Oluştur
-    </button>
+    <div class="field">
+      <label>İşletme adı</label>
+      <input type="text" id="businessName" placeholder="Örn: Matryoshka Cafe" />
+    </div>
 
-    <button class="btn btn-secondary" onclick="alert('Katılım ekranı sonra eklenecek')">
-      Mevcut İşletmeye Katıl
-    </button>
+    <div class="field">
+      <label>İşletme türü</label>
+      <select id="businessType">
+        <option value="">Seçiniz</option>
+        <option>Restoran</option>
+        <option>Kafe</option>
+        <option>Fırın / Bakery</option>
+        <option>Delivery Kitchen</option>
+        <option>Fast Food</option>
+        <option>Coffee Shop</option>
+      </select>
+    </div>
 
-    <div class="trial">7 gün ücretsiz deneme</div>
+    <div class="field">
+      <label>Açılış saati</label>
+      <input type="time" id="openTime" />
+    </div>
+
+    <div class="field">
+      <label>Kapanış saati</label>
+      <input type="time" id="closeTime" />
+    </div>
+
+    <button class="btn" onclick="createBusiness()">Devam Et</button>
+
+    <div class="info">7 gün ücretsiz deneme</div>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.ready();
+
+    function createBusiness() {
+      const name = document.getElementById("businessName").value;
+      const type = document.getElementById("businessType").value;
+      const openTime = document.getElementById("openTime").value;
+      const closeTime = document.getElementById("closeTime").value;
+
+      if (!name || !type || !openTime || !closeTime) {
+        alert("Lütfen tüm alanları doldurun.");
+        return;
+      }
+
+      alert(
+        "İşletme oluşturuldu:\n\n" +
+        "Ad: " + name + "\n" +
+        "Tür: " + type + "\n" +
+        "Açılış: " + openTime + "\n" +
+        "Kapanış: " + closeTime
+      );
+    }
   </script>
 </body>
 </html>
