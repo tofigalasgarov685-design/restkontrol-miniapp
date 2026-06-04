@@ -234,26 +234,19 @@
     }
 
     function finishSetup() {
-      const name = document.getElementById("businessName").value.trim();
-      const type = document.getElementById("businessType").value;
-      const openTime = document.getElementById("openTime").value;
-      const closeTime = document.getElementById("closeTime").value;
+      const data = {
+        businessName: document.getElementById("businessName").value.trim(),
+        businessType: document.getElementById("businessType").value,
+        openTime: document.getElementById("openTime").value,
+        closeTime: document.getElementById("closeTime").value,
+        kitchenMin: document.getElementById("kitchenMin").value,
+        hallMin: document.getElementById("hallMin").value,
+        barMin: document.getElementById("barMin").value,
+        deliveryMin: document.getElementById("deliveryMin").value
+      };
 
-      const kitchenMin = document.getElementById("kitchenMin").value;
-      const hallMin = document.getElementById("hallMin").value;
-      const barMin = document.getElementById("barMin").value;
-      const deliveryMin = document.getElementById("deliveryMin").value;
-
-      alert(
-        "Kurulum tamamlandı:\\n\\n" +
-        "İşletme: " + name + "\\n" +
-        "Tür: " + type + "\\n" +
-        "Saat: " + openTime + " - " + closeTime + "\\n\\n" +
-        "Mutfak: " + kitchenMin + "\\n" +
-        "Salon: " + hallMin + "\\n" +
-        "Bar: " + barMin + "\\n" +
-        "Paket Servis: " + deliveryMin
-      );
+      tg.sendData(JSON.stringify(data));
+      tg.close();
     }
   </script>
 </body>
