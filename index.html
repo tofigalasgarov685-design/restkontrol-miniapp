@@ -3,239 +3,221 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RestKontrol</title>
+  <title>RestKontrol Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
     }
 
     body {
-      background: #f6f7f9;
+      margin: 0;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
       color: #111827;
-      padding: 20px;
     }
 
     .card {
-      max-width: 480px;
-      margin: 0 auto;
       background: #ffffff;
       border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
     }
 
     h1 {
-      font-size: 28px;
-      text-align: center;
-      margin-bottom: 10px;
+      font-size: 24px;
+      margin: 0 0 8px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 12px;
     }
 
     p {
-      text-align: center;
+      margin: 0 0 14px;
       color: #4b5563;
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .field {
-      margin-bottom: 14px;
+      line-height: 1.4;
     }
 
     label {
       display: block;
-      margin-bottom: 6px;
       font-size: 14px;
-      font-weight: 600;
-      color: #374151;
+      font-weight: 700;
+      margin: 14px 0 6px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
+      padding: 13px;
       border: 1px solid #d1d5db;
       border-radius: 12px;
-      padding: 14px;
-      font-size: 15px;
-      outline: none;
-      background: white;
+      font-size: 16px;
+      background: #ffffff;
     }
 
-    .btn {
+    textarea {
+      min-height: 85px;
+      resize: vertical;
+    }
+
+    button {
       width: 100%;
       border: none;
       border-radius: 14px;
-      padding: 16px;
+      padding: 14px;
+      margin-top: 12px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      margin-top: 10px;
     }
 
-    .btn-primary {
+    .primary {
+      background: #16a34a;
+      color: #ffffff;
+    }
+
+    .secondary {
       background: #111827;
-      color: white;
+      color: #ffffff;
     }
 
-    .btn-secondary {
+    .light {
       background: #e5e7eb;
       color: #111827;
     }
 
-    .info {
-      margin-top: 16px;
-      font-size: 13px;
-      color: #16a34a;
-      text-align: center;
-      font-weight: 600;
+    .danger {
+      background: #dc2626;
+      color: #ffffff;
     }
 
-    .step {
+    .hidden {
       display: none;
     }
 
-    .step.active {
-      display: block;
-    }
-
-    .zone-box {
+    .task {
       border: 1px solid #e5e7eb;
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 14px;
-      margin-bottom: 12px;
+      margin-top: 12px;
       background: #fafafa;
     }
 
-    .zone-title {
-      font-size: 16px;
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 13px;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      background: #fef3c7;
+      color: #92400e;
     }
 
-    .row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .row .field {
-      flex: 1;
+    .small {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div id="step1" class="step active">
-      <h1>İşletme Oluştur</h1>
-      <p>Hızlı başlangıç için temel bilgileri girin.</p>
 
-      <div class="field">
-        <label>İşletme adı</label>
-        <input type="text" id="businessName" placeholder="Örn: Matryoshka Cafe" />
-      </div>
+  <div id="homeScreen" class="card">
+    <h1>RestKontrol</h1>
+    <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
 
-      <div class="field">
-        <label>İşletme türü</label>
-        <select id="businessType">
-          <option value="">Seçiniz</option>
-          <option>Restoran</option>
-          <option>Kafe</option>
-          <option>Fırın / Bakery</option>
-          <option>Delivery Kitchen</option>
-          <option>Fast Food</option>
-          <option>Coffee Shop</option>
-        </select>
-      </div>
+    <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
+    <button class="secondary" onclick="showTasks()">Görevler</button>
 
-      <div class="row">
-        <div class="field">
-          <label>Açılış saati</label>
-          <input type="time" id="openTime" />
-        </div>
+    <p class="small">Test sürümü: görevler şu an örnek liste olarak gösteriliyor.</p>
+  </div>
 
-        <div class="field">
-          <label>Kapanış saati</label>
-          <input type="time" id="closeTime" />
-        </div>
-      </div>
+  <div id="businessScreen" class="card hidden">
+    <h2>İşletme Kurulumu</h2>
 
-      <button class="btn btn-primary" onclick="goToStep2()">Devam Et</button>
-      <div class="info">7 gün ücretsiz deneme</div>
+    <label>İşletme adı</label>
+    <input id="businessName" placeholder="Örn: Matryoshka" />
+
+    <label>İşletme türü</label>
+    <select id="businessType">
+      <option value="Restoran">Restoran</option>
+      <option value="Cafe">Cafe</option>
+      <option value="Fast Food">Fast Food</option>
+      <option value="Fırın">Fırın</option>
+      <option value="Paket Servis Mutfağı">Paket Servis Mutfağı</option>
+    </select>
+
+    <label>Açılış saati</label>
+    <input id="openTime" type="time" value="09:00" />
+
+    <label>Kapanış saati</label>
+    <input id="closeTime" type="time" value="21:00" />
+
+    <label>Mutfak minimum personel</label>
+    <input id="kitchenMin" type="number" value="1" />
+
+    <label>Salon minimum personel</label>
+    <input id="hallMin" type="number" value="1" />
+
+    <label>Bar minimum personel</label>
+    <input id="barMin" type="number" value="1" />
+
+    <label>Paket servis minimum personel</label>
+    <input id="deliveryMin" type="number" value="1" />
+
+    <button class="primary" onclick="sendBusiness()">Kurulumu Tamamla</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+  <div id="tasksScreen" class="card hidden">
+    <h2>Görevler</h2>
+    <p>Bugünkü kontrol görevleri.</p>
+
+    <div class="task">
+      <div class="badge">Mutfak · 09:15</div>
+      <h2 style="font-size:17px; margin-bottom:8px;">Açılış öncesi mutfak temizliğini kontrol et</h2>
+      <p>Tip: Zamanlı fotoğraflı kontrol</p>
+      <p>Fotoğraf: Zorunlu</p>
+
+      <label>Yorum</label>
+      <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(1)">Görevi Tamamla</button>
     </div>
 
-    <div id="step2" class="step">
-      <h1>Bölümler</h1>
-      <p>Her bölüm için minimum vardiya personel sayısını girin.</p>
-
-      <div class="zone-box">
-        <div class="zone-title">Mutfak</div>
-        <div class="field">
-          <label>Minimum personel</label>
-          <input type="number" id="kitchenMin" min="0" value="0" />
-        </div>
-      </div>
-
-      <div class="zone-box">
-        <div class="zone-title">Salon</div>
-        <div class="field">
-          <label>Minimum personel</label>
-          <input type="number" id="hallMin" min="0" value="0" />
-        </div>
-      </div>
-
-      <div class="zone-box">
-        <div class="zone-title">Bar</div>
-        <div class="field">
-          <label>Minimum personel</label>
-          <input type="number" id="barMin" min="0" value="0" />
-        </div>
-      </div>
-
-      <div class="zone-box">
-        <div class="zone-title">Paket Servis</div>
-        <div class="field">
-          <label>Minimum personel</label>
-          <input type="number" id="deliveryMin" min="0" value="0" />
-        </div>
-      </div>
-
-      <button class="btn btn-secondary" onclick="goToStep1()">Geri</button>
-      <button class="btn btn-primary" onclick="finishSetup()">Kurulumu Tamamla</button>
-    </div>
+    <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.ready();
 
-    function showStep(stepId) {
-      document.querySelectorAll(".step").forEach(step => step.classList.remove("active"));
-      document.getElementById(stepId).classList.add("active");
+    function showHome() {
+      document.getElementById("homeScreen").classList.remove("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
     }
 
-    function goToStep2() {
-      const name = document.getElementById("businessName").value.trim();
-      const type = document.getElementById("businessType").value;
-      const openTime = document.getElementById("openTime").value;
-      const closeTime = document.getElementById("closeTime").value;
-
-      if (!name || !type || !openTime || !closeTime) {
-        alert("Lütfen tüm alanları doldurun.");
-        return;
-      }
-
-      showStep("step2");
+    function showCreateBusiness() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
     }
 
-    function goToStep1() {
-      showStep("step1");
+    function showTasks() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.remove("hidden");
     }
 
-    function finishSetup() {
+    function sendBusiness() {
       const data = {
-        businessName: document.getElementById("businessName").value.trim(),
+        action: "create_business",
+        businessName: document.getElementById("businessName").value,
         businessType: document.getElementById("businessType").value,
         openTime: document.getElementById("openTime").value,
         closeTime: document.getElementById("closeTime").value,
@@ -243,6 +225,19 @@
         hallMin: document.getElementById("hallMin").value,
         barMin: document.getElementById("barMin").value,
         deliveryMin: document.getElementById("deliveryMin").value
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function completeTask(taskId) {
+      const comment = document.getElementById("taskComment1").value;
+
+      const data = {
+        action: "complete_task",
+        taskId: taskId,
+        comment: comment
       };
 
       tg.sendData(JSON.stringify(data));
