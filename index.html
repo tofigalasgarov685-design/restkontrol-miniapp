@@ -76,7 +76,7 @@
     <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
-    <p class="small">Test sürümü: görevler şu an örnek liste olarak gösteriliyor.</p>
+    <p class="small">Test sürümü v3.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -129,8 +129,8 @@
       <label>Yorum</label>
       <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
 
-      <button class="primary" onclick="completeCompletedTask()">Tamamlandı</button>
-      <button class="danger" onclick="completeLateTask()">Geç Kaldı</button>
+      <button class="primary" onclick="sendCompleted()">Tamamlandı</button>
+      <button class="danger" onclick="sendLate()">Geç Kaldı</button>
     </div>
 
     <button class="light" onclick="showHome()">Geri Dön</button>
@@ -172,10 +172,10 @@
       };
 
       tg.sendData(JSON.stringify(data));
-      tg.close();
+      setTimeout(function() { tg.close(); }, 500);
     }
 
-    function completeCompletedTask() {
+    function sendCompleted() {
       const data = {
         action: "complete_task",
         taskId: 1,
@@ -184,10 +184,10 @@
       };
 
       tg.sendData(JSON.stringify(data));
-      tg.close();
+      setTimeout(function() { tg.close(); }, 500);
     }
 
-    function completeLateTask() {
+    function sendLate() {
       let comment = document.getElementById("taskComment1").value;
 
       if (comment.trim() === "") {
@@ -202,7 +202,7 @@
       };
 
       tg.sendData(JSON.stringify(data));
-      tg.close();
+      setTimeout(function() { tg.close(); }, 500);
     }
   </script>
 </body>
