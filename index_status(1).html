@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RestKontrol Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #111827;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0 0 8px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 12px;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin: 14px 0 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #ffffff;
+    }
+
+    textarea {
+      min-height: 85px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #16a34a;
+      color: #ffffff;
+    }
+
+    .warning {
+      background: #f59e0b;
+      color: #111827;
+    }
+
+    .secondary {
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .light {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .task {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 12px;
+      background: #fafafa;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="homeScreen" class="card">
+    <h1>RestKontrol</h1>
+    <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
+
+    <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
+    <button class="secondary" onclick="showTasks()">Görevler</button>
+
+    <p class="small">Test sürümü: görevler şu an örnek liste olarak gösteriliyor.</p>
+  </div>
+
+  <div id="businessScreen" class="card hidden">
+    <h2>İşletme Kurulumu</h2>
+
+    <label>İşletme adı</label>
+    <input id="businessName" placeholder="Örn: Matryoshka" />
+
+    <label>İşletme türü</label>
+    <select id="businessType">
+      <option value="Restoran">Restoran</option>
+      <option value="Cafe">Cafe</option>
+      <option value="Fast Food">Fast Food</option>
+      <option value="Fırın">Fırın</option>
+      <option value="Paket Servis Mutfağı">Paket Servis Mutfağı</option>
+    </select>
+
+    <label>Açılış saati</label>
+    <input id="openTime" type="time" value="09:00" />
+
+    <label>Kapanış saati</label>
+    <input id="closeTime" type="time" value="21:00" />
+
+    <label>Mutfak minimum personel</label>
+    <input id="kitchenMin" type="number" value="1" />
+
+    <label>Salon minimum personel</label>
+    <input id="hallMin" type="number" value="1" />
+
+    <label>Bar minimum personel</label>
+    <input id="barMin" type="number" value="1" />
+
+    <label>Paket servis minimum personel</label>
+    <input id="deliveryMin" type="number" value="1" />
+
+    <button class="primary" onclick="sendBusiness()">Kurulumu Tamamla</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+  <div id="tasksScreen" class="card hidden">
+    <h2>Görevler</h2>
+    <p>Bugünkü kontrol görevleri.</p>
+
+    <div class="task">
+      <div class="badge">Mutfak · 09:15</div>
+      <h2 style="font-size:17px; margin-bottom:8px;">Açılış öncesi mutfak temizliğini kontrol et</h2>
+      <p>Tip: Zamanlı fotoğraflı kontrol</p>
+      <p>Fotoğraf: Zorunlu</p>
+
+      <label>Yorum</label>
+      <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
+      <button class="warning" onclick="completeTask(1, 'late')">Geç kaldı</button>
+    </div>
+
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function showHome() {
+      document.getElementById("homeScreen").classList.remove("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+    }
+
+    function showCreateBusiness() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+    }
+
+    function showTasks() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.remove("hidden");
+    }
+
+    function sendBusiness() {
+      const data = {
+        action: "create_business",
+        businessName: document.getElementById("businessName").value,
+        businessType: document.getElementById("businessType").value,
+        openTime: document.getElementById("openTime").value,
+        closeTime: document.getElementById("closeTime").value,
+        kitchenMin: document.getElementById("kitchenMin").value,
+        hallMin: document.getElementById("hallMin").value,
+        barMin: document.getElementById("barMin").value,
+        deliveryMin: document.getElementById("deliveryMin").value
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function completeTask(taskId, status) {
+      const comment = document.getElementById("taskComment1").value;
+
+      if (status === "late" && comment.trim() === "") {
+        alert("Geç kalan görev için açıklama yazmanız gerekiyor.");
+        return;
+      }
+
+      const data = {
+        action: "complete_task",
+        taskId: taskId,
+        status: status,
+        comment: comment
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+  </script>
+</body>
+</html>
