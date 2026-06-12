@@ -79,6 +79,11 @@
       color: #ffffff;
     }
 
+    .warning {
+      background: #f59e0b;
+      color: #111827;
+    }
+
     .secondary {
       background: #111827;
       color: #ffffff;
@@ -87,11 +92,6 @@
     .light {
       background: #e5e7eb;
       color: #111827;
-    }
-
-    .danger {
-      background: #dc2626;
-      color: #ffffff;
     }
 
     .hidden {
@@ -186,7 +186,8 @@
       <label>Yorum</label>
       <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
 
-      <button class="primary" onclick="completeTask(1)">Görevi Tamamla</button>
+      <button class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
+      <button class="warning" onclick="completeTask(1, 'late')">Geç kaldı</button>
     </div>
 
     <button class="light" onclick="showHome()">Geri Dön</button>
@@ -231,12 +232,18 @@
       tg.close();
     }
 
-    function completeTask(taskId) {
+    function completeTask(taskId, status) {
       const comment = document.getElementById("taskComment1").value;
+
+      if (status === "late" && comment.trim() === "") {
+        alert("Geç kalan görev için açıklama yazmanız gerekiyor.");
+        return;
+      }
 
       const data = {
         action: "complete_task",
         taskId: taskId,
+        status: status,
         comment: comment
       };
 
