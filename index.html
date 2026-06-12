@@ -6,10 +6,7 @@
   <title>RestKontrol Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 18px;
@@ -17,7 +14,6 @@
       background: #f4f6f8;
       color: #111827;
     }
-
     .card {
       background: #ffffff;
       border-radius: 18px;
@@ -25,30 +21,10 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.08);
       margin-bottom: 14px;
     }
-
-    h1 {
-      font-size: 24px;
-      margin: 0 0 8px;
-    }
-
-    h2 {
-      font-size: 20px;
-      margin: 0 0 12px;
-    }
-
-    p {
-      margin: 0 0 14px;
-      color: #4b5563;
-      line-height: 1.4;
-    }
-
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      margin: 14px 0 6px;
-    }
-
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    p { margin: 0 0 14px; color: #4b5563; line-height: 1.4; }
+    label { display: block; font-size: 14px; font-weight: 700; margin: 14px 0 6px; }
     input, select, textarea {
       width: 100%;
       padding: 13px;
@@ -57,12 +33,7 @@
       font-size: 16px;
       background: #ffffff;
     }
-
-    textarea {
-      min-height: 85px;
-      resize: vertical;
-    }
-
+    textarea { min-height: 85px; resize: vertical; }
     button {
       width: 100%;
       border: none;
@@ -73,31 +44,11 @@
       font-weight: 700;
       cursor: pointer;
     }
-
-    .primary {
-      background: #16a34a;
-      color: #ffffff;
-    }
-
-    .warning {
-      background: #f59e0b;
-      color: #111827;
-    }
-
-    .secondary {
-      background: #111827;
-      color: #ffffff;
-    }
-
-    .light {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .hidden {
-      display: none;
-    }
-
+    .primary { background: #16a34a; color: #ffffff; }
+    .secondary { background: #111827; color: #ffffff; }
+    .light { background: #e5e7eb; color: #111827; }
+    .danger { background: #dc2626; color: #ffffff; }
+    .hidden { display: none; }
     .task {
       border: 1px solid #e5e7eb;
       border-radius: 16px;
@@ -105,7 +56,6 @@
       margin-top: 12px;
       background: #fafafa;
     }
-
     .badge {
       display: inline-block;
       padding: 5px 10px;
@@ -116,12 +66,7 @@
       background: #fef3c7;
       color: #92400e;
     }
-
-    .small {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 8px;
-    }
+    .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -129,10 +74,8 @@
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
     <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
-
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
-
     <p class="small">Test sürümü: görevler şu an örnek liste olarak gösteriliyor.</p>
   </div>
 
@@ -186,8 +129,8 @@
       <label>Yorum</label>
       <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
 
-      <button class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
-      <button class="warning" onclick="completeTask(1, 'late')">Geç kaldı</button>
+      <button class="primary" onclick="completeCompletedTask()">Tamamlandı</button>
+      <button class="danger" onclick="completeLateTask()">Geç Kaldı</button>
     </div>
 
     <button class="light" onclick="showHome()">Geri Dön</button>
@@ -232,18 +175,29 @@
       tg.close();
     }
 
-    function completeTask(taskId, status) {
-      const comment = document.getElementById("taskComment1").value;
+    function completeCompletedTask() {
+      const data = {
+        action: "complete_task",
+        taskId: 1,
+        status: "completed",
+        comment: ""
+      };
 
-      if (status === "late" && comment.trim() === "") {
-        alert("Geç kalan görev için açıklama yazmanız gerekiyor.");
-        return;
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function completeLateTask() {
+      let comment = document.getElementById("taskComment1").value;
+
+      if (comment.trim() === "") {
+        comment = "Geç kalma nedeni yazılmadı";
       }
 
       const data = {
         action: "complete_task",
-        taskId: taskId,
-        status: status,
+        taskId: 1,
+        status: "late",
         comment: comment
       };
 
