@@ -45,6 +45,7 @@
       cursor: pointer;
     }
     .primary { background: #16a34a; color: #ffffff; }
+    .danger { background: #dc2626; color: #ffffff; }
     .secondary { background: #111827; color: #ffffff; }
     .light { background: #e5e7eb; color: #111827; }
     .hidden { display: none; }
@@ -74,7 +75,7 @@
     <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
-    <p class="small">Test sürümü: güvenli çalışma sürümü.</p>
+    <p class="small">Test sürümü: geç kaldı güvenli sürüm.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -115,7 +116,8 @@
       <p>Fotoğraf: Zorunlu</p>
       <label>Yorum</label>
       <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
-      <button class="primary" onclick="completeTask(1)">Görevi Tamamla</button>
+      <button class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(1, 'late')">Geç Kaldı</button>
     </div>
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
@@ -158,14 +160,20 @@
       tg.close();
     }
 
-    function completeTask(taskId) {
-      const comment = document.getElementById("taskComment1").value;
+    function completeTask(taskId, status) {
+      let comment = document.getElementById("taskComment1").value;
+
+      if (status === "late" && comment.trim() === "") {
+        comment = "Geç kalma nedeni yazılmadı";
+      }
+
       const data = {
         action: "complete_task",
         taskId: taskId,
-        status: "completed",
+        status: status,
         comment: comment
       };
+
       tg.sendData(JSON.stringify(data));
       tg.close();
     }
