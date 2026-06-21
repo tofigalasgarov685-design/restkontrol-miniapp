@@ -23,7 +23,7 @@
     }
     h1 { font-size: 24px; margin: 0 0 8px; }
     h2 { font-size: 20px; margin: 0 0 12px; }
-    p { margin: 0 0 14px; color: #4b5563; line-height: 1.4; }
+    p { margin: 0 0 10px; color: #4b5563; line-height: 1.4; }
     label { display: block; font-size: 14px; font-weight: 700; margin: 14px 0 6px; }
     input, select, textarea {
       width: 100%;
@@ -33,7 +33,7 @@
       font-size: 16px;
       background: #ffffff;
     }
-    textarea { min-height: 85px; resize: vertical; }
+    textarea { min-height: 78px; resize: vertical; }
     button {
       width: 100%;
       border: none;
@@ -66,6 +66,16 @@
       background: #fef3c7;
       color: #92400e;
     }
+    .task-id {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+    .task-title {
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
   </style>
 </head>
@@ -75,7 +85,7 @@
     <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
-    <p class="small">Test sürümü: geç kaldı güvenli sürüm.</p>
+    <p class="small">Test sürümü: 8 görevli Mini App.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -109,16 +119,119 @@
   <div id="tasksScreen" class="card hidden">
     <h2>Görevler</h2>
     <p>Bugünkü kontrol görevleri.</p>
+    
     <div class="task">
       <div class="badge">Mutfak · 09:15</div>
-      <h2 style="font-size:17px; margin-bottom:8px;">Açılış öncesi mutfak temizliğini kontrol et</h2>
-      <p>Tip: Zamanlı fotoğraflı kontrol</p>
+      <div class="task-id">Görev #2</div>
+      <h2 class="task-title">Açılış öncesi mutfak temizliğini kontrol et</h2>
+      <p>Tip: Açılış kontrolü</p>
       <p>Fotoğraf: Zorunlu</p>
+
       <label>Yorum</label>
-      <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
-      <button class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
-      <button class="danger" onclick="completeTask(1, 'late')">Geç Kaldı</button>
+      <textarea id="comment2" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(2, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(2, 'late')">Geç Kaldı</button>
     </div>
+
+    <div class="task">
+      <div class="badge">Mutfak · 12:00</div>
+      <div class="task-id">Görev #3</div>
+      <h2 class="task-title">Hazırlık ürünlerinin etiket ve tarihlerini kontrol et</h2>
+      <p>Tip: Operasyon kontrolü</p>
+      <p>Fotoğraf: Zorunlu</p>
+
+      <label>Yorum</label>
+      <textarea id="comment3" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(3, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(3, 'late')">Geç Kaldı</button>
+    </div>
+
+    <div class="task">
+      <div class="badge">Salon · 10:00</div>
+      <div class="task-id">Görev #4</div>
+      <h2 class="task-title">Masa düzeni ve genel salon temizliğini kontrol et</h2>
+      <p>Tip: Açılış kontrolü</p>
+      <p>Fotoğraf: Zorunlu</p>
+
+      <label>Yorum</label>
+      <textarea id="comment4" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(4, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(4, 'late')">Geç Kaldı</button>
+    </div>
+
+    <div class="task">
+      <div class="badge">Salon · 14:00</div>
+      <div class="task-id">Görev #5</div>
+      <h2 class="task-title">Servis alanı eksiklerini kontrol et</h2>
+      <p>Tip: Operasyon kontrolü</p>
+      <p>Fotoğraf: Zorunlu değil</p>
+
+      <label>Yorum</label>
+      <textarea id="comment5" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(5, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(5, 'late')">Geç Kaldı</button>
+    </div>
+
+    <div class="task">
+      <div class="badge">Bar · 10:15</div>
+      <div class="task-id">Görev #6</div>
+      <h2 class="task-title">Bar tezgahı ve ekipman temizliğini kontrol et</h2>
+      <p>Tip: Açılış kontrolü</p>
+      <p>Fotoğraf: Zorunlu</p>
+
+      <label>Yorum</label>
+      <textarea id="comment6" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(6, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(6, 'late')">Geç Kaldı</button>
+    </div>
+
+    <div class="task">
+      <div class="badge">Bar · 16:00</div>
+      <div class="task-id">Görev #7</div>
+      <h2 class="task-title">İçecek stok seviyesini kontrol et</h2>
+      <p>Tip: Stok kontrolü</p>
+      <p>Fotoğraf: Zorunlu değil</p>
+
+      <label>Yorum</label>
+      <textarea id="comment7" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(7, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(7, 'late')">Geç Kaldı</button>
+    </div>
+
+    <div class="task">
+      <div class="badge">Paket Servis · 11:30</div>
+      <div class="task-id">Görev #8</div>
+      <h2 class="task-title">Paketleme alanı ve kurye teslim düzenini kontrol et</h2>
+      <p>Tip: Paket servis kontrolü</p>
+      <p>Fotoğraf: Zorunlu</p>
+
+      <label>Yorum</label>
+      <textarea id="comment8" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(8, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(8, 'late')">Geç Kaldı</button>
+    </div>
+
+    <div class="task">
+      <div class="badge">Paket Servis · 18:00</div>
+      <div class="task-id">Görev #9</div>
+      <h2 class="task-title">Eksik veya geciken siparişleri kontrol et</h2>
+      <p>Tip: Operasyon kontrolü</p>
+      <p>Fotoğraf: Zorunlu değil</p>
+
+      <label>Yorum</label>
+      <textarea id="comment9" placeholder="Gerekirse açıklama yazın"></textarea>
+
+      <button class="primary" onclick="completeTask(9, 'completed')">Tamamlandı</button>
+      <button class="danger" onclick="completeTask(9, 'late')">Geç Kaldı</button>
+    </div>
+
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
 
@@ -161,7 +274,7 @@
     }
 
     function completeTask(taskId, status) {
-      let comment = document.getElementById("taskComment1").value;
+      let comment = document.getElementById("comment" + taskId).value;
 
       if (status === "late" && comment.trim() === "") {
         comment = "Geç kalma nedeni yazılmadı";
