@@ -47,7 +47,6 @@
     .primary { background: #16a34a; color: #ffffff; }
     .secondary { background: #111827; color: #ffffff; }
     .light { background: #e5e7eb; color: #111827; }
-    .danger { background: #dc2626; color: #ffffff; }
     .hidden { display: none; }
     .task {
       border: 1px solid #e5e7eb;
@@ -70,21 +69,18 @@
   </style>
 </head>
 <body>
-
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
     <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
-    <p class="small">Test sürümü v3.</p>
+    <p class="small">Test sürümü: güvenli çalışma sürümü.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
     <h2>İşletme Kurulumu</h2>
-
     <label>İşletme adı</label>
     <input id="businessName" placeholder="Örn: Matryoshka" />
-
     <label>İşletme türü</label>
     <select id="businessType">
       <option value="Restoran">Restoran</option>
@@ -93,25 +89,18 @@
       <option value="Fırın">Fırın</option>
       <option value="Paket Servis Mutfağı">Paket Servis Mutfağı</option>
     </select>
-
     <label>Açılış saati</label>
     <input id="openTime" type="time" value="09:00" />
-
     <label>Kapanış saati</label>
     <input id="closeTime" type="time" value="21:00" />
-
     <label>Mutfak minimum personel</label>
     <input id="kitchenMin" type="number" value="1" />
-
     <label>Salon minimum personel</label>
     <input id="hallMin" type="number" value="1" />
-
     <label>Bar minimum personel</label>
     <input id="barMin" type="number" value="1" />
-
     <label>Paket servis minimum personel</label>
     <input id="deliveryMin" type="number" value="1" />
-
     <button class="primary" onclick="sendBusiness()">Kurulumu Tamamla</button>
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
@@ -119,20 +108,15 @@
   <div id="tasksScreen" class="card hidden">
     <h2>Görevler</h2>
     <p>Bugünkü kontrol görevleri.</p>
-
     <div class="task">
       <div class="badge">Mutfak · 09:15</div>
       <h2 style="font-size:17px; margin-bottom:8px;">Açılış öncesi mutfak temizliğini kontrol et</h2>
       <p>Tip: Zamanlı fotoğraflı kontrol</p>
       <p>Fotoğraf: Zorunlu</p>
-
       <label>Yorum</label>
       <textarea id="taskComment1" placeholder="Gerekirse açıklama yazın"></textarea>
-
-      <button class="primary" onclick="sendCompleted()">Tamamlandı</button>
-      <button class="danger" onclick="sendLate()">Geç Kaldı</button>
+      <button class="primary" onclick="completeTask(1)">Görevi Tamamla</button>
     </div>
-
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
 
@@ -170,39 +154,20 @@
         barMin: document.getElementById("barMin").value,
         deliveryMin: document.getElementById("deliveryMin").value
       };
-
       tg.sendData(JSON.stringify(data));
-      setTimeout(function() { tg.close(); }, 500);
+      tg.close();
     }
 
-    function sendCompleted() {
+    function completeTask(taskId) {
+      const comment = document.getElementById("taskComment1").value;
       const data = {
         action: "complete_task",
-        taskId: 1,
+        taskId: taskId,
         status: "completed",
-        comment: ""
-      };
-
-      tg.sendData(JSON.stringify(data));
-      setTimeout(function() { tg.close(); }, 500);
-    }
-
-    function sendLate() {
-      let comment = document.getElementById("taskComment1").value;
-
-      if (comment.trim() === "") {
-        comment = "Geç kalma nedeni yazılmadı";
-      }
-
-      const data = {
-        action: "complete_task",
-        taskId: 1,
-        status: "late",
         comment: comment
       };
-
       tg.sendData(JSON.stringify(data));
-      setTimeout(function() { tg.close(); }, 500);
+      tg.close();
     }
   </script>
 </body>
