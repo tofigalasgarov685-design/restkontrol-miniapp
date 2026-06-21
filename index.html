@@ -85,7 +85,8 @@
     <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
-    <p class="small">Test sürümü: 8 görevli Mini App.</p>
+    <button class="light" onclick="sendReport()">Rapor Al</button>
+    <p class="small">Test sürümü: 8 görev + rapor.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -290,6 +291,14 @@
       tg.sendData(JSON.stringify(data));
       tg.close();
     }
+    function sendReport() {
+      const data = {
+        action: "get_report"
+      };
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
   </script>
 </body>
 </html>
