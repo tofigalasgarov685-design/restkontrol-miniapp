@@ -186,11 +186,12 @@
     </div>
 
     <button class="danger" onclick="showLateTasks()">Gecikenleri Göster</button>
+    <button class="primary" onclick="showWaitingTasks()">Bekleyenleri Göster</button>
     <button class="secondary" onclick="showTasks()">Görevleri Aç</button>
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v2.</p>
+    <p class="small">Test sürümü: dashboard v3.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -228,6 +229,7 @@
     <div class="filter-grid">
       <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
       <button id="filterLate" onclick="filterTasks('Geciken', this)">Geciken</button>
+      <button id="filterWaiting" onclick="filterTasks('Bekleyen', this)">Bekleyen</button>
       <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
       <button onclick="filterTasks('Salon', this)">Salon</button>
       <button onclick="filterTasks('Bar', this)">Bar</button>
@@ -435,6 +437,15 @@
       filterTasks("Geciken", document.getElementById("filterLate"));
     }
 
+    function showWaitingTasks() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.remove("hidden");
+      document.getElementById("taskScreenTitle").innerText = "Bekleyen Görevler";
+      updateTaskStates();
+      filterTasks("Bekleyen", document.getElementById("filterWaiting"));
+    }
+
     function getCurrentMinutes() {
       const now = new Date();
       return now.getHours() * 60 + now.getMinutes();
@@ -510,6 +521,8 @@
           shouldShow = true;
         } else if (zone === "Geciken") {
           shouldShow = task.dataset.status === "late";
+        } else if (zone === "Bekleyen") {
+          shouldShow = task.dataset.status === "waiting";
         } else {
           shouldShow = task.dataset.zone === zone;
         }
