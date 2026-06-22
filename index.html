@@ -142,6 +142,16 @@
       color: #111827;
     }
     .filter-grid button.active { background: #111827; color: #ffffff; }
+    .empty-box {
+      display: none;
+      border: 1px dashed #d1d5db;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      color: #6b7280;
+      background: #fafafa;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -175,11 +185,12 @@
       <div class="zone-card"><strong>Paket Servis</strong><span>2 görev</span></div>
     </div>
 
+    <button class="danger" onclick="showLateTasks()">Gecikenleri Göster</button>
     <button class="secondary" onclick="showTasks()">Görevleri Aç</button>
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v1.</p>
+    <p class="small">Test sürümü: dashboard v2.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -211,16 +222,19 @@
   </div>
 
   <div id="tasksScreen" class="card hidden">
-    <h2>Görevler</h2>
+    <h2 id="taskScreenTitle">Görevler</h2>
     <p>Sistem, görevin saatine göre durumu otomatik belirler.</p>
 
     <div class="filter-grid">
       <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
+      <button id="filterLate" onclick="filterTasks('Geciken', this)">Geciken</button>
       <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
       <button onclick="filterTasks('Salon', this)">Salon</button>
       <button onclick="filterTasks('Bar', this)">Bar</button>
       <button onclick="filterTasks('Paket Servis', this)">Paket Servis</button>
     </div>
+
+    <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
 
     
     <div class="task" data-zone="Mutfak" data-time="09:15">
@@ -407,8 +421,18 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
+      document.getElementById("taskScreenTitle").innerText = "Görevler";
       updateTaskStates();
       filterTasks("Tümü", document.getElementById("filterAll"));
+    }
+
+    function showLateTasks() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.remove("hidden");
+      document.getElementById("taskScreenTitle").innerText = "Geciken Görevler";
+      updateTaskStates();
+      filterTasks("Geciken", document.getElementById("filterLate"));
     }
 
     function getCurrentMinutes() {
@@ -423,8 +447,7 @@
 
     function isTaskLate(taskId) {
       const task = document.querySelector('.task button[onclick*="' + taskId + '"]').closest(".task");
-      const taskTime = task.dataset.time;
-      return getCurrentMinutes() > getTaskMinutes(taskTime);
+      return getCurrentMinutes() > getTaskMinutes(task.dataset.time);
     }
 
     function updateDashboard(lateCount, waitingCount) {
@@ -442,10 +465,9 @@
       let waitingCount = 0;
 
       tasks.forEach(function(task) {
-        const taskTime = task.dataset.time;
         const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
         const taskId = parseInt(taskIdText, 10);
-        const late = getCurrentMinutes() > getTaskMinutes(taskTime);
+        const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
 
         const state = document.getElementById("state" + taskId);
         const doneButton = document.getElementById("done" + taskId);
@@ -453,6 +475,7 @@
 
         if (late) {
           lateCount += 1;
+          task.dataset.status = "late";
           state.innerText = "Gecikti";
           state.classList.remove("state-ok");
           state.classList.add("state-late");
@@ -461,6 +484,7 @@
           lateButton.disabled = false;
         } else {
           waitingCount += 1;
+          task.dataset.status = "waiting";
           state.innerText = "Bekliyor";
           state.classList.remove("state-late");
           state.classList.add("state-ok");
@@ -476,10 +500,23 @@
     function filterTasks(zone, button) {
       updateTaskStates();
 
+      let visibleCount = 0;
       const tasks = document.querySelectorAll(".task");
+
       tasks.forEach(function(task) {
-        if (zone === "Tümü" || task.dataset.zone === zone) {
+        let shouldShow = false;
+
+        if (zone === "Tümü") {
+          shouldShow = true;
+        } else if (zone === "Geciken") {
+          shouldShow = task.dataset.status === "late";
+        } else {
+          shouldShow = task.dataset.zone === zone;
+        }
+
+        if (shouldShow) {
           task.classList.remove("hidden");
+          visibleCount += 1;
         } else {
           task.classList.add("hidden");
         }
@@ -488,6 +525,8 @@
       const buttons = document.querySelectorAll(".filter-grid button");
       buttons.forEach(function(btn) { btn.classList.remove("active"); });
       button.classList.add("active");
+
+      document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
     }
 
     function sendBusiness() {
