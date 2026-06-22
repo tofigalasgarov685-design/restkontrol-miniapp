@@ -85,6 +85,7 @@
       border-radius: 16px;
       padding: 13px;
     }
+    .zone-card { cursor: pointer; }
     .zone-card strong { display: block; font-size: 15px; margin-bottom: 4px; }
     .zone-card span { color: #6b7280; font-size: 13px; }
     .task {
@@ -179,10 +180,10 @@
     </div>
 
     <div class="zone-grid">
-      <div class="zone-card"><strong>Mutfak</strong><span>2 görev</span></div>
-      <div class="zone-card"><strong>Salon</strong><span>2 görev</span></div>
-      <div class="zone-card"><strong>Bar</strong><span>2 görev</span></div>
-      <div class="zone-card"><strong>Paket Servis</strong><span>2 görev</span></div>
+      <div class="zone-card" onclick="showZoneTasks('Mutfak')"><strong>Mutfak</strong><span>2 görev</span></div>
+      <div class="zone-card" onclick="showZoneTasks('Salon')"><strong>Salon</strong><span>2 görev</span></div>
+      <div class="zone-card" onclick="showZoneTasks('Bar')"><strong>Bar</strong><span>2 görev</span></div>
+      <div class="zone-card" onclick="showZoneTasks('Paket Servis')"><strong>Paket Servis</strong><span>2 görev</span></div>
     </div>
 
     <button class="danger" onclick="showLateTasks()">Gecikenleri Göster</button>
@@ -191,7 +192,7 @@
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v3.</p>
+    <p class="small">Test sürümü: dashboard v4.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -435,6 +436,27 @@
       document.getElementById("taskScreenTitle").innerText = "Geciken Görevler";
       updateTaskStates();
       filterTasks("Geciken", document.getElementById("filterLate"));
+    }
+
+    function showZoneTasks(zone) {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.remove("hidden");
+      document.getElementById("taskScreenTitle").innerText = zone + " Görevleri";
+      updateTaskStates();
+
+      const buttons = document.querySelectorAll(".filter-grid button");
+      let targetButton = null;
+
+      buttons.forEach(function(btn) {
+        if (btn.innerText === zone) {
+          targetButton = btn;
+        }
+      });
+
+      if (targetButton) {
+        filterTasks(zone, targetButton);
+      }
     }
 
     function showWaitingTasks() {
