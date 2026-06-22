@@ -80,12 +80,28 @@
       margin-top: 12px;
     }
     .zone-card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
+      border: 1px solid transparent;
       border-radius: 16px;
-      padding: 13px;
+      padding: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
     }
-    .zone-card { cursor: pointer; }
+    .zone-mutfak {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+    .zone-salon {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+    .zone-bar {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+    }
+    .zone-paket {
+      background: #ecfdf5;
+      border-color: #bbf7d0;
+    }
     .zone-card strong { display: block; font-size: 15px; margin-bottom: 4px; }
     .zone-card span { color: #6b7280; font-size: 13px; }
     .task {
@@ -180,10 +196,10 @@
     </div>
 
     <div class="zone-grid">
-      <div class="zone-card" onclick="showZoneTasks('Mutfak')"><strong>Mutfak</strong><span>2 görev</span></div>
-      <div class="zone-card" onclick="showZoneTasks('Salon')"><strong>Salon</strong><span>2 görev</span></div>
-      <div class="zone-card" onclick="showZoneTasks('Bar')"><strong>Bar</strong><span>2 görev</span></div>
-      <div class="zone-card" onclick="showZoneTasks('Paket Servis')"><strong>Paket Servis</strong><span>2 görev</span></div>
+      <div class="zone-card zone-mutfak" onclick="showZoneTasks('Mutfak')"><strong>Mutfak</strong><span>2 görev</span></div>
+      <div class="zone-card zone-salon" onclick="showZoneTasks('Salon')"><strong>Salon</strong><span>2 görev</span></div>
+      <div class="zone-card zone-bar" onclick="showZoneTasks('Bar')"><strong>Bar</strong><span>2 görev</span></div>
+      <div class="zone-card zone-paket" onclick="showZoneTasks('Paket Servis')"><strong>Paket Servis</strong><span>2 görev</span></div>
     </div>
 
     <button class="danger" onclick="showLateTasks()">Gecikenleri Göster</button>
@@ -192,7 +208,7 @@
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v4.</p>
+    <p class="small">Test sürümü: dashboard v5.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
