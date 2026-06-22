@@ -77,6 +77,24 @@
       margin-bottom: 8px;
     }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+    .filter-grid button {
+      margin-top: 0;
+      padding: 11px;
+      font-size: 14px;
+      border-radius: 12px;
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .filter-grid button.active {
+      background: #111827;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -86,7 +104,7 @@
     <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
     <button class="secondary" onclick="showTasks()">Görevler</button>
     <button class="light" onclick="sendReport()">Rapor Al</button>
-    <p class="small">Test sürümü: 8 görev + rapor.</p>
+    <p class="small">Test sürümü: görev filtreli Mini App.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -119,9 +137,18 @@
 
   <div id="tasksScreen" class="card hidden">
     <h2>Görevler</h2>
-    <p>Bugünkü kontrol görevleri.</p>
+    <p>Bölüme göre görevleri filtreleyin.</p>
+
+    <div class="filter-grid">
+      <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
+      <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
+      <button onclick="filterTasks('Salon', this)">Salon</button>
+      <button onclick="filterTasks('Bar', this)">Bar</button>
+      <button onclick="filterTasks('Paket Servis', this)">Paket Servis</button>
+    </div>
+
     
-    <div class="task">
+    <div class="task" data-zone="Mutfak">
       <div class="badge">Mutfak · 09:15</div>
       <div class="task-id">Görev #2</div>
       <h2 class="task-title">Açılış öncesi mutfak temizliğini kontrol et</h2>
@@ -135,7 +162,7 @@
       <button class="danger" onclick="completeTask(2, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Mutfak">
       <div class="badge">Mutfak · 12:00</div>
       <div class="task-id">Görev #3</div>
       <h2 class="task-title">Hazırlık ürünlerinin etiket ve tarihlerini kontrol et</h2>
@@ -149,7 +176,7 @@
       <button class="danger" onclick="completeTask(3, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Salon">
       <div class="badge">Salon · 10:00</div>
       <div class="task-id">Görev #4</div>
       <h2 class="task-title">Masa düzeni ve genel salon temizliğini kontrol et</h2>
@@ -163,7 +190,7 @@
       <button class="danger" onclick="completeTask(4, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Salon">
       <div class="badge">Salon · 14:00</div>
       <div class="task-id">Görev #5</div>
       <h2 class="task-title">Servis alanı eksiklerini kontrol et</h2>
@@ -177,7 +204,7 @@
       <button class="danger" onclick="completeTask(5, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Bar">
       <div class="badge">Bar · 10:15</div>
       <div class="task-id">Görev #6</div>
       <h2 class="task-title">Bar tezgahı ve ekipman temizliğini kontrol et</h2>
@@ -191,7 +218,7 @@
       <button class="danger" onclick="completeTask(6, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Bar">
       <div class="badge">Bar · 16:00</div>
       <div class="task-id">Görev #7</div>
       <h2 class="task-title">İçecek stok seviyesini kontrol et</h2>
@@ -205,7 +232,7 @@
       <button class="danger" onclick="completeTask(7, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Paket Servis">
       <div class="badge">Paket Servis · 11:30</div>
       <div class="task-id">Görev #8</div>
       <h2 class="task-title">Paketleme alanı ve kurye teslim düzenini kontrol et</h2>
@@ -219,7 +246,7 @@
       <button class="danger" onclick="completeTask(8, 'late')">Geç Kaldı</button>
     </div>
 
-    <div class="task">
+    <div class="task" data-zone="Paket Servis">
       <div class="badge">Paket Servis · 18:00</div>
       <div class="task-id">Görev #9</div>
       <h2 class="task-title">Eksik veya geciken siparişleri kontrol et</h2>
@@ -256,6 +283,24 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
+      filterTasks("Tümü", document.getElementById("filterAll"));
+    }
+
+    function filterTasks(zone, button) {
+      const tasks = document.querySelectorAll(".task");
+      tasks.forEach(function(task) {
+        if (zone === "Tümü" || task.dataset.zone === zone) {
+          task.classList.remove("hidden");
+        } else {
+          task.classList.add("hidden");
+        }
+      });
+
+      const buttons = document.querySelectorAll(".filter-grid button");
+      buttons.forEach(function(btn) {
+        btn.classList.remove("active");
+      });
+      button.classList.add("active");
     }
 
     function sendBusiness() {
@@ -291,6 +336,7 @@
       tg.sendData(JSON.stringify(data));
       tg.close();
     }
+
     function sendReport() {
       const data = {
         action: "get_report"
@@ -298,7 +344,6 @@
       tg.sendData(JSON.stringify(data));
       tg.close();
     }
-
   </script>
 </body>
 </html>
