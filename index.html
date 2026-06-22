@@ -44,21 +44,61 @@
       font-weight: 700;
       cursor: pointer;
     }
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
     .primary { background: #16a34a; color: #ffffff; }
     .danger { background: #dc2626; color: #ffffff; }
     .secondary { background: #111827; color: #ffffff; }
     .light { background: #e5e7eb; color: #111827; }
     .hidden { display: none; }
+    .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .metric {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .metric .number {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .metric .label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 700;
+    }
+    .zone-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .zone-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 13px;
+    }
+    .zone-card strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .zone-card span { color: #6b7280; font-size: 13px; }
     .task {
       border: 1px solid #e5e7eb;
       border-radius: 16px;
       padding: 14px;
       margin-top: 12px;
       background: #fafafa;
+    }
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
     }
     .badge {
       display: inline-block;
@@ -76,27 +116,17 @@
       color: #6b7280;
       margin-bottom: 6px;
     }
-    .task-title {
-      font-size: 17px;
-      margin-bottom: 8px;
-    }
-    .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    .task-title { font-size: 17px; margin-bottom: 8px; }
     .state {
       display: inline-block;
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 700;
-      margin-bottom: 8px;
+      white-space: nowrap;
     }
-    .state-ok {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .state-late {
-      background: #fee2e2;
-      color: #991b1b;
-    }
+    .state-ok { background: #dcfce7; color: #166534; }
+    .state-late { background: #fee2e2; color: #991b1b; }
     .filter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -111,20 +141,45 @@
       background: #e5e7eb;
       color: #111827;
     }
-    .filter-grid button.active {
-      background: #111827;
-      color: #ffffff;
-    }
+    .filter-grid button.active { background: #111827; color: #ffffff; }
   </style>
 </head>
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>Yeme-içme işletmeleri için dijital kontrol sistemi.</p>
-    <button class="primary" onclick="showCreateBusiness()">İşletme Oluştur</button>
-    <button class="secondary" onclick="showTasks()">Görevler</button>
+    <p>Restoran operasyonları için günlük kontrol paneli.</p>
+
+    <div class="dashboard-grid">
+      <div class="metric">
+        <div id="metricTotal" class="number">8</div>
+        <div class="label">Bugünkü görev</div>
+      </div>
+      <div class="metric">
+        <div id="metricLate" class="number">0</div>
+        <div class="label">Geciken</div>
+      </div>
+      <div class="metric">
+        <div id="metricWaiting" class="number">0</div>
+        <div class="label">Bekleyen</div>
+      </div>
+      <div class="metric">
+        <div id="metricRate" class="number">%0</div>
+        <div class="label">Geç oranı</div>
+      </div>
+    </div>
+
+    <div class="zone-grid">
+      <div class="zone-card"><strong>Mutfak</strong><span>2 görev</span></div>
+      <div class="zone-card"><strong>Salon</strong><span>2 görev</span></div>
+      <div class="zone-card"><strong>Bar</strong><span>2 görev</span></div>
+      <div class="zone-card"><strong>Paket Servis</strong><span>2 görev</span></div>
+    </div>
+
+    <button class="secondary" onclick="showTasks()">Görevleri Aç</button>
     <button class="light" onclick="sendReport()">Rapor Al</button>
-    <p class="small">Test sürümü: otomatik geç kalma kontrolü.</p>
+    <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
+
+    <p class="small">Test sürümü: dashboard v1.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -169,9 +224,14 @@
 
     
     <div class="task" data-zone="Mutfak" data-time="09:15">
-      <div class="badge">Mutfak · 09:15</div>
-      <div class="task-id">Görev #2</div>
-      <div id="state2" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Mutfak · 09:15</div>
+          <div class="task-id">Görev #2</div>
+        </div>
+        <div id="state2" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Açılış öncesi mutfak temizliğini kontrol et</h2>
       <p>Tip: Açılış kontrolü</p>
       <p>Fotoğraf: Zorunlu</p>
@@ -184,9 +244,14 @@
     </div>
 
     <div class="task" data-zone="Mutfak" data-time="12:00">
-      <div class="badge">Mutfak · 12:00</div>
-      <div class="task-id">Görev #3</div>
-      <div id="state3" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Mutfak · 12:00</div>
+          <div class="task-id">Görev #3</div>
+        </div>
+        <div id="state3" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Hazırlık ürünlerinin etiket ve tarihlerini kontrol et</h2>
       <p>Tip: Operasyon kontrolü</p>
       <p>Fotoğraf: Zorunlu</p>
@@ -199,9 +264,14 @@
     </div>
 
     <div class="task" data-zone="Salon" data-time="10:00">
-      <div class="badge">Salon · 10:00</div>
-      <div class="task-id">Görev #4</div>
-      <div id="state4" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Salon · 10:00</div>
+          <div class="task-id">Görev #4</div>
+        </div>
+        <div id="state4" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Masa düzeni ve genel salon temizliğini kontrol et</h2>
       <p>Tip: Açılış kontrolü</p>
       <p>Fotoğraf: Zorunlu</p>
@@ -214,9 +284,14 @@
     </div>
 
     <div class="task" data-zone="Salon" data-time="14:00">
-      <div class="badge">Salon · 14:00</div>
-      <div class="task-id">Görev #5</div>
-      <div id="state5" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Salon · 14:00</div>
+          <div class="task-id">Görev #5</div>
+        </div>
+        <div id="state5" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Servis alanı eksiklerini kontrol et</h2>
       <p>Tip: Operasyon kontrolü</p>
       <p>Fotoğraf: Zorunlu değil</p>
@@ -229,9 +304,14 @@
     </div>
 
     <div class="task" data-zone="Bar" data-time="10:15">
-      <div class="badge">Bar · 10:15</div>
-      <div class="task-id">Görev #6</div>
-      <div id="state6" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Bar · 10:15</div>
+          <div class="task-id">Görev #6</div>
+        </div>
+        <div id="state6" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Bar tezgahı ve ekipman temizliğini kontrol et</h2>
       <p>Tip: Açılış kontrolü</p>
       <p>Fotoğraf: Zorunlu</p>
@@ -244,9 +324,14 @@
     </div>
 
     <div class="task" data-zone="Bar" data-time="16:00">
-      <div class="badge">Bar · 16:00</div>
-      <div class="task-id">Görev #7</div>
-      <div id="state7" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Bar · 16:00</div>
+          <div class="task-id">Görev #7</div>
+        </div>
+        <div id="state7" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">İçecek stok seviyesini kontrol et</h2>
       <p>Tip: Stok kontrolü</p>
       <p>Fotoğraf: Zorunlu değil</p>
@@ -259,9 +344,14 @@
     </div>
 
     <div class="task" data-zone="Paket Servis" data-time="11:30">
-      <div class="badge">Paket Servis · 11:30</div>
-      <div class="task-id">Görev #8</div>
-      <div id="state8" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Paket Servis · 11:30</div>
+          <div class="task-id">Görev #8</div>
+        </div>
+        <div id="state8" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Paketleme alanı ve kurye teslim düzenini kontrol et</h2>
       <p>Tip: Paket servis kontrolü</p>
       <p>Fotoğraf: Zorunlu</p>
@@ -274,9 +364,14 @@
     </div>
 
     <div class="task" data-zone="Paket Servis" data-time="18:00">
-      <div class="badge">Paket Servis · 18:00</div>
-      <div class="task-id">Görev #9</div>
-      <div id="state9" class="state">Durum kontrol ediliyor...</div>
+      <div class="task-top">
+        <div>
+          <div class="badge">Paket Servis · 18:00</div>
+          <div class="task-id">Görev #9</div>
+        </div>
+        <div id="state9" class="state">Kontrol</div>
+      </div>
+
       <h2 class="task-title">Eksik veya geciken siparişleri kontrol et</h2>
       <p>Tip: Operasyon kontrolü</p>
       <p>Fotoğraf: Zorunlu değil</p>
@@ -299,6 +394,7 @@
       document.getElementById("homeScreen").classList.remove("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
+      updateTaskStates();
     }
 
     function showCreateBusiness() {
@@ -331,8 +427,19 @@
       return getCurrentMinutes() > getTaskMinutes(taskTime);
     }
 
+    function updateDashboard(lateCount, waitingCount) {
+      const total = 8;
+      const rate = Math.round((lateCount / total) * 100);
+      document.getElementById("metricTotal").innerText = total;
+      document.getElementById("metricLate").innerText = lateCount;
+      document.getElementById("metricWaiting").innerText = waitingCount;
+      document.getElementById("metricRate").innerText = "%" + rate;
+    }
+
     function updateTaskStates() {
       const tasks = document.querySelectorAll(".task");
+      let lateCount = 0;
+      let waitingCount = 0;
 
       tasks.forEach(function(task) {
         const taskTime = task.dataset.time;
@@ -345,26 +452,25 @@
         const lateButton = document.getElementById("late" + taskId);
 
         if (late) {
+          lateCount += 1;
           state.innerText = "Gecikti";
           state.classList.remove("state-ok");
           state.classList.add("state-late");
-
           doneButton.disabled = true;
           doneButton.innerText = "Tamamlandı kapalı";
-
           lateButton.disabled = false;
-          lateButton.classList.remove("hidden");
         } else {
-          state.innerText = "Zamanında";
+          waitingCount += 1;
+          state.innerText = "Bekliyor";
           state.classList.remove("state-late");
           state.classList.add("state-ok");
-
           doneButton.disabled = false;
           doneButton.innerText = "Tamamlandı";
-
           lateButton.disabled = true;
         }
       });
+
+      updateDashboard(lateCount, waitingCount);
     }
 
     function filterTasks(zone, button) {
@@ -380,9 +486,7 @@
       });
 
       const buttons = document.querySelectorAll(".filter-grid button");
-      buttons.forEach(function(btn) {
-        btn.classList.remove("active");
-      });
+      buttons.forEach(function(btn) { btn.classList.remove("active"); });
       button.classList.add("active");
     }
 
@@ -442,12 +546,12 @@
     }
 
     function sendReport() {
-      const data = {
-        action: "get_report"
-      };
+      const data = { action: "get_report" };
       tg.sendData(JSON.stringify(data));
       tg.close();
     }
+
+    updateTaskStates();
   </script>
 </body>
 </html>
