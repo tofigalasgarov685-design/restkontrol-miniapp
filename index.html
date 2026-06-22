@@ -208,7 +208,7 @@
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v5.</p>
+    <p class="small">Test sürümü: dashboard v6.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -242,6 +242,9 @@
   <div id="tasksScreen" class="card hidden">
     <h2 id="taskScreenTitle">Görevler</h2>
     <p>Sistem, görevin saatine göre durumu otomatik belirler.</p>
+
+    <label>Sorumlu kişi</label>
+    <input id="staffName" placeholder="Örn: Ahmet, Elif, Vardiya Şefi" />
 
     <div class="filter-grid">
       <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
@@ -601,6 +604,16 @@
 
       const late = isTaskLate(taskId);
       let comment = document.getElementById("comment" + taskId).value;
+      let staffName = document.getElementById("staffName").value;
+
+      if (staffName.trim() === "") {
+        if (tg.showAlert) {
+          tg.showAlert("Sorumlu kişi yazılmalıdır.");
+        } else {
+          alert("Sorumlu kişi yazılmalıdır.");
+        }
+        return;
+      }
 
       if (late && status === "completed") {
         if (tg.showAlert) {
@@ -628,7 +641,8 @@
         action: "complete_task",
         taskId: taskId,
         status: status,
-        comment: comment
+        comment: comment,
+        staffName: staffName
       };
 
       tg.sendData(JSON.stringify(data));
