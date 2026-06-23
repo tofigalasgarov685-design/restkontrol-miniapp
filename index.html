@@ -207,10 +207,12 @@
     <button class="secondary" onclick="showTasks()">Görevleri Aç</button>
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
+    <button class="light" onclick="sendEmployeeListRequest()">Çalışan Listesi</button>
+    <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v8 employees.</p>
-    <p class="small">Yetki kontrolü ve çalışan davet kodları bot tarafında yapılır.</p>
+    <p class="small">Test sürümü: dashboard v9 employee list.</p>
+    <p class="small">Çalışan ekleme, çalışan listesi ve yetki bilgileri bot tarafında yapılır.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -625,6 +627,25 @@
       document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
     }
 
+
+
+    function sendEmployeeListRequest() {
+      const data = {
+        action: "get_employees"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendMyRoleRequest() {
+      const data = {
+        action: "get_me"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
 
     function sendEmployee() {
       const fullName = document.getElementById("employeeName").value.trim();
