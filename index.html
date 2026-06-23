@@ -314,6 +314,7 @@
         <button class="danger" onclick="showLateTasks()">Gecikenler</button>
         <button class="primary" onclick="showWaitingTasks()">Bekleyenler</button>
         <button class="secondary" onclick="showTasks()">Tüm Görevler</button>
+        <button class="light" onclick="showAddTaskScreen()">Görev Ekle</button>
         <button class="light" onclick="filterTasks('Tümü', document.getElementById('filterAll')); showTasks();">Filtreli Liste</button>
       </div>
     </div>
@@ -344,8 +345,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v13 task UX.</p>
-    <p class="small">Görev kartları daha okunabilir ve yönetilebilir hale getirildi.</p>
+    <p class="small">Test sürümü: dashboard v14 add task.</p>
+    <p class="small">Görev ekleme ekranı eklendi. Yeni görevler bot veritabanına kaydedilir.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -403,6 +404,45 @@
 
     <button class="primary" onclick="sendEmployee()">Davet Kodu Oluştur</button>
     <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+  <div id="addTaskScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Görev Ekle</h2>
+    <p class="small">Owner, director ve manager yeni kontrol görevi oluşturabilir.</p>
+
+    <label>Bölüm</label>
+    <select id="newTaskZone">
+      <option value="Mutfak">Mutfak</option>
+      <option value="Salon">Salon</option>
+      <option value="Bar">Bar</option>
+      <option value="Paket Servis">Paket Servis</option>
+    </select>
+
+    <label>Görev başlığı</label>
+    <input id="newTaskTitle" placeholder="Örn: Soğuk dolap sıcaklığını kontrol et" />
+
+    <label>Kontrol tipi</label>
+    <select id="newTaskType">
+      <option value="Açılış kontrolü">Açılış kontrolü</option>
+      <option value="Operasyon kontrolü">Operasyon kontrolü</option>
+      <option value="Kapanış kontrolü">Kapanış kontrolü</option>
+      <option value="Stok kontrolü">Stok kontrolü</option>
+      <option value="Temizlik kontrolü">Temizlik kontrolü</option>
+      <option value="Paket servis kontrolü">Paket servis kontrolü</option>
+    </select>
+
+    <label>Planlanan saat</label>
+    <input id="newTaskTime" type="time" value="09:00" />
+
+    <label>Fotoğraf zorunlu mu?</label>
+    <select id="newTaskPhoto">
+      <option value="1">Evet, zorunlu</option>
+      <option value="0">Hayır</option>
+    </select>
+
+    <button class="primary" onclick="sendNewTask()">Görev Oluştur</button>
   </div>
 
   <div id="tasksScreen" class="card hidden">
@@ -700,6 +740,7 @@
       document.getElementById("homeScreen").classList.remove("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       updateTaskStates();
       setTelegramBackButton(false);
@@ -709,6 +750,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.remove("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -717,6 +759,16 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+
+    function showAddTaskScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.remove("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -875,6 +927,45 @@
 
 
 
+
+
+    function sendNewTask() {
+      const zone = document.getElementById("newTaskZone").value;
+      const title = document.getElementById("newTaskTitle").value.trim();
+      const taskType = document.getElementById("newTaskType").value;
+      const scheduledTime = document.getElementById("newTaskTime").value;
+      const requiresPhoto = document.getElementById("newTaskPhoto").value;
+
+      if (!title) {
+        if (tg.showAlert) {
+          tg.showAlert("Görev başlığı boş olamaz.");
+        } else {
+          alert("Görev başlığı boş olamaz.");
+        }
+        return;
+      }
+
+      if (!scheduledTime) {
+        if (tg.showAlert) {
+          tg.showAlert("Planlanan saat seçilmelidir.");
+        } else {
+          alert("Planlanan saat seçilmelidir.");
+        }
+        return;
+      }
+
+      const data = {
+        action: "add_task",
+        zone: zone,
+        taskTitle: title,
+        taskType: taskType,
+        scheduledTime: scheduledTime,
+        requiresPhoto: requiresPhoto
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
 
     function sendManagementReportRequest() {
       const data = {
