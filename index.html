@@ -49,6 +49,39 @@
     .danger { background: #dc2626; color: #ffffff; }
     .secondary { background: #111827; color: #ffffff; }
     .light { background: #e5e7eb; color: #111827; }
+
+    .menu-section {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 14px;
+      background: #ffffff;
+    }
+    .menu-section h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      color: #111827;
+    }
+    .menu-section p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .menu-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .menu-actions button {
+      margin-top: 0;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 12px;
+    }
+    .menu-actions.single {
+      grid-template-columns: 1fr;
+    }
+
     .hidden { display: none; }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
     .dashboard-grid {
@@ -202,18 +235,45 @@
       <div class="zone-card zone-paket" onclick="showZoneTasks('Paket Servis')"><strong>Paket Servis</strong><span>2 görev</span></div>
     </div>
 
-    <button class="danger" onclick="showLateTasks()">Gecikenleri Göster</button>
-    <button class="primary" onclick="showWaitingTasks()">Bekleyenleri Göster</button>
-    <button class="secondary" onclick="showTasks()">Görevleri Aç</button>
-    <button class="light" onclick="sendReport()">Rapor Al</button>
-    <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
-    <button class="light" onclick="sendEmployeeListRequest()">Çalışan Listesi</button>
-    <button class="light" onclick="sendManagementReportRequest()">Yönetim Raporu</button>
-    <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
-    <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
+    <div class="menu-section">
+      <h3>Görevler</h3>
+      <p>Günlük operasyon görevlerini durum ve bölüme göre takip et.</p>
+      <div class="menu-actions">
+        <button class="danger" onclick="showLateTasks()">Gecikenler</button>
+        <button class="primary" onclick="showWaitingTasks()">Bekleyenler</button>
+        <button class="secondary" onclick="showTasks()">Tüm Görevler</button>
+        <button class="light" onclick="filterTasks('Tümü', document.getElementById('filterAll')); showTasks();">Filtreli Liste</button>
+      </div>
+    </div>
 
-    <p class="small">Test sürümü: dashboard v10 management report.</p>
-    <p class="small">Çalışan yönetimi ve yönetim raporu bot tarafında gerçek verilerle oluşturulur.</p>
+    <div class="menu-section">
+      <h3>Çalışanlar</h3>
+      <p>Personel, rol, bölüm ve davet kodlarını yönet.</p>
+      <div class="menu-actions">
+        <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
+        <button class="light" onclick="sendEmployeeListRequest()">Çalışan Listesi</button>
+        <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Raporlar</h3>
+      <p>Gecikme oranı, son kayıtlar, sorumlu kişi ve rol bilgilerini al.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="sendManagementReportRequest()">Yönetim Raporu</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Ayarlar</h3>
+      <p>İşletme bilgileri ve minimum personel ayarlarını düzenle.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
+      </div>
+    </div>
+
+    <p class="small">Test sürümü: dashboard v11 navigation.</p>
+    <p class="small">Ana ekran artık Dashboard, Görevler, Çalışanlar, Raporlar ve Ayarlar olarak düzenlendi.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
