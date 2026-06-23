@@ -208,11 +208,12 @@
     <button class="light" onclick="sendReport()">Rapor Al</button>
     <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
     <button class="light" onclick="sendEmployeeListRequest()">Çalışan Listesi</button>
+    <button class="light" onclick="sendManagementReportRequest()">Yönetim Raporu</button>
     <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v9 employee list.</p>
-    <p class="small">Çalışan ekleme, çalışan listesi ve yetki bilgileri bot tarafında yapılır.</p>
+    <p class="small">Test sürümü: dashboard v10 management report.</p>
+    <p class="small">Çalışan yönetimi ve yönetim raporu bot tarafında gerçek verilerle oluşturulur.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -628,6 +629,16 @@
     }
 
 
+
+
+    function sendManagementReportRequest() {
+      const data = {
+        action: "get_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
 
     function sendEmployeeListRequest() {
       const data = {
