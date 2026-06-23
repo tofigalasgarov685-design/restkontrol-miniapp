@@ -82,6 +82,15 @@
       grid-template-columns: 1fr;
     }
 
+
+    .top-back {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin-bottom: 12px;
+      border: 1px solid #d1d5db;
+    }
+
     .hidden { display: none; }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
     .dashboard-grid {
@@ -272,8 +281,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v11 navigation.</p>
-    <p class="small">Ana ekran artık Dashboard, Görevler, Çalışanlar, Raporlar ve Ayarlar olarak düzenlendi.</p>
+    <p class="small">Test sürümü: dashboard v12 back button.</p>
+    <p class="small">Görev ekranlarına hızlı geri dönüş butonu eklendi.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -306,6 +315,7 @@
 
 
   <div id="employeeScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışan Ekle</h2>
     <p class="small">Owner, director ve manager çalışan ekleyebilir. Manager sadece staff ekleyebilir.</p>
 
@@ -333,6 +343,7 @@
   </div>
 
   <div id="tasksScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2 id="taskScreenTitle">Görevler</h2>
     <p>Sistem, görevin saatine göre durumu otomatik belirler.</p>
 
@@ -518,12 +529,29 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    function setTelegramBackButton(visible) {
+      if (!tg.BackButton) return;
+
+      if (visible) {
+        tg.BackButton.show();
+      } else {
+        tg.BackButton.hide();
+      }
+    }
+
+    if (tg.BackButton) {
+      tg.BackButton.onClick(function() {
+        showHome();
+      });
+    }
+
     function showHome() {
       document.getElementById("homeScreen").classList.remove("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       updateTaskStates();
+      setTelegramBackButton(false);
     }
 
     function showCreateBusiness() {
@@ -531,6 +559,7 @@
       document.getElementById("businessScreen").classList.remove("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
     }
 
     function showEmployeeScreen() {
@@ -538,6 +567,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.remove("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
     }
 
     function showTasks() {
@@ -545,6 +575,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = "Görevler";
       updateTaskStates();
       filterTasks("Tümü", document.getElementById("filterAll"));
@@ -555,6 +586,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = "Geciken Görevler";
       updateTaskStates();
       filterTasks("Geciken", document.getElementById("filterLate"));
@@ -565,6 +597,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = zone + " Görevleri";
       updateTaskStates();
 
@@ -587,6 +620,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = "Bekleyen Görevler";
       updateTaskStates();
       filterTasks("Bekleyen", document.getElementById("filterWaiting"));
