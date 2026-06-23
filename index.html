@@ -206,10 +206,11 @@
     <button class="primary" onclick="showWaitingTasks()">Bekleyenleri Göster</button>
     <button class="secondary" onclick="showTasks()">Görevleri Aç</button>
     <button class="light" onclick="sendReport()">Rapor Al</button>
+    <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
     <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
 
-    <p class="small">Test sürümü: dashboard v7 roles.</p>
-    <p class="small">Yetki kontrolü bot tarafında yapılır: owner, director, manager, staff.</p>
+    <p class="small">Test sürümü: dashboard v8 employees.</p>
+    <p class="small">Yetki kontrolü ve çalışan davet kodları bot tarafında yapılır.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -237,6 +238,34 @@
     <label>Paket servis minimum personel</label>
     <input id="deliveryMin" type="number" value="1" />
     <button class="primary" onclick="sendBusiness()">Kurulumu Tamamla</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+  <div id="employeeScreen" class="card hidden">
+    <h2>Çalışan Ekle</h2>
+    <p class="small">Owner, director ve manager çalışan ekleyebilir. Manager sadece staff ekleyebilir.</p>
+
+    <label>Ad Soyad</label>
+    <input id="employeeName" placeholder="Örn: Ahmet Yılmaz" />
+
+    <label>Rol</label>
+    <select id="employeeRole">
+      <option value="staff">Personel</option>
+      <option value="manager">Müdür / Vardiya Şefi</option>
+      <option value="director">Genel Müdür</option>
+    </select>
+
+    <label>Bölüm</label>
+    <select id="employeeZone">
+      <option value="Mutfak">Mutfak</option>
+      <option value="Salon">Salon</option>
+      <option value="Bar">Bar</option>
+      <option value="Paket Servis">Paket Servis</option>
+      <option value="Tüm Bölümler">Tüm Bölümler</option>
+    </select>
+
+    <button class="primary" onclick="sendEmployee()">Davet Kodu Oluştur</button>
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
 
@@ -429,6 +458,7 @@
     function showHome() {
       document.getElementById("homeScreen").classList.remove("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       updateTaskStates();
     }
@@ -436,12 +466,21 @@
     function showCreateBusiness() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.remove("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+    }
+
+    function showEmployeeScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.remove("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
     }
 
     function showTasks() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       document.getElementById("taskScreenTitle").innerText = "Görevler";
       updateTaskStates();
@@ -451,6 +490,7 @@
     function showLateTasks() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       document.getElementById("taskScreenTitle").innerText = "Geciken Görevler";
       updateTaskStates();
@@ -460,6 +500,7 @@
     function showZoneTasks(zone) {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       document.getElementById("taskScreenTitle").innerText = zone + " Görevleri";
       updateTaskStates();
@@ -481,6 +522,7 @@
     function showWaitingTasks() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       document.getElementById("taskScreenTitle").innerText = "Bekleyen Görevler";
       updateTaskStates();
@@ -581,6 +623,32 @@
       button.classList.add("active");
 
       document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+
+    function sendEmployee() {
+      const fullName = document.getElementById("employeeName").value.trim();
+      const role = document.getElementById("employeeRole").value;
+      const zone = document.getElementById("employeeZone").value;
+
+      if (!fullName) {
+        if (tg.showAlert) {
+          tg.showAlert("Ad Soyad boş olamaz.");
+        } else {
+          alert("Ad Soyad boş olamaz.");
+        }
+        return;
+      }
+
+      const data = {
+        action: "add_employee",
+        fullName: fullName,
+        role: role,
+        zone: zone
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
     }
 
     function sendBusiness() {
