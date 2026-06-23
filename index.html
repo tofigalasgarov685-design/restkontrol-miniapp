@@ -148,44 +148,107 @@
     .zone-card span { color: #6b7280; font-size: 13px; }
     .task {
       border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 14px;
-      margin-top: 12px;
-      background: #fafafa;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 14px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
     }
     .task-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 8px;
+      gap: 10px;
+      margin-bottom: 10px;
     }
     .badge {
       display: inline-block;
-      padding: 5px 10px;
+      padding: 6px 11px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      background: #fef3c7;
-      color: #92400e;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 7px;
+      background: #eef2ff;
+      color: #3730a3;
+      letter-spacing: 0.2px;
     }
     .task-id {
-      font-size: 13px;
-      font-weight: 700;
-      color: #6b7280;
-      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
-    .task-title { font-size: 17px; margin-bottom: 8px; }
+    .task-title {
+      font-size: 18px;
+      line-height: 1.3;
+      margin: 8px 0 12px;
+      color: #111827;
+    }
     .state {
       display: inline-block;
-      padding: 6px 10px;
+      padding: 7px 11px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 800;
       white-space: nowrap;
+      background: #f3f4f6;
+      color: #374151;
     }
     .state-ok { background: #dcfce7; color: #166534; }
     .state-late { background: #fee2e2; color: #991b1b; }
+    .task-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .task-meta-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+      background: #f9fafb;
+    }
+    .task-meta-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+    .task-meta-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+    }
+    .photo-required { color: #b45309; }
+    .photo-optional { color: #047857; }
+    .comment-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #374151;
+      margin-top: 10px;
+    }
+    .task textarea {
+      min-height: 68px;
+      font-size: 15px;
+      background: #f9fafb;
+    }
+    .task-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .task-actions button {
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+    }
     .filter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -281,8 +344,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v12 back button.</p>
-    <p class="small">Görev ekranlarına hızlı geri dönüş butonu eklendi.</p>
+    <p class="small">Test sürümü: dashboard v13 task UX.</p>
+    <p class="small">Görev kartları daha okunabilir ve yönetilebilir hale getirildi.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -372,14 +435,25 @@
       </div>
 
       <h2 class="task-title">Açılış öncesi mutfak temizliğini kontrol et</h2>
-      <p>Tip: Açılış kontrolü</p>
-      <p>Fotoğraf: Zorunlu</p>
 
-      <label>Yorum</label>
-      <textarea id="comment1" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Açılış kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
 
-      <button id="done1" class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
-      <button id="late1" class="danger" onclick="completeTask(1, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment1" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done1" class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
+        <button id="late1" class="danger" onclick="completeTask(1, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Mutfak" data-time="12:00">
@@ -392,14 +466,25 @@
       </div>
 
       <h2 class="task-title">Hazırlık ürünlerinin etiket ve tarihlerini kontrol et</h2>
-      <p>Tip: Operasyon kontrolü</p>
-      <p>Fotoğraf: Zorunlu</p>
 
-      <label>Yorum</label>
-      <textarea id="comment2" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Operasyon kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
 
-      <button id="done2" class="primary" onclick="completeTask(2, 'completed')">Tamamlandı</button>
-      <button id="late2" class="danger" onclick="completeTask(2, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment2" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done2" class="primary" onclick="completeTask(2, 'completed')">Tamamlandı</button>
+        <button id="late2" class="danger" onclick="completeTask(2, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Salon" data-time="10:00">
@@ -412,14 +497,25 @@
       </div>
 
       <h2 class="task-title">Masa düzeni ve genel salon temizliğini kontrol et</h2>
-      <p>Tip: Açılış kontrolü</p>
-      <p>Fotoğraf: Zorunlu</p>
 
-      <label>Yorum</label>
-      <textarea id="comment3" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Açılış kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
 
-      <button id="done3" class="primary" onclick="completeTask(3, 'completed')">Tamamlandı</button>
-      <button id="late3" class="danger" onclick="completeTask(3, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment3" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done3" class="primary" onclick="completeTask(3, 'completed')">Tamamlandı</button>
+        <button id="late3" class="danger" onclick="completeTask(3, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Salon" data-time="14:00">
@@ -432,14 +528,25 @@
       </div>
 
       <h2 class="task-title">Servis alanı eksiklerini kontrol et</h2>
-      <p>Tip: Operasyon kontrolü</p>
-      <p>Fotoğraf: Zorunlu değil</p>
 
-      <label>Yorum</label>
-      <textarea id="comment4" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Operasyon kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-optional">Zorunlu değil</span>
+        </div>
+      </div>
 
-      <button id="done4" class="primary" onclick="completeTask(4, 'completed')">Tamamlandı</button>
-      <button id="late4" class="danger" onclick="completeTask(4, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment4" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done4" class="primary" onclick="completeTask(4, 'completed')">Tamamlandı</button>
+        <button id="late4" class="danger" onclick="completeTask(4, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Bar" data-time="10:15">
@@ -452,14 +559,25 @@
       </div>
 
       <h2 class="task-title">Bar tezgahı ve ekipman temizliğini kontrol et</h2>
-      <p>Tip: Açılış kontrolü</p>
-      <p>Fotoğraf: Zorunlu</p>
 
-      <label>Yorum</label>
-      <textarea id="comment5" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Açılış kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
 
-      <button id="done5" class="primary" onclick="completeTask(5, 'completed')">Tamamlandı</button>
-      <button id="late5" class="danger" onclick="completeTask(5, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment5" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done5" class="primary" onclick="completeTask(5, 'completed')">Tamamlandı</button>
+        <button id="late5" class="danger" onclick="completeTask(5, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Bar" data-time="16:00">
@@ -472,14 +590,25 @@
       </div>
 
       <h2 class="task-title">İçecek stok seviyesini kontrol et</h2>
-      <p>Tip: Stok kontrolü</p>
-      <p>Fotoğraf: Zorunlu değil</p>
 
-      <label>Yorum</label>
-      <textarea id="comment6" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Stok kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-optional">Zorunlu değil</span>
+        </div>
+      </div>
 
-      <button id="done6" class="primary" onclick="completeTask(6, 'completed')">Tamamlandı</button>
-      <button id="late6" class="danger" onclick="completeTask(6, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment6" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done6" class="primary" onclick="completeTask(6, 'completed')">Tamamlandı</button>
+        <button id="late6" class="danger" onclick="completeTask(6, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Paket Servis" data-time="11:30">
@@ -492,14 +621,25 @@
       </div>
 
       <h2 class="task-title">Paketleme alanı ve kurye teslim düzenini kontrol et</h2>
-      <p>Tip: Paket servis kontrolü</p>
-      <p>Fotoğraf: Zorunlu</p>
 
-      <label>Yorum</label>
-      <textarea id="comment7" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Paket servis kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
 
-      <button id="done7" class="primary" onclick="completeTask(7, 'completed')">Tamamlandı</button>
-      <button id="late7" class="danger" onclick="completeTask(7, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment7" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done7" class="primary" onclick="completeTask(7, 'completed')">Tamamlandı</button>
+        <button id="late7" class="danger" onclick="completeTask(7, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <div class="task" data-zone="Paket Servis" data-time="18:00">
@@ -512,14 +652,25 @@
       </div>
 
       <h2 class="task-title">Eksik veya geciken siparişleri kontrol et</h2>
-      <p>Tip: Operasyon kontrolü</p>
-      <p>Fotoğraf: Zorunlu değil</p>
 
-      <label>Yorum</label>
-      <textarea id="comment8" placeholder="Geç kalma durumunda neden yazın"></textarea>
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Operasyon kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-optional">Zorunlu değil</span>
+        </div>
+      </div>
 
-      <button id="done8" class="primary" onclick="completeTask(8, 'completed')">Tamamlandı</button>
-      <button id="late8" class="danger" onclick="completeTask(8, 'late')">Geç Kaldı</button>
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment8" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done8" class="primary" onclick="completeTask(8, 'completed')">Tamamlandı</button>
+        <button id="late8" class="danger" onclick="completeTask(8, 'late')">Geç Kaldı</button>
+      </div>
     </div>
 
     <button class="light" onclick="showHome()">Geri Dön</button>
