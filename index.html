@@ -297,7 +297,7 @@
       gap: 10px;
       margin-top: 10px;
     }
-    .task-actions button, .upload-button {
+    .task-actions button, .upload-button, .camera-action {
       margin-top: 0;
       padding: 13px;
       border-radius: 13px;
@@ -311,6 +311,38 @@
     .upload-button.primary { background: #16a34a; color: #ffffff; }
     .upload-button.danger { background: #dc2626; color: #ffffff; }
     .upload-button.disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .camera-action {
+      position: relative;
+      overflow: hidden;
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      border: none;
+    }
+    .camera-action.primary { background: #16a34a; color: #ffffff; }
+    .camera-action.danger { background: #dc2626; color: #ffffff; }
+    .camera-action input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .camera-action span {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+    }
     .filter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -424,7 +456,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.1 Mini App user id fix.</p>
+    <p class="small">Test sürümü: dashboard v19.3 camera direct input fix.</p>
     <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
@@ -1053,10 +1085,14 @@ function renderDynamicTasks(tasks) {
 
         <div class="task-actions">
           ${photoRequired ? `
-            <label id="done${id}" class="upload-button primary" for="photoDone${id}">Tamamlandı</label>
-            <input id="photoDone${id}" type="file" accept="image/*" capture="environment" style="display:none" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handleCameraInput(this)">
-            <label id="late${id}" class="upload-button danger" for="photoLate${id}">Geç Kaldı</label>
-            <input id="photoLate${id}" type="file" accept="image/*" capture="environment" style="display:none" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handleCameraInput(this)">
+            <div id="done${id}" class="camera-action primary">
+              <span>Tamamlandı</span>
+              <input id="photoDone${id}" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handleCameraInput(this)">
+            </div>
+            <div id="late${id}" class="camera-action danger">
+              <span>Geç Kaldı</span>
+              <input id="photoLate${id}" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handleCameraInput(this)">
+            </div>
           ` : `
             <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
             <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
