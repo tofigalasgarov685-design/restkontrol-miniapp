@@ -1503,6 +1503,7 @@ function prepareCameraInput(taskId, status, event) {
   }
 
   pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
   return true;
 }
 
@@ -1510,6 +1511,19 @@ function handleCameraInput(input) {
   const file = input.files && input.files[0];
   if (!file) return;
   uploadCameraPhoto(file, input);
+}
+
+async function calculateFileHash(file) {
+  if (!window.crypto || !window.crypto.subtle) {
+    return "";
+  }
+
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(byte) {
+    return byte.toString(16).padStart(2, "0");
+  }).join("");
 }
 
 async function uploadCameraPhoto(file, input) {
@@ -1529,12 +1543,32 @@ async function uploadCameraPhoto(file, input) {
     return;
   }
 
+  const startedAtMs = pendingCameraTask.startedAtMs || Date.now();
+  const fileLastModifiedMs = file.lastModified || 0;
+  const oldPhotoToleranceMs = 2 * 60 * 1000;
+
+  if (fileLastModifiedMs > 0 && fileLastModifiedMs < startedAtMs - oldPhotoToleranceMs) {
+    if (input) input.value = "";
+    showMessage("Bu fotoğraf eski görünüyor. Lütfen görevi şimdi fotoğraf çekerek tamamlayın.");
+    return;
+  }
+
+  let photoHash = "";
+  try {
+    photoHash = await calculateFileHash(file);
+  } catch (error) {
+    photoHash = "";
+  }
+
   const formData = new FormData();
   formData.append("telegram_user_id", userId);
   formData.append("task_id", pendingCameraTask.taskId);
   formData.append("status", pendingCameraTask.status);
   formData.append("comment", pendingCameraTask.comment);
   formData.append("staff_name", pendingCameraTask.staffName || "");
+  formData.append("started_at_ms", startedAtMs);
+  formData.append("photo_last_modified_ms", fileLastModifiedMs);
+  formData.append("photo_hash", photoHash);
   formData.append("photo", file);
 
   try {
@@ -1554,6 +1588,7 @@ async function uploadCameraPhoto(file, input) {
     if (input) input.value = "";
     tg.close();
   } catch (error) {
+    if (input) input.value = "";
     showMessage(error.message || "Fotoğraf kaydedilemedi.");
   }
 }
@@ -1571,6 +1606,7 @@ function completeTask(taskId, status) {
 
   if (requiresPhoto) {
     pendingCameraTask = result.data;
+    pendingCameraTask.startedAtMs = Date.now();
     const inputId = result.data.status === "late" ? "photoLate" + taskId : "photoDone" + taskId;
     const input = document.getElementById(inputId);
     if (input) {
