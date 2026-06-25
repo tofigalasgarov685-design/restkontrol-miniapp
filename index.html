@@ -297,12 +297,20 @@
       gap: 10px;
       margin-top: 10px;
     }
-    .task-actions button {
+    .task-actions button, .upload-button {
       margin-top: 0;
       padding: 13px;
       border-radius: 13px;
       font-size: 15px;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
     }
+    .upload-button.primary { background: #16a34a; color: #ffffff; }
+    .upload-button.danger { background: #dc2626; color: #ffffff; }
+    .upload-button.disabled { opacity: 0.45; cursor: not-allowed; }
     .filter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -417,7 +425,7 @@
     </div>
 
     <p class="small">Test sürümü: dashboard v19.1 Mini App user id fix.</p>
-    <p class="small">Photo report akışı eklendi. Fotoğraf zorunlu görevlerde Telegram fotoğraf kaydı istenir.</p>
+    <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -1044,8 +1052,15 @@ function renderDynamicTasks(tasks) {
         <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
 
         <div class="task-actions">
-          <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
-          <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
+          ${photoRequired ? `
+            <label id="done${id}" class="upload-button primary" for="photoDone${id}">Tamamlandı</label>
+            <input id="photoDone${id}" type="file" accept="image/*" capture="environment" style="display:none" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handleCameraInput(this)">
+            <label id="late${id}" class="upload-button danger" for="photoLate${id}">Geç Kaldı</label>
+            <input id="photoLate${id}" type="file" accept="image/*" capture="environment" style="display:none" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handleCameraInput(this)">
+          ` : `
+            <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
+            <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
+          `}
         </div>
       </div>
     `;
@@ -1174,18 +1189,32 @@ function getCurrentMinutes() {
           state.innerText = "Gecikti";
           state.classList.remove("state-ok");
           state.classList.add("state-late");
-          doneButton.disabled = true;
-          doneButton.innerText = "Tamamlandı kapalı";
-          lateButton.disabled = false;
+          if (doneButton) {
+            doneButton.disabled = true;
+            doneButton.classList.add("disabled");
+            doneButton.innerText = "Tamamlandı kapalı";
+          }
+          if (lateButton) {
+            lateButton.disabled = false;
+            lateButton.classList.remove("disabled");
+            lateButton.innerText = "Geç Kaldı";
+          }
         } else {
           waitingCount += 1;
           task.dataset.status = "waiting";
           state.innerText = "Bekliyor";
           state.classList.remove("state-late");
           state.classList.add("state-ok");
-          doneButton.disabled = false;
-          doneButton.innerText = "Tamamlandı";
-          lateButton.disabled = true;
+          if (doneButton) {
+            doneButton.disabled = false;
+            doneButton.classList.remove("disabled");
+            doneButton.innerText = "Tamamlandı";
+          }
+          if (lateButton) {
+            lateButton.disabled = true;
+            lateButton.classList.add("disabled");
+            lateButton.innerText = "Geç Kaldı kapalı";
+          }
         }
       });
 
@@ -1375,18 +1404,86 @@ function showMessage(message) {
 
 let pendingCameraTask = null;
 
-const cameraInput = document.createElement("input");
-cameraInput.type = "file";
-cameraInput.accept = "image/*";
-cameraInput.setAttribute("capture", "environment");
-cameraInput.style.display = "none";
-document.body.appendChild(cameraInput);
+function buildCompletionData(taskId, status) {
+  updateTaskStates();
 
-async function uploadCameraPhoto(file) {
-  if (!pendingCameraTask) return;
+  const task = getTaskElement(taskId);
+  if (!task) {
+    return { ok: false, message: "Görev bulunamadı." };
+  }
+
+  const early = isTaskEarly(taskId);
+  const late = isTaskLate(taskId);
+  let commentEl = document.getElementById("comment" + taskId);
+  let comment = commentEl ? commentEl.value : "";
+
+  if (early && status === "late") {
+    return {
+      ok: false,
+      message: "Bu görev henüz gecikmedi. Planlanan saat: " + task.dataset.time
+    };
+  }
+
+  if (early && status === "completed") {
+    return {
+      ok: false,
+      message: "Bu görev henüz tamamlanamaz. Planlanan saat: " + task.dataset.time
+    };
+  }
+
+  if (late && status === "completed") {
+    return {
+      ok: false,
+      message: "Bu görev gecikti. Lütfen gecikme nedenini yazıp Geç Kaldı seçin."
+    };
+  }
+
+  if (late) {
+    status = "late";
+  }
+
+  if (status === "late" && comment.trim() === "") {
+    return { ok: false, message: "Geç kalma nedeni yazılmalıdır." };
+  }
+
+  return {
+    ok: true,
+    data: {
+      taskId: taskId,
+      status: status,
+      comment: comment,
+      staffName: ""
+    }
+  };
+}
+
+function prepareCameraInput(taskId, status, event) {
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    if (event) event.preventDefault();
+    showMessage(result.message);
+    return false;
+  }
+
+  pendingCameraTask = result.data;
+  return true;
+}
+
+function handleCameraInput(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  uploadCameraPhoto(file, input);
+}
+
+async function uploadCameraPhoto(file, input) {
+  if (!pendingCameraTask) {
+    showMessage("Görev bilgisi bulunamadı.");
+    return;
+  }
 
   if (!API_BASE_URL) {
-    showMessage("Kamera yükleme için backend URL yok. PUBLIC_BASE_URL / ngrok ayarı gerekli.");
+    showMessage("Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.");
     return;
   }
 
@@ -1418,70 +1515,42 @@ async function uploadCameraPhoto(file) {
 
     showMessage("Fotoğraf ile görev kaydedildi.");
     pendingCameraTask = null;
+    if (input) input.value = "";
     tg.close();
   } catch (error) {
     showMessage(error.message || "Fotoğraf kaydedilemedi.");
   }
 }
 
-cameraInput.addEventListener("change", function() {
-  const file = cameraInput.files && cameraInput.files[0];
-  if (!file) return;
-  uploadCameraPhoto(file);
-});
-
 function completeTask(taskId, status) {
-  updateTaskStates();
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    showMessage(result.message);
+    return;
+  }
 
   const task = getTaskElement(taskId);
-  if (!task) {
-    showMessage("Görev bulunamadı.");
-    return;
-  }
-
-  const early = isTaskEarly(taskId);
-  const late = isTaskLate(taskId);
-  let comment = document.getElementById("comment" + taskId).value;
-  let staffName = "";
-
-  if (early) {
-    showMessage("Bu görev henüz tamamlanamaz. Planlanan saat: " + task.dataset.time);
-    return;
-  }
-
-  if (late && status === "completed") {
-    showMessage("Bu görev gecikti. Tamamlandı olarak gönderilemez.");
-    return;
-  }
-
-  if (late && status !== "late") {
-    status = "late";
-  }
-
-  if (status === "late" && comment.trim() === "") {
-    showMessage("Geç kalma nedeni yazılmalıdır.");
-    return;
-  }
-
   const requiresPhoto = task && task.dataset.photoRequired === "1";
 
   if (requiresPhoto) {
-    pendingCameraTask = {
-      taskId: taskId,
-      status: status,
-      comment: comment,
-      staffName: staffName
-    };
-    cameraInput.value = "";
-    cameraInput.click();
+    pendingCameraTask = result.data;
+    const inputId = result.data.status === "late" ? "photoLate" + taskId : "photoDone" + taskId;
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.value = "";
+      input.click();
+    } else {
+      showMessage("Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.");
+    }
     return;
   }
 
   const data = {
     action: "complete_task",
     taskId: taskId,
-    status: status,
-    comment: comment,
+    status: result.data.status,
+    comment: result.data.comment,
     staffName: "",
     requiresPhotoClient: "0"
   };
