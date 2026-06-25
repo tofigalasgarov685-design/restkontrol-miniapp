@@ -383,6 +383,14 @@
     </div>
 
     <div class="menu-section">
+      <h3>Plan ve Ödeme</h3>
+      <p>Trial / Paid durumunu gör. Test ödemesi sonrası premium checklist açılır.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="showPlanScreen()">Plan ve Ödeme</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
       <h3>Çalışanlar</h3>
       <p>Personel, rol, bölüm ve davet kodlarını yönet.</p>
       <div class="menu-actions">
@@ -408,8 +416,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v16 duplicate protection.</p>
-    <p class="small">Hazır checklistlerde tekrar ekleme koruması eklendi.</p>
+    <p class="small">Test sürümü: dashboard v17 premium unlock.</p>
+    <p class="small">Plan ve ödeme ekranı + premium unlock eklendi.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -445,7 +453,7 @@
   <div id="checklistScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Hazır Checklistler</h2>
-    <p class="small">Trial sürecinde sadece demo checklist eklenir. Aynı checklist tekrar eklenirse sistem engeller. Premium paketlerin tam içeriği ödeme sonrası açılır.</p>
+    <p class="small">Trial sürecinde sadece demo checklist eklenir. Premium paketlerin tam görev listesi ödeme sonrası açılır.</p>
 
     <div class="template-card">
       <div class="template-top">
@@ -473,8 +481,8 @@
         </div>
         <span class="template-badge template-premium">Premium</span>
       </div>
-      <p class="small">18 hazır görev. Tam içerik ödeme sonrası açılır.</p>
-      <button class="light" onclick="showPremiumLocked()">Ödeme Sonrası Açılır</button>
+      <p class="small">10 premium görev. Trial sürecinde tam görev listesi gösterilmez.</p>
+      <button class="primary" onclick="sendChecklistTemplate('premium_full_service')">Full Servis Restoran'ı Ekle</button>
     </div>
 
     <div class="template-card locked">
@@ -499,6 +507,35 @@
       </div>
       <p class="small">12 hazır görev. Tam içerik ödeme sonrası açılır.</p>
       <button class="light" onclick="showPremiumLocked()">Ödeme Sonrası Açılır</button>
+    </div>
+  </div>
+
+  <div id="planScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Plan ve Ödeme</h2>
+    <p class="small">Bu ekranda işletmenin Trial / Paid durumunu kontrol edebilirsiniz.</p>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Trial Plan</h3>
+          <p class="template-desc">Demo Operasyon Checklist açık. Premium paketlerin tam içeriği kapalı.</p>
+        </div>
+        <span class="template-badge template-free">Trial</span>
+      </div>
+      <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Paid / Premium</h3>
+          <p class="template-desc">Ödeme sonrası Full Servis Restoran premium checklist eklenebilir.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Test ödeme için Telegram sohbetine şu komutu yazın: /set_paid</p>
+      <button class="primary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
     </div>
   </div>
 
@@ -866,6 +903,7 @@
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       updateTaskStates();
       setTelegramBackButton(false);
@@ -877,6 +915,7 @@
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -891,11 +930,23 @@
 
 
 
+    function showPlanScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
     function showChecklistScreen() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.remove("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
@@ -906,6 +957,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.remove("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -914,6 +966,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = "Görevler";
@@ -925,6 +978,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = "Geciken Görevler";
@@ -936,6 +990,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = zone + " Görevleri";
@@ -959,6 +1014,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.remove("hidden");
       setTelegramBackButton(true);
       document.getElementById("taskScreenTitle").innerText = "Bekleyen Görevler";
@@ -1118,6 +1174,15 @@
         taskType: taskType,
         scheduledTime: scheduledTime,
         requiresPhoto: requiresPhoto
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPlanStatusRequest() {
+      const data = {
+        action: "get_plan_status"
       };
 
       tg.sendData(JSON.stringify(data));
