@@ -416,7 +416,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v18 photo report.</p>
+    <p class="small">Test sürümü: dashboard v19 Mini App camera upload.</p>
     <p class="small">Photo report akışı eklendi. Fotoğraf zorunlu görevlerde Telegram fotoğraf kaydı istenir.</p>
   </div>
 
@@ -624,6 +624,8 @@
     </div>
 
     <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
+
+    <div id="dynamicTasks"></div>
 
     
     <div class="task" data-zone="Mutfak" data-time="09:15" data-photo-required="1">
@@ -962,67 +964,153 @@
       setTelegramBackButton(true);
     }
 
-    function showTasks() {
-      document.getElementById("homeScreen").classList.add("hidden");
-      document.getElementById("businessScreen").classList.add("hidden");
-      document.getElementById("employeeScreen").classList.add("hidden");
-      document.getElementById("planScreen").classList.add("hidden");
-      document.getElementById("tasksScreen").classList.remove("hidden");
-      setTelegramBackButton(true);
-      document.getElementById("taskScreenTitle").innerText = "Görevler";
-      updateTaskStates();
-      filterTasks("Tümü", document.getElementById("filterAll"));
+function getApiBaseUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("api_base") || "").replace(/\/$/, "");
+}
+
+const API_BASE_URL = getApiBaseUrl();
+
+function getTelegramUserId() {
+  if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+    return tg.initDataUnsafe.user.id;
+  }
+  return "";
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderDynamicTasks(tasks) {
+  const container = document.getElementById("dynamicTasks");
+  if (!container) return;
+
+  const oldStaticTasks = document.querySelectorAll("#tasksScreen > .task");
+  oldStaticTasks.forEach(function(task) { task.remove(); });
+
+  if (!tasks || tasks.length === 0) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = tasks.map(function(task) {
+    const photoRequired = parseInt(task.requires_photo || 0, 10) === 1;
+    const photoText = photoRequired ? "Zorunlu" : "Zorunlu değil";
+    const photoClass = photoRequired ? "photo-required" : "photo-optional";
+    const safeTitle = escapeHtml(task.task_title);
+    const safeZone = escapeHtml(task.zone);
+    const safeType = escapeHtml(task.task_type);
+    const safeTime = escapeHtml(task.scheduled_time);
+    const id = parseInt(task.id, 10);
+
+    return `
+      <div class="task" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}">
+        <div class="task-top">
+          <div>
+            <div class="badge">${safeZone} · ${safeTime}</div>
+            <div class="task-id">Görev #${id}</div>
+          </div>
+          <div id="state${id}" class="state">Kontrol</div>
+        </div>
+
+        <h2 class="task-title">${safeTitle}</h2>
+
+        <div class="task-meta">
+          <div class="task-meta-item">
+            <span class="task-meta-label">Kontrol Tipi</span>
+            <span class="task-meta-value">${safeType}</span>
+          </div>
+          <div class="task-meta-item">
+            <span class="task-meta-label">Fotoğraf</span>
+            <span class="task-meta-value ${photoClass}">${photoText}</span>
+          </div>
+        </div>
+
+        <label class="comment-label">Yorum / Gecikme nedeni</label>
+        <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+        <div class="task-actions">
+          <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
+          <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function loadDynamicTasks() {
+  if (!API_BASE_URL) {
+    return false;
+  }
+
+  const userId = getTelegramUserId();
+  if (!userId) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(API_BASE_URL + "/api/tasks?telegram_user_id=" + encodeURIComponent(userId));
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(result.error || "Görevler alınamadı.");
     }
 
-    function showLateTasks() {
-      document.getElementById("homeScreen").classList.add("hidden");
-      document.getElementById("businessScreen").classList.add("hidden");
-      document.getElementById("employeeScreen").classList.add("hidden");
-      document.getElementById("planScreen").classList.add("hidden");
-      document.getElementById("tasksScreen").classList.remove("hidden");
-      setTelegramBackButton(true);
-      document.getElementById("taskScreenTitle").innerText = "Geciken Görevler";
-      updateTaskStates();
-      filterTasks("Geciken", document.getElementById("filterLate"));
+    renderDynamicTasks(result.tasks || []);
+    return true;
+  } catch (error) {
+    console.log("Dynamic task load error", error);
+    return false;
+  }
+}
+
+function openTasksScreen(title, filterValue, button) {
+  document.getElementById("homeScreen").classList.add("hidden");
+  document.getElementById("businessScreen").classList.add("hidden");
+  document.getElementById("employeeScreen").classList.add("hidden");
+  document.getElementById("planScreen").classList.add("hidden");
+  document.getElementById("tasksScreen").classList.remove("hidden");
+  setTelegramBackButton(true);
+  document.getElementById("taskScreenTitle").innerText = title;
+
+  loadDynamicTasks().then(function() {
+    updateTaskStates();
+    filterTasks(filterValue, button || document.getElementById("filterAll"));
+  });
+}
+
+function showTasks() {
+  openTasksScreen("Görevler", "Tümü", document.getElementById("filterAll"));
+}
+
+function showLateTasks() {
+  openTasksScreen("Geciken Görevler", "Geciken", document.getElementById("filterLate"));
+}
+
+function showZoneTasks(zone) {
+  const buttons = document.querySelectorAll(".filter-grid button");
+  let targetButton = null;
+
+  buttons.forEach(function(btn) {
+    if (btn.innerText === zone) {
+      targetButton = btn;
     }
+  });
 
-    function showZoneTasks(zone) {
-      document.getElementById("homeScreen").classList.add("hidden");
-      document.getElementById("businessScreen").classList.add("hidden");
-      document.getElementById("employeeScreen").classList.add("hidden");
-      document.getElementById("planScreen").classList.add("hidden");
-      document.getElementById("tasksScreen").classList.remove("hidden");
-      setTelegramBackButton(true);
-      document.getElementById("taskScreenTitle").innerText = zone + " Görevleri";
-      updateTaskStates();
+  openTasksScreen(zone + " Görevleri", zone, targetButton);
+}
 
-      const buttons = document.querySelectorAll(".filter-grid button");
-      let targetButton = null;
+function showWaitingTasks() {
+  openTasksScreen("Bekleyen Görevler", "Bekleyen", document.getElementById("filterWaiting"));
+}
 
-      buttons.forEach(function(btn) {
-        if (btn.innerText === zone) {
-          targetButton = btn;
-        }
-      });
-
-      if (targetButton) {
-        filterTasks(zone, targetButton);
-      }
-    }
-
-    function showWaitingTasks() {
-      document.getElementById("homeScreen").classList.add("hidden");
-      document.getElementById("businessScreen").classList.add("hidden");
-      document.getElementById("employeeScreen").classList.add("hidden");
-      document.getElementById("planScreen").classList.add("hidden");
-      document.getElementById("tasksScreen").classList.remove("hidden");
-      setTelegramBackButton(true);
-      document.getElementById("taskScreenTitle").innerText = "Bekleyen Görevler";
-      updateTaskStates();
-      filterTasks("Bekleyen", document.getElementById("filterWaiting"));
-    }
-
-    function getCurrentMinutes() {
+function getCurrentMinutes() {
       const now = new Date();
       return now.getHours() * 60 + now.getMinutes();
     }
@@ -1032,14 +1120,26 @@
       return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
     }
 
+    function getTaskElement(taskId) {
+      return document.querySelector('.task[data-task-id="' + taskId + '"]') ||
+        (document.querySelector('.task button[onclick*="' + taskId + '"]') || {}).closest?.(".task");
+    }
+
     function isTaskLate(taskId) {
-      const task = document.querySelector('.task button[onclick*="' + taskId + '"]').closest(".task");
+      const task = getTaskElement(taskId);
+      if (!task) return false;
       return getCurrentMinutes() > getTaskMinutes(task.dataset.time);
     }
 
+    function isTaskEarly(taskId) {
+      const task = getTaskElement(taskId);
+      if (!task) return false;
+      return getCurrentMinutes() < getTaskMinutes(task.dataset.time);
+    }
+
     function updateDashboard(lateCount, waitingCount) {
-      const total = 8;
-      const rate = Math.round((lateCount / total) * 100);
+      const total = document.querySelectorAll(".task").length || 0;
+      const rate = total > 0 ? Math.round((lateCount / total) * 100) : 0;
       document.getElementById("metricTotal").innerText = total;
       document.getElementById("metricLate").innerText = lateCount;
       document.getElementById("metricWaiting").innerText = waitingCount;
@@ -1257,59 +1357,130 @@
       tg.close();
     }
 
-    function completeTask(taskId, status) {
-      updateTaskStates();
+function showMessage(message) {
+  if (tg.showAlert) {
+    tg.showAlert(message);
+  } else {
+    alert(message);
+  }
+}
 
-      const late = isTaskLate(taskId);
-      let comment = document.getElementById("comment" + taskId).value;
-      let staffName = "";
+let pendingCameraTask = null;
 
-      if (late && status === "completed") {
-        if (tg.showAlert) {
-          tg.showAlert("Bu görev gecikti. Tamamlandı olarak gönderilemez.");
-        } else {
-          alert("Bu görev gecikti. Tamamlandı olarak gönderilemez.");
-        }
-        return;
-      }
+const cameraInput = document.createElement("input");
+cameraInput.type = "file";
+cameraInput.accept = "image/*";
+cameraInput.setAttribute("capture", "environment");
+cameraInput.style.display = "none";
+document.body.appendChild(cameraInput);
 
-      if (late && status !== "late") {
-        status = "late";
-      }
+async function uploadCameraPhoto(file) {
+  if (!pendingCameraTask) return;
 
-      if (status === "late" && comment.trim() === "") {
-        if (tg.showAlert) {
-          tg.showAlert("Geç kalma nedeni yazılmalıdır.");
-        } else {
-          alert("Geç kalma nedeni yazılmalıdır.");
-        }
-        return;
-      }
+  if (!API_BASE_URL) {
+    showMessage("Kamera yükleme için backend URL yok. PUBLIC_BASE_URL / ngrok ayarı gerekli.");
+    return;
+  }
 
-      const task = document.querySelector('.task button[onclick*="' + taskId + '"]').closest(".task");
-      const requiresPhoto = task && task.dataset.photoRequired === "1";
+  const userId = getTelegramUserId();
+  if (!userId) {
+    showMessage("Telegram kullanıcı bilgisi alınamadı.");
+    return;
+  }
 
-      const data = {
-        action: "complete_task",
-        taskId: taskId,
-        status: status,
-        comment: comment,
-        staffName: "",
-        requiresPhotoClient: requiresPhoto ? "1" : "0"
-      };
+  const formData = new FormData();
+  formData.append("telegram_user_id", userId);
+  formData.append("task_id", pendingCameraTask.taskId);
+  formData.append("status", pendingCameraTask.status);
+  formData.append("comment", pendingCameraTask.comment);
+  formData.append("staff_name", pendingCameraTask.staffName || "");
+  formData.append("photo", file);
 
-      if (requiresPhoto) {
-        const message = "Bu görev için fotoğraf zorunlu. Gönderdikten sonra Telegram sohbetine fotoğraf atın.";
-        if (tg.showAlert) {
-          tg.showAlert(message);
-        } else {
-          alert(message);
-        }
-      }
+  try {
+    const response = await fetch(API_BASE_URL + "/upload_photo", {
+      method: "POST",
+      body: formData
+    });
 
-      tg.sendData(JSON.stringify(data));
-      tg.close();
+    const result = await response.json();
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || "Fotoğraf kaydedilemedi.");
     }
+
+    showMessage("Fotoğraf ile görev kaydedildi.");
+    pendingCameraTask = null;
+    tg.close();
+  } catch (error) {
+    showMessage(error.message || "Fotoğraf kaydedilemedi.");
+  }
+}
+
+cameraInput.addEventListener("change", function() {
+  const file = cameraInput.files && cameraInput.files[0];
+  if (!file) return;
+  uploadCameraPhoto(file);
+});
+
+function completeTask(taskId, status) {
+  updateTaskStates();
+
+  const task = getTaskElement(taskId);
+  if (!task) {
+    showMessage("Görev bulunamadı.");
+    return;
+  }
+
+  const early = isTaskEarly(taskId);
+  const late = isTaskLate(taskId);
+  let comment = document.getElementById("comment" + taskId).value;
+  let staffName = "";
+
+  if (early) {
+    showMessage("Bu görev henüz tamamlanamaz. Planlanan saat: " + task.dataset.time);
+    return;
+  }
+
+  if (late && status === "completed") {
+    showMessage("Bu görev gecikti. Tamamlandı olarak gönderilemez.");
+    return;
+  }
+
+  if (late && status !== "late") {
+    status = "late";
+  }
+
+  if (status === "late" && comment.trim() === "") {
+    showMessage("Geç kalma nedeni yazılmalıdır.");
+    return;
+  }
+
+  const requiresPhoto = task && task.dataset.photoRequired === "1";
+
+  if (requiresPhoto) {
+    pendingCameraTask = {
+      taskId: taskId,
+      status: status,
+      comment: comment,
+      staffName: staffName
+    };
+    cameraInput.value = "";
+    cameraInput.click();
+    return;
+  }
+
+  const data = {
+    action: "complete_task",
+    taskId: taskId,
+    status: status,
+    comment: comment,
+    staffName: "",
+    requiresPhotoClient: "0"
+  };
+
+  tg.sendData(JSON.stringify(data));
+  tg.close();
+}
 
     function sendReport() {
       const data = { action: "get_report" };
