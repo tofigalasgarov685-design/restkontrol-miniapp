@@ -416,8 +416,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v17 premium unlock.</p>
-    <p class="small">Plan ve ödeme ekranı + premium unlock eklendi.</p>
+    <p class="small">Test sürümü: dashboard v18 photo report.</p>
+    <p class="small">Photo report akışı eklendi. Fotoğraf zorunlu görevlerde Telegram fotoğraf kaydı istenir.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -626,7 +626,7 @@
     <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
 
     
-    <div class="task" data-zone="Mutfak" data-time="09:15">
+    <div class="task" data-zone="Mutfak" data-time="09:15" data-photo-required="1">
       <div class="task-top">
         <div>
           <div class="badge">Mutfak · 09:15</div>
@@ -657,7 +657,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Mutfak" data-time="12:00">
+    <div class="task" data-zone="Mutfak" data-time="12:00" data-photo-required="1">
       <div class="task-top">
         <div>
           <div class="badge">Mutfak · 12:00</div>
@@ -688,7 +688,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Salon" data-time="10:00">
+    <div class="task" data-zone="Salon" data-time="10:00" data-photo-required="1">
       <div class="task-top">
         <div>
           <div class="badge">Salon · 10:00</div>
@@ -719,7 +719,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Salon" data-time="14:00">
+    <div class="task" data-zone="Salon" data-time="14:00" data-photo-required="0">
       <div class="task-top">
         <div>
           <div class="badge">Salon · 14:00</div>
@@ -750,7 +750,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Bar" data-time="10:15">
+    <div class="task" data-zone="Bar" data-time="10:15" data-photo-required="1">
       <div class="task-top">
         <div>
           <div class="badge">Bar · 10:15</div>
@@ -781,7 +781,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Bar" data-time="16:00">
+    <div class="task" data-zone="Bar" data-time="16:00" data-photo-required="0">
       <div class="task-top">
         <div>
           <div class="badge">Bar · 16:00</div>
@@ -812,7 +812,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Paket Servis" data-time="11:30">
+    <div class="task" data-zone="Paket Servis" data-time="11:30" data-photo-required="1">
       <div class="task-top">
         <div>
           <div class="badge">Paket Servis · 11:30</div>
@@ -843,7 +843,7 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Paket Servis" data-time="18:00">
+    <div class="task" data-zone="Paket Servis" data-time="18:00" data-photo-required="0">
       <div class="task-top">
         <div>
           <div class="badge">Paket Servis · 18:00</div>
@@ -1286,13 +1286,26 @@
         return;
       }
 
+      const task = document.querySelector('.task button[onclick*="' + taskId + '"]').closest(".task");
+      const requiresPhoto = task && task.dataset.photoRequired === "1";
+
       const data = {
         action: "complete_task",
         taskId: taskId,
         status: status,
         comment: comment,
-        staffName: ""
+        staffName: "",
+        requiresPhotoClient: requiresPhoto ? "1" : "0"
       };
+
+      if (requiresPhoto) {
+        const message = "Bu görev için fotoğraf zorunlu. Gönderdikten sonra Telegram sohbetine fotoğraf atın.";
+        if (tg.showAlert) {
+          tg.showAlert(message);
+        } else {
+          alert(message);
+        }
+      }
 
       tg.sendData(JSON.stringify(data));
       tg.close();
