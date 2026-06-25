@@ -416,7 +416,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19 Mini App camera upload.</p>
+    <p class="small">Test sürümü: dashboard v19.1 Mini App user id fix.</p>
     <p class="small">Photo report akışı eklendi. Fotoğraf zorunlu görevlerde Telegram fotoğraf kaydı istenir.</p>
   </div>
 
@@ -972,9 +972,17 @@ function getApiBaseUrl() {
 const API_BASE_URL = getApiBaseUrl();
 
 function getTelegramUserId() {
+  const params = new URLSearchParams(window.location.search);
+  const urlUserId = params.get("telegram_user_id") || params.get("user_id") || "";
+
+  if (urlUserId) {
+    return urlUserId;
+  }
+
   if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
     return tg.initDataUnsafe.user.id;
   }
+
   return "";
 }
 
