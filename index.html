@@ -328,6 +328,8 @@
     }
     .camera-action.primary { background: #16a34a; color: #ffffff; }
     .camera-action.danger { background: #dc2626; color: #ffffff; }
+    .camera-action.disabled { opacity: 0.45; cursor: not-allowed; }
+    .camera-action.disabled input[type="file"] { pointer-events: none; cursor: not-allowed; }
     .camera-action input[type="file"] {
       position: absolute;
       left: 0;
@@ -456,7 +458,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.3 camera direct input fix.</p>
+    <p class="small">Test sürümü: dashboard v19.5 camera state fix.</p>
     <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
@@ -1087,11 +1089,11 @@ function renderDynamicTasks(tasks) {
           ${photoRequired ? `
             <div id="done${id}" class="camera-action primary">
               <span>Tamamlandı</span>
-              <input id="photoDone${id}" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handleCameraInput(this)">
+              <input id="photoDone${id}" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handleCameraInput(this)">
             </div>
             <div id="late${id}" class="camera-action danger">
               <span>Geç Kaldı</span>
-              <input id="photoLate${id}" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handleCameraInput(this)">
+              <input id="photoLate${id}" data-task-id="${id}" data-status="late" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handleCameraInput(this)">
             </div>
           ` : `
             <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
@@ -1205,6 +1207,30 @@ function getCurrentMinutes() {
       document.getElementById("metricRate").innerText = "%" + rate;
     }
 
+    function setActionState(actionEl, text, disabled) {
+      if (!actionEl) return;
+
+      const label = actionEl.querySelector("span");
+      if (label) {
+        label.innerText = text;
+      } else {
+        actionEl.innerText = text;
+      }
+
+      const fileInput = actionEl.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.disabled = !!disabled;
+      } else {
+        actionEl.disabled = !!disabled;
+      }
+
+      if (disabled) {
+        actionEl.classList.add("disabled");
+      } else {
+        actionEl.classList.remove("disabled");
+      }
+    }
+
     function updateTaskStates() {
       const tasks = document.querySelectorAll(".task");
       let lateCount = 0;
@@ -1225,32 +1251,16 @@ function getCurrentMinutes() {
           state.innerText = "Gecikti";
           state.classList.remove("state-ok");
           state.classList.add("state-late");
-          if (doneButton) {
-            doneButton.disabled = true;
-            doneButton.classList.add("disabled");
-            doneButton.innerText = "Tamamlandı kapalı";
-          }
-          if (lateButton) {
-            lateButton.disabled = false;
-            lateButton.classList.remove("disabled");
-            lateButton.innerText = "Geç Kaldı";
-          }
+          setActionState(doneButton, "Tamamlandı kapalı", true);
+          setActionState(lateButton, "Geç Kaldı", false);
         } else {
           waitingCount += 1;
           task.dataset.status = "waiting";
           state.innerText = "Bekliyor";
           state.classList.remove("state-late");
           state.classList.add("state-ok");
-          if (doneButton) {
-            doneButton.disabled = false;
-            doneButton.classList.remove("disabled");
-            doneButton.innerText = "Tamamlandı";
-          }
-          if (lateButton) {
-            lateButton.disabled = true;
-            lateButton.classList.add("disabled");
-            lateButton.innerText = "Geç Kaldı kapalı";
-          }
+          setActionState(doneButton, "Tamamlandı", false);
+          setActionState(lateButton, "Geç Kaldı kapalı", true);
         }
       });
 
@@ -1504,12 +1514,33 @@ function prepareCameraInput(taskId, status, event) {
 
   pendingCameraTask = result.data;
   pendingCameraTask.startedAtMs = Date.now();
+
+  if (event && event.target) {
+    event.target.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+  }
+
   return true;
 }
 
 function handleCameraInput(input) {
   const file = input.files && input.files[0];
   if (!file) return;
+
+  if (!pendingCameraTask && input && input.dataset) {
+    const taskId = parseInt(input.dataset.taskId || "0", 10);
+    const status = input.dataset.status || "completed";
+    const result = buildCompletionData(taskId, status);
+
+    if (!result.ok) {
+      if (input) input.value = "";
+      showMessage(result.message);
+      return;
+    }
+
+    pendingCameraTask = result.data;
+    pendingCameraTask.startedAtMs = parseInt(input.dataset.startedAtMs || "0", 10) || Date.now();
+  }
+
   uploadCameraPhoto(file, input);
 }
 
