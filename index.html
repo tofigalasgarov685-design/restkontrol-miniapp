@@ -345,6 +345,43 @@
       z-index: 1;
       pointer-events: none;
     }
+
+    .hidden-photo-input {
+      display: none !important;
+    }
+    .photo-debug {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.35;
+      display: none;
+    }
+    .photo-debug.ok {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+      display: block;
+    }
+    .photo-debug.warn {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+      display: block;
+    }
+    .photo-debug.error {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+    .photo-debug.info {
+      display: block;
+    }
     .filter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -458,7 +495,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.5 camera state fix.</p>
+    <p class="small">Test sürümü: dashboard v19.6 photo debug.</p>
     <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
@@ -1087,14 +1124,10 @@ function renderDynamicTasks(tasks) {
 
         <div class="task-actions">
           ${photoRequired ? `
-            <div id="done${id}" class="camera-action primary">
-              <span>Tamamlandı</span>
-              <input id="photoDone${id}" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handleCameraInput(this)">
-            </div>
-            <div id="late${id}" class="camera-action danger">
-              <span>Geç Kaldı</span>
-              <input id="photoLate${id}" data-task-id="${id}" data-status="late" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handleCameraInput(this)">
-            </div>
+            <button id="done${id}" type="button" class="primary" onclick="openPhotoPicker(${id}, 'completed')">Tamamlandı</button>
+            <button id="late${id}" type="button" class="danger" onclick="openPhotoPicker(${id}, 'late')">Geç Kaldı</button>
+            <input id="photoInput${id}" class="photo-input hidden-photo-input" data-task-id="${id}" data-status="" type="file" accept="image/*" capture="environment">
+            <div id="photoDebug${id}" class="photo-debug"></div>
           ` : `
             <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
             <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
@@ -1448,6 +1481,38 @@ function showMessage(message) {
   }
 }
 
+function setPhotoDebug(taskId, message, type) {
+  const el = document.getElementById("photoDebug" + taskId);
+  if (!el) return;
+  el.className = "photo-debug " + (type || "info");
+  el.textContent = message;
+}
+
+function clearPhotoDebug(taskId) {
+  const el = document.getElementById("photoDebug" + taskId);
+  if (!el) return;
+  el.className = "photo-debug";
+  el.textContent = "";
+}
+
+function safeErrorText(error) {
+  if (!error) return "Bilinmeyen hata";
+  if (error.message) return error.message;
+  return String(error);
+}
+
+window.addEventListener("error", function(event) {
+  const text = "Teknik hata: " + (event.message || "JavaScript hatası");
+  const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
+  if (taskId) setPhotoDebug(taskId, text, "error");
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+  const text = "Teknik hata: " + safeErrorText(event.reason);
+  const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
+  if (taskId) setPhotoDebug(taskId, text, "error");
+});
+
 let pendingCameraTask = null;
 
 function buildCompletionData(taskId, status) {
@@ -1503,42 +1568,105 @@ function buildCompletionData(taskId, status) {
   };
 }
 
-function prepareCameraInput(taskId, status, event) {
+function openPhotoPicker(taskId, status) {
+  clearPhotoDebug(taskId);
   const result = buildCompletionData(taskId, status);
 
   if (!result.ok) {
-    if (event) event.preventDefault();
+    setPhotoDebug(taskId, result.message, "warn");
     showMessage(result.message);
-    return false;
+    return;
   }
 
   pendingCameraTask = result.data;
   pendingCameraTask.startedAtMs = Date.now();
 
-  if (event && event.target) {
-    event.target.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+  const input = document.getElementById("photoInput" + taskId);
+  if (!input) {
+    const message = "Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.";
+    setPhotoDebug(taskId, message, "error");
+    showMessage(message);
+    return;
   }
 
-  return true;
+  input.dataset.taskId = String(taskId);
+  input.dataset.status = pendingCameraTask.status;
+  input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+  input.dataset.lastHandledMarker = "";
+  input.value = "";
+
+  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+
+  try {
+    input.click();
+  } catch (error) {
+    const message = "Fotoğraf seçici açılamadı: " + safeErrorText(error);
+    setPhotoDebug(taskId, message, "error");
+    showMessage(message);
+  }
 }
 
-function handleCameraInput(input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
+function prepareCameraInput(taskId, status, event) {
+  if (event) event.preventDefault();
+  openPhotoPicker(taskId, status);
+  return false;
+}
 
-  if (!pendingCameraTask && input && input.dataset) {
-    const taskId = parseInt(input.dataset.taskId || "0", 10);
-    const status = input.dataset.status || "completed";
+function handlePhotoInputEvent(input) {
+  if (!input) return;
+
+  const file = input.files && input.files[0];
+  const marker = file ? [file.name, file.size, file.lastModified].join(":") : "no-file";
+
+  if (input.dataset.lastHandledMarker === marker) {
+    return;
+  }
+  input.dataset.lastHandledMarker = marker;
+
+  handleCameraInput(input);
+}
+
+document.addEventListener("change", function(event) {
+  const target = event.target;
+  if (target && target.classList && target.classList.contains("photo-input")) {
+    handlePhotoInputEvent(target);
+  }
+}, true);
+
+document.addEventListener("input", function(event) {
+  const target = event.target;
+  if (target && target.classList && target.classList.contains("photo-input")) {
+    handlePhotoInputEvent(target);
+  }
+}, true);
+
+function handleCameraInput(input) {
+  const taskIdFromInput = parseInt((input && input.dataset && input.dataset.taskId) || "0", 10);
+  const file = input.files && input.files[0];
+
+  if (!file) {
+    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf seçilmedi.", "warn");
+    return;
+  }
+
+  if (taskIdFromInput) {
+    setPhotoDebug(taskIdFromInput, "Fotoğraf seçildi. Kontrol ediliyor...", "info");
+  }
+
+  if (!pendingCameraTask || pendingCameraTask.taskId !== taskIdFromInput) {
+    const taskId = taskIdFromInput;
+    const status = (input && input.dataset && input.dataset.status) || "completed";
     const result = buildCompletionData(taskId, status);
 
     if (!result.ok) {
       if (input) input.value = "";
+      if (taskId) setPhotoDebug(taskId, result.message, "warn");
       showMessage(result.message);
       return;
     }
 
     pendingCameraTask = result.data;
-    pendingCameraTask.startedAtMs = parseInt(input.dataset.startedAtMs || "0", 10) || Date.now();
+    pendingCameraTask.startedAtMs = parseInt((input && input.dataset && input.dataset.startedAtMs) || "0", 10) || Date.now();
   }
 
   uploadCameraPhoto(file, input);
@@ -1558,19 +1686,27 @@ async function calculateFileHash(file) {
 }
 
 async function uploadCameraPhoto(file, input) {
+  const taskIdForDebug = (pendingCameraTask && pendingCameraTask.taskId) || parseInt((input && input.dataset && input.dataset.taskId) || "0", 10) || 0;
+
   if (!pendingCameraTask) {
-    showMessage("Görev bilgisi bulunamadı.");
+    const message = "Görev bilgisi bulunamadı.";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+    showMessage(message);
     return;
   }
 
   if (!API_BASE_URL) {
-    showMessage("Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.");
+    const message = "Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+    showMessage(message);
     return;
   }
 
   const userId = getTelegramUserId();
   if (!userId) {
-    showMessage("Telegram kullanıcı bilgisi alınamadı.");
+    const message = "Telegram kullanıcı bilgisi alınamadı.";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+    showMessage(message);
     return;
   }
 
@@ -1578,14 +1714,21 @@ async function uploadCameraPhoto(file, input) {
   const fileLastModifiedMs = file.lastModified || 0;
   const oldPhotoToleranceMs = 2 * 60 * 1000;
 
+  if (taskIdForDebug) {
+    setPhotoDebug(taskIdForDebug, "Fotoğraf kontrolü: " + file.name + " · " + Math.round(file.size / 1024) + " KB", "info");
+  }
+
   if (fileLastModifiedMs > 0 && fileLastModifiedMs < startedAtMs - oldPhotoToleranceMs) {
     if (input) input.value = "";
-    showMessage("Bu fotoğraf eski görünüyor. Lütfen görevi şimdi fotoğraf çekerek tamamlayın.");
+    const message = "Bu fotoğraf eski görünüyor. Lütfen görevi şimdi fotoğraf çekerek tamamlayın.";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "warn");
+    showMessage(message);
     return;
   }
 
   let photoHash = "";
   try {
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf hash kontrolü yapılıyor...", "info");
     photoHash = await calculateFileHash(file);
   } catch (error) {
     photoHash = "";
@@ -1603,24 +1746,35 @@ async function uploadCameraPhoto(file, input) {
   formData.append("photo", file);
 
   try {
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
+
     const response = await fetch(API_BASE_URL + "/upload_photo", {
       method: "POST",
       body: formData
     });
 
-    const result = await response.json();
+    let result = {};
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      throw new Error("Sunucu cevabı okunamadı. HTTP " + response.status);
+    }
 
     if (!response.ok || !result.ok) {
       throw new Error(result.error || "Fotoğraf kaydedilemedi.");
     }
 
-    showMessage("Fotoğraf ile görev kaydedildi.");
+    const successMessage = "Fotoğraf ile görev kaydedildi.";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage, "ok");
+    showMessage(successMessage);
     pendingCameraTask = null;
     if (input) input.value = "";
     tg.close();
   } catch (error) {
     if (input) input.value = "";
-    showMessage(error.message || "Fotoğraf kaydedilemedi.");
+    const message = safeErrorText(error) || "Fotoğraf kaydedilemedi.";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+    showMessage(message);
   }
 }
 
@@ -1636,16 +1790,7 @@ function completeTask(taskId, status) {
   const requiresPhoto = task && task.dataset.photoRequired === "1";
 
   if (requiresPhoto) {
-    pendingCameraTask = result.data;
-    pendingCameraTask.startedAtMs = Date.now();
-    const inputId = result.data.status === "late" ? "photoLate" + taskId : "photoDone" + taskId;
-    const input = document.getElementById(inputId);
-    if (input) {
-      input.value = "";
-      input.click();
-    } else {
-      showMessage("Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.");
-    }
+    openPhotoPicker(taskId, result.data.status);
     return;
   }
 
