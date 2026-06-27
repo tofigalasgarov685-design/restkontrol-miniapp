@@ -495,7 +495,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.6 photo debug.</p>
+    <p class="small">Test sürümü: dashboard v19.7 photo overlay debug.</p>
     <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
@@ -1124,9 +1124,14 @@ function renderDynamicTasks(tasks) {
 
         <div class="task-actions">
           ${photoRequired ? `
-            <button id="done${id}" type="button" class="primary" onclick="openPhotoPicker(${id}, 'completed')">Tamamlandı</button>
-            <button id="late${id}" type="button" class="danger" onclick="openPhotoPicker(${id}, 'late')">Geç Kaldı</button>
-            <input id="photoInput${id}" class="photo-input hidden-photo-input" data-task-id="${id}" data-status="" type="file" accept="image/*" capture="environment">
+            <div id="done${id}" class="camera-action primary">
+              <span>Tamamlandı</span>
+              <input id="photoDone${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+            </div>
+            <div id="late${id}" class="camera-action danger">
+              <span>Geç Kaldı</span>
+              <input id="photoLate${id}" class="photo-input" data-task-id="${id}" data-status="late" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+            </div>
             <div id="photoDebug${id}" class="photo-debug"></div>
           ` : `
             <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
@@ -1607,9 +1612,30 @@ function openPhotoPicker(taskId, status) {
 }
 
 function prepareCameraInput(taskId, status, event) {
-  if (event) event.preventDefault();
-  openPhotoPicker(taskId, status);
-  return false;
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    if (event) event.preventDefault();
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return false;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+
+  const input = event && event.target ? event.target : null;
+  if (input && input.dataset) {
+    input.dataset.taskId = String(taskId);
+    input.dataset.status = pendingCameraTask.status;
+    input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+    input.dataset.lastHandledMarker = "";
+    input.value = "";
+  }
+
+  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  return true;
 }
 
 function handlePhotoInputEvent(input) {
@@ -1790,7 +1816,18 @@ function completeTask(taskId, status) {
   const requiresPhoto = task && task.dataset.photoRequired === "1";
 
   if (requiresPhoto) {
-    openPhotoPicker(taskId, result.data.status);
+    pendingCameraTask = result.data;
+    pendingCameraTask.startedAtMs = Date.now();
+    const inputId = result.data.status === "late" ? "photoLate" + taskId : "photoDone" + taskId;
+    const input = document.getElementById(inputId) || document.getElementById("photoInput" + taskId);
+    if (input) {
+      input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+      input.dataset.lastHandledMarker = "";
+      input.value = "";
+      input.click();
+    } else {
+      showMessage("Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.");
+    }
     return;
   }
 
