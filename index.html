@@ -495,7 +495,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.8 photo event watcher.</p>
+    <p class="small">Test sürümü: dashboard v19.9 photo direct upload.</p>
     <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
@@ -1753,74 +1753,85 @@ async function calculateFileHash(file) {
   }).join("");
 }
 
-async function uploadCameraPhoto(file, input) {
+function uploadCameraPhoto(file, input) {
   stopPhotoInputWatcher();
   const taskIdForDebug = (pendingCameraTask && pendingCameraTask.taskId) || parseInt((input && input.dataset && input.dataset.taskId) || "0", 10) || 0;
 
-  if (!pendingCameraTask) {
-    const message = "Görev bilgisi bulunamadı.";
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
-    showMessage(message);
+  if (!file) {
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf seçilmedi.", "warn");
     return;
   }
-
-  if (!API_BASE_URL) {
-    const message = "Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.";
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
-    showMessage(message);
-    return;
-  }
-
-  const userId = getTelegramUserId();
-  if (!userId) {
-    const message = "Telegram kullanıcı bilgisi alınamadı.";
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
-    showMessage(message);
-    return;
-  }
-
-  const startedAtMs = pendingCameraTask.startedAtMs || Date.now();
-  const fileLastModifiedMs = file.lastModified || 0;
-  const oldPhotoToleranceMs = 2 * 60 * 1000;
 
   if (taskIdForDebug) {
-    setPhotoDebug(taskIdForDebug, "Fotoğraf kontrolü: " + file.name + " · " + Math.round(file.size / 1024) + " KB", "info");
+    setPhotoDebug(taskIdForDebug, "Fotoğraf alındı. Yükleme hazırlanıyor...", "info");
   }
 
-  if (fileLastModifiedMs > 0 && fileLastModifiedMs < startedAtMs - oldPhotoToleranceMs) {
-    if (input) input.value = "";
-    const message = "Bu fotoğraf eski görünüyor. Lütfen görevi şimdi fotoğraf çekerek tamamlayın.";
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "warn");
-    showMessage(message);
-    return;
-  }
+  setTimeout(function() {
+    uploadCameraPhotoDirect(file, input, taskIdForDebug);
+  }, 120);
+}
 
-  let photoHash = "";
+async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
   try {
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf hash kontrolü yapılıyor...", "info");
-    photoHash = await calculateFileHash(file);
-  } catch (error) {
-    photoHash = "";
-  }
+    if (!pendingCameraTask) {
+      const message = "Görev bilgisi bulunamadı.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("telegram_user_id", userId);
-  formData.append("task_id", pendingCameraTask.taskId);
-  formData.append("status", pendingCameraTask.status);
-  formData.append("comment", pendingCameraTask.comment);
-  formData.append("staff_name", pendingCameraTask.staffName || "");
-  formData.append("started_at_ms", startedAtMs);
-  formData.append("photo_last_modified_ms", fileLastModifiedMs);
-  formData.append("photo_hash", photoHash);
-  formData.append("photo", file);
+    if (!API_BASE_URL) {
+      const message = "Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
 
-  try {
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
+    const userId = getTelegramUserId();
+    if (!userId) {
+      const message = "Telegram kullanıcı bilgisi alınamadı.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
 
-    const response = await fetch(API_BASE_URL + "/upload_photo", {
-      method: "POST",
-      body: formData
-    });
+    const startedAtMs = pendingCameraTask.startedAtMs || Date.now();
+    const fileLastModifiedMs = Number(file.lastModified || 0);
+    const fileName = file.name || "photo.jpg";
+    const fileSizeKb = Math.round((file.size || 0) / 1024);
+
+    if (taskIdForDebug) {
+      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor: " + fileName + " · " + fileSizeKb + " KB", "info");
+    }
+
+    const formData = new FormData();
+    formData.append("telegram_user_id", userId);
+    formData.append("task_id", pendingCameraTask.taskId);
+    formData.append("status", pendingCameraTask.status);
+    formData.append("comment", pendingCameraTask.comment);
+    formData.append("staff_name", pendingCameraTask.staffName || "");
+    formData.append("started_at_ms", startedAtMs);
+    formData.append("photo_last_modified_ms", fileLastModifiedMs);
+    formData.append("photo_hash", "");
+    formData.append("photo", file);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(function() {
+      controller.abort();
+    }, 30000);
+
+    let response;
+    try {
+      response = await fetch(API_BASE_URL + "/upload_photo", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Sunucu cevabı okunuyor...", "info");
 
     let result = {};
     try {
@@ -1841,7 +1852,7 @@ async function uploadCameraPhoto(file, input) {
     tg.close();
   } catch (error) {
     if (input) input.value = "";
-    const message = safeErrorText(error) || "Fotoğraf kaydedilemedi.";
+    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi.");
     if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
     showMessage(message);
   }
