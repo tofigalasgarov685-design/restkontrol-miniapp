@@ -495,7 +495,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.7 photo overlay debug.</p>
+    <p class="small">Test sürümü: dashboard v19.8 photo event watcher.</p>
     <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
   </div>
 
@@ -1520,6 +1520,46 @@ window.addEventListener("unhandledrejection", function(event) {
 
 let pendingCameraTask = null;
 
+let photoWatcherTimer = null;
+
+function stopPhotoInputWatcher() {
+  if (photoWatcherTimer) {
+    clearInterval(photoWatcherTimer);
+    photoWatcherTimer = null;
+  }
+}
+
+function startPhotoInputWatcher(input, taskId) {
+  stopPhotoInputWatcher();
+  if (!input || !taskId) return;
+
+  let ticks = 0;
+  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+
+  photoWatcherTimer = setInterval(function() {
+    ticks += 1;
+
+    try {
+      if (input.files && input.files.length > 0) {
+        stopPhotoInputWatcher();
+        setPhotoDebug(taskId, "Fotoğraf seçildi. İşlem başlıyor...", "info");
+        handlePhotoInputEvent(input);
+        return;
+      }
+    } catch (error) {
+      stopPhotoInputWatcher();
+      setPhotoDebug(taskId, "Fotoğraf kontrol hatası: " + safeErrorText(error), "error");
+      return;
+    }
+
+    if (ticks >= 40) {
+      stopPhotoInputWatcher();
+      setPhotoDebug(taskId, "Fotoğraf seçilmedi veya Telegram seçim bilgisini göndermedi. Tekrar deneyin.", "warn");
+    }
+  }, 500);
+}
+
+
 function buildCompletionData(taskId, status) {
   updateTaskStates();
 
@@ -1601,6 +1641,7 @@ function openPhotoPicker(taskId, status) {
   input.value = "";
 
   setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  startPhotoInputWatcher(input, taskId);
 
   try {
     input.click();
@@ -1635,6 +1676,7 @@ function prepareCameraInput(taskId, status, event) {
   }
 
   setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  startPhotoInputWatcher(input, taskId);
   return true;
 }
 
@@ -1712,6 +1754,7 @@ async function calculateFileHash(file) {
 }
 
 async function uploadCameraPhoto(file, input) {
+  stopPhotoInputWatcher();
   const taskIdForDebug = (pendingCameraTask && pendingCameraTask.taskId) || parseInt((input && input.dataset && input.dataset.taskId) || "0", 10) || 0;
 
   if (!pendingCameraTask) {
@@ -1824,6 +1867,7 @@ function completeTask(taskId, status) {
       input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
       input.dataset.lastHandledMarker = "";
       input.value = "";
+      startPhotoInputWatcher(input, taskId);
       input.click();
     } else {
       showMessage("Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.");
