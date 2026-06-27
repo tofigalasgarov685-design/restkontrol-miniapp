@@ -495,8 +495,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.9 photo direct upload.</p>
-    <p class="small">Mini App kamera akışı düzeltildi. Fotoğraf zorunlu görevlerde kamera direkt açılır.</p>
+    <p class="small">Test sürümü: dashboard v19.10 direct upload no recheck.</p>
+    <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -1712,32 +1712,44 @@ function handleCameraInput(input) {
   const taskIdFromInput = parseInt((input && input.dataset && input.dataset.taskId) || "0", 10);
   const file = input.files && input.files[0];
 
-  if (!file) {
-    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf seçilmedi.", "warn");
-    return;
-  }
-
-  if (taskIdFromInput) {
-    setPhotoDebug(taskIdFromInput, "Fotoğraf seçildi. Kontrol ediliyor...", "info");
-  }
-
-  if (!pendingCameraTask || pendingCameraTask.taskId !== taskIdFromInput) {
-    const taskId = taskIdFromInput;
-    const status = (input && input.dataset && input.dataset.status) || "completed";
-    const result = buildCompletionData(taskId, status);
-
-    if (!result.ok) {
-      if (input) input.value = "";
-      if (taskId) setPhotoDebug(taskId, result.message, "warn");
-      showMessage(result.message);
+  try {
+    if (!file) {
+      if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf seçilmedi.", "warn");
       return;
     }
 
-    pendingCameraTask = result.data;
-    pendingCameraTask.startedAtMs = parseInt((input && input.dataset && input.dataset.startedAtMs) || "0", 10) || Date.now();
-  }
+    if (!taskIdFromInput) {
+      showMessage("Görev bilgisi alınamadı. Sayfayı kapatıp tekrar açın.");
+      return;
+    }
 
-  uploadCameraPhoto(file, input);
+    setPhotoDebug(taskIdFromInput, "Fotoğraf seçildi. Yükleme hazırlanıyor...", "info");
+
+    const pendingId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : 0;
+    if (!pendingCameraTask || pendingId !== taskIdFromInput) {
+      const status = (input && input.dataset && input.dataset.status) || "completed";
+      const commentEl = document.getElementById("comment" + taskIdFromInput);
+      pendingCameraTask = {
+        taskId: taskIdFromInput,
+        status: status,
+        comment: commentEl ? commentEl.value : "",
+        staffName: "",
+        startedAtMs: parseInt((input && input.dataset && input.dataset.startedAtMs) || "0", 10) || Date.now()
+      };
+    }
+
+    window.setTimeout(function() {
+      try {
+        uploadCameraPhoto(file, input);
+      } catch (innerError) {
+        setPhotoDebug(taskIdFromInput, "Upload başlatma hatası: " + safeErrorText(innerError), "error");
+        showMessage("Upload başlatma hatası: " + safeErrorText(innerError));
+      }
+    }, 50);
+  } catch (error) {
+    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf işlem hatası: " + safeErrorText(error), "error");
+    showMessage("Fotoğraf işlem hatası: " + safeErrorText(error));
+  }
 }
 
 async function calculateFileHash(file) {
