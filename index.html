@@ -1239,10 +1239,14 @@ function getCurrentMinutes() {
     function updateDashboard(lateCount, waitingCount) {
       const total = document.querySelectorAll(".task").length || 0;
       const rate = total > 0 ? Math.round((lateCount / total) * 100) : 0;
-      document.getElementById("metricTotal").innerText = total;
-      document.getElementById("metricLate").innerText = lateCount;
-      document.getElementById("metricWaiting").innerText = waitingCount;
-      document.getElementById("metricRate").innerText = "%" + rate;
+      const metricTotal = document.getElementById("metricTotal");
+      const metricLate = document.getElementById("metricLate");
+      const metricWaiting = document.getElementById("metricWaiting");
+      const metricRate = document.getElementById("metricRate");
+      if (metricTotal) metricTotal.innerText = total;
+      if (metricLate) metricLate.innerText = lateCount;
+      if (metricWaiting) metricWaiting.innerText = waitingCount;
+      if (metricRate) metricRate.innerText = "%" + rate;
     }
 
     function setActionState(actionEl, text, disabled) {
@@ -1275,9 +1279,11 @@ function getCurrentMinutes() {
       let waitingCount = 0;
 
       tasks.forEach(function(task) {
-        const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
-        const taskId = parseInt(taskIdText, 10);
-        const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
+        const taskId = parseInt(task.dataset.taskId || "0", 10);
+        if (!taskId) return;
+
+        const timeText = task.dataset.time || "00:00";
+        const late = getCurrentMinutes() > getTaskMinutes(timeText);
 
         const state = document.getElementById("state" + taskId);
         const doneButton = document.getElementById("done" + taskId);
@@ -1286,17 +1292,21 @@ function getCurrentMinutes() {
         if (late) {
           lateCount += 1;
           task.dataset.status = "late";
-          state.innerText = "Gecikti";
-          state.classList.remove("state-ok");
-          state.classList.add("state-late");
+          if (state) {
+            state.innerText = "Gecikti";
+            state.classList.remove("state-ok");
+            state.classList.add("state-late");
+          }
           setActionState(doneButton, "Tamamlandı kapalı", true);
           setActionState(lateButton, "Geç Kaldı", false);
         } else {
           waitingCount += 1;
           task.dataset.status = "waiting";
-          state.innerText = "Bekliyor";
-          state.classList.remove("state-late");
-          state.classList.add("state-ok");
+          if (state) {
+            state.innerText = "Bekliyor";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
           setActionState(doneButton, "Tamamlandı", false);
           setActionState(lateButton, "Geç Kaldı kapalı", true);
         }
@@ -1334,9 +1344,10 @@ function getCurrentMinutes() {
 
       const buttons = document.querySelectorAll(".filter-grid button");
       buttons.forEach(function(btn) { btn.classList.remove("active"); });
-      button.classList.add("active");
+      if (button) button.classList.add("active");
 
-      document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
+      const emptyBox = document.getElementById("emptyBox");
+      if (emptyBox) emptyBox.style.display = visibleCount === 0 ? "block" : "none";
     }
 
 
