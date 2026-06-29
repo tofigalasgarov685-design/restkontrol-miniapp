@@ -495,8 +495,8 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.10 direct upload no recheck.</p>
-    <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
+    <p class="small">Sürüm: dashboard v19.11 clean photo UI.</p>
+    <p class="small">Fotoğraflı görev akışı aktif. Eski fotoğraflar kabul edilmez.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -1507,13 +1507,13 @@ function safeErrorText(error) {
 }
 
 window.addEventListener("error", function(event) {
-  const text = "Teknik hata: " + (event.message || "JavaScript hatası");
+  const text = "Teknik sorun: " + (event.message || "JavaScript hatası");
   const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
   if (taskId) setPhotoDebug(taskId, text, "error");
 });
 
 window.addEventListener("unhandledrejection", function(event) {
-  const text = "Teknik hata: " + safeErrorText(event.reason);
+  const text = "Teknik sorun: " + safeErrorText(event.reason);
   const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
   if (taskId) setPhotoDebug(taskId, text, "error");
 });
@@ -1534,7 +1534,7 @@ function startPhotoInputWatcher(input, taskId) {
   if (!input || !taskId) return;
 
   let ticks = 0;
-  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
 
   photoWatcherTimer = setInterval(function() {
     ticks += 1;
@@ -1542,19 +1542,19 @@ function startPhotoInputWatcher(input, taskId) {
     try {
       if (input.files && input.files.length > 0) {
         stopPhotoInputWatcher();
-        setPhotoDebug(taskId, "Fotoğraf seçildi. İşlem başlıyor...", "info");
+        setPhotoDebug(taskId, "Fotoğraf hazırlanıyor...", "info");
         handlePhotoInputEvent(input);
         return;
       }
     } catch (error) {
       stopPhotoInputWatcher();
-      setPhotoDebug(taskId, "Fotoğraf kontrol hatası: " + safeErrorText(error), "error");
+      setPhotoDebug(taskId, "Fotoğraf işlenemedi: " + safeErrorText(error), "error");
       return;
     }
 
     if (ticks >= 40) {
       stopPhotoInputWatcher();
-      setPhotoDebug(taskId, "Fotoğraf seçilmedi veya Telegram seçim bilgisini göndermedi. Tekrar deneyin.", "warn");
+      setPhotoDebug(taskId, "Fotoğraf seçilmedi. Lütfen tekrar deneyin.", "warn");
     }
   }, 500);
 }
@@ -1640,13 +1640,13 @@ function openPhotoPicker(taskId, status) {
   input.dataset.lastHandledMarker = "";
   input.value = "";
 
-  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
   startPhotoInputWatcher(input, taskId);
 
   try {
     input.click();
   } catch (error) {
-    const message = "Fotoğraf seçici açılamadı: " + safeErrorText(error);
+    const message = "Fotoğraf açılamadı: " + safeErrorText(error);
     setPhotoDebug(taskId, message, "error");
     showMessage(message);
   }
@@ -1675,7 +1675,7 @@ function prepareCameraInput(taskId, status, event) {
     input.value = "";
   }
 
-  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
   startPhotoInputWatcher(input, taskId);
   return true;
 }
@@ -1723,7 +1723,7 @@ function handleCameraInput(input) {
       return;
     }
 
-    setPhotoDebug(taskIdFromInput, "Fotoğraf seçildi. Yükleme hazırlanıyor...", "info");
+    setPhotoDebug(taskIdFromInput, "Fotoğraf yükleniyor...", "info");
 
     const pendingId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : 0;
     if (!pendingCameraTask || pendingId !== taskIdFromInput) {
@@ -1742,13 +1742,13 @@ function handleCameraInput(input) {
       try {
         uploadCameraPhoto(file, input);
       } catch (innerError) {
-        setPhotoDebug(taskIdFromInput, "Upload başlatma hatası: " + safeErrorText(innerError), "error");
-        showMessage("Upload başlatma hatası: " + safeErrorText(innerError));
+        setPhotoDebug(taskIdFromInput, "Fotoğraf yükleme başlatılamadı: " + safeErrorText(innerError), "error");
+        showMessage("Fotoğraf yükleme başlatılamadı: " + safeErrorText(innerError));
       }
     }, 50);
   } catch (error) {
-    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf işlem hatası: " + safeErrorText(error), "error");
-    showMessage("Fotoğraf işlem hatası: " + safeErrorText(error));
+    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf yüklenemedi: " + safeErrorText(error), "error");
+    showMessage("Fotoğraf yüklenemedi: " + safeErrorText(error));
   }
 }
 
@@ -1775,7 +1775,7 @@ function uploadCameraPhoto(file, input) {
   }
 
   if (taskIdForDebug) {
-    setPhotoDebug(taskIdForDebug, "Fotoğraf alındı. Yükleme hazırlanıyor...", "info");
+    setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
   }
 
   setTimeout(function() {
@@ -1813,7 +1813,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     const fileSizeKb = Math.round((file.size || 0) / 1024);
 
     if (taskIdForDebug) {
-      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor: " + fileName + " · " + fileSizeKb + " KB", "info");
+      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
     }
 
     const formData = new FormData();
@@ -1843,7 +1843,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
       clearTimeout(timeoutId);
     }
 
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Sunucu cevabı okunuyor...", "info");
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Görev kaydediliyor...", "info");
 
     let result = {};
     try {
@@ -1853,10 +1853,10 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     }
 
     if (!response.ok || !result.ok) {
-      throw new Error(result.error || "Fotoğraf kaydedilemedi.");
+      throw new Error(result.error || "Fotoğraf kaydedilemedi. Lütfen tekrar deneyin.");
     }
 
-    const successMessage = "Fotoğraf ile görev kaydedildi.";
+    const successMessage = "Görev başarıyla kaydedildi ✅";
     if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage, "ok");
     showMessage(successMessage);
     pendingCameraTask = null;
@@ -1864,7 +1864,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     tg.close();
   } catch (error) {
     if (input) input.value = "";
-    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi.");
+    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi. Lütfen tekrar deneyin.");
     if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
     showMessage(message);
   }
