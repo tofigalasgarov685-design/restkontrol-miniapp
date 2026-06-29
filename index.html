@@ -495,8 +495,8 @@
       </div>
     </div>
 
-    <p class="small">Sürüm: dashboard v19.11 clean photo UI.</p>
-    <p class="small">Fotoğraflı görev akışı aktif. Eski fotoğraflar kabul edilmez.</p>
+    <p class="small">Test sürümü: dashboard v19.10 direct upload no recheck.</p>
+    <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
@@ -1239,14 +1239,10 @@ function getCurrentMinutes() {
     function updateDashboard(lateCount, waitingCount) {
       const total = document.querySelectorAll(".task").length || 0;
       const rate = total > 0 ? Math.round((lateCount / total) * 100) : 0;
-      const metricTotal = document.getElementById("metricTotal");
-      const metricLate = document.getElementById("metricLate");
-      const metricWaiting = document.getElementById("metricWaiting");
-      const metricRate = document.getElementById("metricRate");
-      if (metricTotal) metricTotal.innerText = total;
-      if (metricLate) metricLate.innerText = lateCount;
-      if (metricWaiting) metricWaiting.innerText = waitingCount;
-      if (metricRate) metricRate.innerText = "%" + rate;
+      document.getElementById("metricTotal").innerText = total;
+      document.getElementById("metricLate").innerText = lateCount;
+      document.getElementById("metricWaiting").innerText = waitingCount;
+      document.getElementById("metricRate").innerText = "%" + rate;
     }
 
     function setActionState(actionEl, text, disabled) {
@@ -1279,11 +1275,9 @@ function getCurrentMinutes() {
       let waitingCount = 0;
 
       tasks.forEach(function(task) {
-        const taskId = parseInt(task.dataset.taskId || "0", 10);
-        if (!taskId) return;
-
-        const timeText = task.dataset.time || "00:00";
-        const late = getCurrentMinutes() > getTaskMinutes(timeText);
+        const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
+        const taskId = parseInt(taskIdText, 10);
+        const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
 
         const state = document.getElementById("state" + taskId);
         const doneButton = document.getElementById("done" + taskId);
@@ -1292,21 +1286,17 @@ function getCurrentMinutes() {
         if (late) {
           lateCount += 1;
           task.dataset.status = "late";
-          if (state) {
-            state.innerText = "Gecikti";
-            state.classList.remove("state-ok");
-            state.classList.add("state-late");
-          }
+          state.innerText = "Gecikti";
+          state.classList.remove("state-ok");
+          state.classList.add("state-late");
           setActionState(doneButton, "Tamamlandı kapalı", true);
           setActionState(lateButton, "Geç Kaldı", false);
         } else {
           waitingCount += 1;
           task.dataset.status = "waiting";
-          if (state) {
-            state.innerText = "Bekliyor";
-            state.classList.remove("state-late");
-            state.classList.add("state-ok");
-          }
+          state.innerText = "Bekliyor";
+          state.classList.remove("state-late");
+          state.classList.add("state-ok");
           setActionState(doneButton, "Tamamlandı", false);
           setActionState(lateButton, "Geç Kaldı kapalı", true);
         }
@@ -1344,10 +1334,9 @@ function getCurrentMinutes() {
 
       const buttons = document.querySelectorAll(".filter-grid button");
       buttons.forEach(function(btn) { btn.classList.remove("active"); });
-      if (button) button.classList.add("active");
+      button.classList.add("active");
 
-      const emptyBox = document.getElementById("emptyBox");
-      if (emptyBox) emptyBox.style.display = visibleCount === 0 ? "block" : "none";
+      document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
     }
 
 
@@ -1518,13 +1507,13 @@ function safeErrorText(error) {
 }
 
 window.addEventListener("error", function(event) {
-  const text = "Teknik sorun: " + (event.message || "JavaScript hatası");
+  const text = "Teknik hata: " + (event.message || "JavaScript hatası");
   const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
   if (taskId) setPhotoDebug(taskId, text, "error");
 });
 
 window.addEventListener("unhandledrejection", function(event) {
-  const text = "Teknik sorun: " + safeErrorText(event.reason);
+  const text = "Teknik hata: " + safeErrorText(event.reason);
   const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
   if (taskId) setPhotoDebug(taskId, text, "error");
 });
@@ -1545,7 +1534,7 @@ function startPhotoInputWatcher(input, taskId) {
   if (!input || !taskId) return;
 
   let ticks = 0;
-  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
+  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
 
   photoWatcherTimer = setInterval(function() {
     ticks += 1;
@@ -1553,19 +1542,19 @@ function startPhotoInputWatcher(input, taskId) {
     try {
       if (input.files && input.files.length > 0) {
         stopPhotoInputWatcher();
-        setPhotoDebug(taskId, "Fotoğraf hazırlanıyor...", "info");
+        setPhotoDebug(taskId, "Fotoğraf seçildi. İşlem başlıyor...", "info");
         handlePhotoInputEvent(input);
         return;
       }
     } catch (error) {
       stopPhotoInputWatcher();
-      setPhotoDebug(taskId, "Fotoğraf işlenemedi: " + safeErrorText(error), "error");
+      setPhotoDebug(taskId, "Fotoğraf kontrol hatası: " + safeErrorText(error), "error");
       return;
     }
 
     if (ticks >= 40) {
       stopPhotoInputWatcher();
-      setPhotoDebug(taskId, "Fotoğraf seçilmedi. Lütfen tekrar deneyin.", "warn");
+      setPhotoDebug(taskId, "Fotoğraf seçilmedi veya Telegram seçim bilgisini göndermedi. Tekrar deneyin.", "warn");
     }
   }, 500);
 }
@@ -1651,13 +1640,13 @@ function openPhotoPicker(taskId, status) {
   input.dataset.lastHandledMarker = "";
   input.value = "";
 
-  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
+  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
   startPhotoInputWatcher(input, taskId);
 
   try {
     input.click();
   } catch (error) {
-    const message = "Fotoğraf açılamadı: " + safeErrorText(error);
+    const message = "Fotoğraf seçici açılamadı: " + safeErrorText(error);
     setPhotoDebug(taskId, message, "error");
     showMessage(message);
   }
@@ -1686,7 +1675,7 @@ function prepareCameraInput(taskId, status, event) {
     input.value = "";
   }
 
-  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
+  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
   startPhotoInputWatcher(input, taskId);
   return true;
 }
@@ -1734,7 +1723,7 @@ function handleCameraInput(input) {
       return;
     }
 
-    setPhotoDebug(taskIdFromInput, "Fotoğraf yükleniyor...", "info");
+    setPhotoDebug(taskIdFromInput, "Fotoğraf seçildi. Yükleme hazırlanıyor...", "info");
 
     const pendingId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : 0;
     if (!pendingCameraTask || pendingId !== taskIdFromInput) {
@@ -1753,13 +1742,13 @@ function handleCameraInput(input) {
       try {
         uploadCameraPhoto(file, input);
       } catch (innerError) {
-        setPhotoDebug(taskIdFromInput, "Fotoğraf yükleme başlatılamadı: " + safeErrorText(innerError), "error");
-        showMessage("Fotoğraf yükleme başlatılamadı: " + safeErrorText(innerError));
+        setPhotoDebug(taskIdFromInput, "Upload başlatma hatası: " + safeErrorText(innerError), "error");
+        showMessage("Upload başlatma hatası: " + safeErrorText(innerError));
       }
     }, 50);
   } catch (error) {
-    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf yüklenemedi: " + safeErrorText(error), "error");
-    showMessage("Fotoğraf yüklenemedi: " + safeErrorText(error));
+    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf işlem hatası: " + safeErrorText(error), "error");
+    showMessage("Fotoğraf işlem hatası: " + safeErrorText(error));
   }
 }
 
@@ -1786,7 +1775,7 @@ function uploadCameraPhoto(file, input) {
   }
 
   if (taskIdForDebug) {
-    setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
+    setPhotoDebug(taskIdForDebug, "Fotoğraf alındı. Yükleme hazırlanıyor...", "info");
   }
 
   setTimeout(function() {
@@ -1824,7 +1813,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     const fileSizeKb = Math.round((file.size || 0) / 1024);
 
     if (taskIdForDebug) {
-      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
+      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor: " + fileName + " · " + fileSizeKb + " KB", "info");
     }
 
     const formData = new FormData();
@@ -1854,7 +1843,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
       clearTimeout(timeoutId);
     }
 
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Görev kaydediliyor...", "info");
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Sunucu cevabı okunuyor...", "info");
 
     let result = {};
     try {
@@ -1864,10 +1853,10 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     }
 
     if (!response.ok || !result.ok) {
-      throw new Error(result.error || "Fotoğraf kaydedilemedi. Lütfen tekrar deneyin.");
+      throw new Error(result.error || "Fotoğraf kaydedilemedi.");
     }
 
-    const successMessage = "Görev başarıyla kaydedildi ✅";
+    const successMessage = "Fotoğraf ile görev kaydedildi.";
     if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage, "ok");
     showMessage(successMessage);
     pendingCameraTask = null;
@@ -1875,7 +1864,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     tg.close();
   } catch (error) {
     if (input) input.value = "";
-    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi. Lütfen tekrar deneyin.");
+    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi.");
     if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
     showMessage(message);
   }
