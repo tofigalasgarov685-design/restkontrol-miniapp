@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RestKontrol Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #111827;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    p { margin: 0 0 10px; color: #4b5563; line-height: 1.4; }
+    label { display: block; font-size: 14px; font-weight: 700; margin: 14px 0 6px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #ffffff;
+    }
+    textarea { min-height: 78px; resize: vertical; }
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .primary { background: #16a34a; color: #ffffff; }
+    .danger { background: #dc2626; color: #ffffff; }
+    .secondary { background: #111827; color: #ffffff; }
+    .light { background: #e5e7eb; color: #111827; }
+
+    .menu-section {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 14px;
+      background: #ffffff;
+    }
+    .menu-section h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      color: #111827;
+    }
+    .menu-section p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .menu-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .menu-actions button {
+      margin-top: 0;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 12px;
+    }
+    .menu-actions.single {
+      grid-template-columns: 1fr;
+    }
+
+
+    .top-back {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin-bottom: 12px;
+      border: 1px solid #d1d5db;
+    }
+
+
+    .template-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 12px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
+    }
+    .template-card.locked {
+      background: #f9fafb;
+      opacity: 0.9;
+    }
+    .template-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .template-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+      margin: 0 0 4px;
+    }
+    .template-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin: 0 0 10px;
+      line-height: 1.4;
+    }
+    .template-badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .template-free {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .template-premium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .template-items {
+      margin: 10px 0;
+      padding-left: 18px;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .hidden { display: none; }
+    .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .metric {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .metric .number {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .metric .label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 700;
+    }
+    .zone-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .zone-card {
+      border: 1px solid transparent;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    }
+    .zone-mutfak {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+    .zone-salon {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+    .zone-bar {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+    }
+    .zone-paket {
+      background: #ecfdf5;
+      border-color: #bbf7d0;
+    }
+    .zone-card strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .zone-card span { color: #6b7280; font-size: 13px; }
+    .task {
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 14px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+    }
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 7px;
+      background: #eef2ff;
+      color: #3730a3;
+      letter-spacing: 0.2px;
+    }
+    .task-id {
+      font-size: 12px;
+      font-weight: 800;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .task-title {
+      font-size: 18px;
+      line-height: 1.3;
+      margin: 8px 0 12px;
+      color: #111827;
+    }
+    .state {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .state-ok { background: #dcfce7; color: #166534; }
+    .state-late { background: #fee2e2; color: #991b1b; }
+    .task-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .task-meta-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+      background: #f9fafb;
+    }
+    .task-meta-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+    .task-meta-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+    }
+    .photo-required { color: #b45309; }
+    .photo-optional { color: #047857; }
+    .comment-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #374151;
+      margin-top: 10px;
+    }
+    .task textarea {
+      min-height: 68px;
+      font-size: 15px;
+      background: #f9fafb;
+    }
+    .task-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .task-actions button, .upload-button, .camera-action {
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+    }
+    .upload-button.primary { background: #16a34a; color: #ffffff; }
+    .upload-button.danger { background: #dc2626; color: #ffffff; }
+    .upload-button.disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .camera-action {
+      position: relative;
+      overflow: hidden;
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      border: none;
+    }
+    .camera-action.primary { background: #16a34a; color: #ffffff; }
+    .camera-action.danger { background: #dc2626; color: #ffffff; }
+    .camera-action.disabled { opacity: 0.45; cursor: not-allowed; }
+    .camera-action.disabled input[type="file"] { pointer-events: none; cursor: not-allowed; }
+    .camera-action input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .camera-action span {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hidden-photo-input {
+      display: none !important;
+    }
+    .photo-debug {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.35;
+      display: none;
+    }
+    .photo-debug.ok {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+      display: block;
+    }
+    .photo-debug.warn {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+      display: block;
+    }
+    .photo-debug.error {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+    .photo-debug.info {
+      display: block;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+    .filter-grid button {
+      margin-top: 0;
+      padding: 11px;
+      font-size: 14px;
+      border-radius: 12px;
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .filter-grid button.active { background: #111827; color: #ffffff; }
+    .empty-box {
+      display: none;
+      border: 1px dashed #d1d5db;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      color: #6b7280;
+      background: #fafafa;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="homeScreen" class="card">
+    <h1>RestKontrol</h1>
+    <p>Restoran operasyonları için günlük kontrol paneli.</p>
+
+    <div class="dashboard-grid">
+      <div class="metric">
+        <div id="metricTotal" class="number">8</div>
+        <div class="label">Bugünkü görev</div>
+      </div>
+      <div class="metric">
+        <div id="metricLate" class="number">0</div>
+        <div class="label">Geciken</div>
+      </div>
+      <div class="metric">
+        <div id="metricWaiting" class="number">0</div>
+        <div class="label">Bekleyen</div>
+      </div>
+      <div class="metric">
+        <div id="metricRate" class="number">%0</div>
+        <div class="label">Geç oranı</div>
+      </div>
+    </div>
+
+    <div class="zone-grid">
+      <div class="zone-card zone-mutfak" onclick="showZoneTasks('Mutfak')"><strong>Mutfak</strong><span>2 görev</span></div>
+      <div class="zone-card zone-salon" onclick="showZoneTasks('Salon')"><strong>Salon</strong><span>2 görev</span></div>
+      <div class="zone-card zone-bar" onclick="showZoneTasks('Bar')"><strong>Bar</strong><span>2 görev</span></div>
+      <div class="zone-card zone-paket" onclick="showZoneTasks('Paket Servis')"><strong>Paket Servis</strong><span>2 görev</span></div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Görevler</h3>
+      <p>Günlük operasyon görevlerini durum ve bölüme göre takip et.</p>
+      <div class="menu-actions">
+        <button class="danger" onclick="showLateTasks()">Gecikenler</button>
+        <button class="primary" onclick="showWaitingTasks()">Bekleyenler</button>
+        <button class="secondary" onclick="showTasks()">Tüm Görevler</button>
+        <button class="light" onclick="showAddTaskScreen()">Görev Ekle</button>
+        <button class="light" onclick="filterTasks('Tümü', document.getElementById('filterAll')); showTasks();">Filtreli Liste</button>
+      </div>
+    </div>
+
+
+    <div class="menu-section">
+      <h3>Hazır Checklistler</h3>
+      <p>Hazır operasyon şablonlarını incele. Trial sürecinde sadece demo paket eklenebilir.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="showChecklistScreen()">Hazır Checklistleri Aç</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Plan ve Ödeme</h3>
+      <p>Trial / Paid durumunu gör. Test ödemesi sonrası premium checklist açılır.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="showPlanScreen()">Plan ve Ödeme</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Çalışanlar</h3>
+      <p>Personel, rol, bölüm ve davet kodlarını yönet.</p>
+      <div class="menu-actions">
+        <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
+        <button class="light" onclick="sendEmployeeListRequest()">Çalışan Listesi</button>
+        <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Raporlar</h3>
+      <p>Gecikme oranı, son kayıtlar, sorumlu kişi ve rol bilgilerini al.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="sendManagementReportRequest()">Yönetim Raporu</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Ayarlar</h3>
+      <p>İşletme bilgileri ve minimum personel ayarlarını düzenle.</p>
+      <div class="menu-actions single">
+        <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
+      </div>
+    </div>
+
+    <p class="small">Sürüm: dashboard v19.11 clean photo UI.</p>
+    <p class="small">Fotoğraflı görev akışı aktif. Eski fotoğraflar kabul edilmez.</p>
+  </div>
+
+  <div id="businessScreen" class="card hidden">
+    <h2>İşletme Kurulumu</h2>
+    <label>İşletme adı</label>
+    <input id="businessName" placeholder="Örn: Matryoshka" />
+    <label>İşletme türü</label>
+    <select id="businessType">
+      <option value="Restoran">Restoran</option>
+      <option value="Cafe">Cafe</option>
+      <option value="Fast Food">Fast Food</option>
+      <option value="Fırın">Fırın</option>
+      <option value="Paket Servis Mutfağı">Paket Servis Mutfağı</option>
+    </select>
+    <label>Açılış saati</label>
+    <input id="openTime" type="time" value="09:00" />
+    <label>Kapanış saati</label>
+    <input id="closeTime" type="time" value="21:00" />
+    <label>Mutfak minimum personel</label>
+    <input id="kitchenMin" type="number" value="1" />
+    <label>Salon minimum personel</label>
+    <input id="hallMin" type="number" value="1" />
+    <label>Bar minimum personel</label>
+    <input id="barMin" type="number" value="1" />
+    <label>Paket servis minimum personel</label>
+    <input id="deliveryMin" type="number" value="1" />
+    <button class="primary" onclick="sendBusiness()">Kurulumu Tamamla</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+
+  <div id="checklistScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Hazır Checklistler</h2>
+    <p class="small">Trial sürecinde sadece demo checklist eklenir. Premium paketlerin tam görev listesi ödeme sonrası açılır.</p>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Demo Operasyon Checklist</h3>
+          <p class="template-desc">Sistemin nasıl çalıştığını göstermek için 5 örnek görev.</p>
+        </div>
+        <span class="template-badge template-free">Ücretsiz</span>
+      </div>
+      <ul class="template-items">
+        <li>Açılış öncesi genel temizlik kontrolü</li>
+        <li>Personel üniforma kontrolü</li>
+        <li>Masa / servis alanı düzen kontrolü</li>
+        <li>Ürün etiket ve tarih kontrolü</li>
+        <li>Kapanış hijyen kontrolü</li>
+      </ul>
+      <button class="primary" onclick="sendChecklistTemplate('demo_basic')">Demo Checklist'i Ekle</button>
+    </div>
+
+    <div class="template-card locked">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Full Servis Restoran</h3>
+          <p class="template-desc">Servis, masa düzeni, garson operasyonu, misafir deneyimi ve kapanış kontrolleri.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">10 premium görev. Trial sürecinde tam görev listesi gösterilmez.</p>
+      <button class="primary" onclick="sendChecklistTemplate('premium_full_service')">Full Servis Restoran'ı Ekle</button>
+    </div>
+
+    <div class="template-card locked">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Self Servis / Yemekhane</h3>
+          <p class="template-desc">Yemek dağıtım hattı, sıcaklık, görsel düzen, tepsi alanı ve yoğun saat kontrolleri.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">16 hazır görev. Tam içerik ödeme sonrası açılır.</p>
+      <button class="light" onclick="showPremiumLocked()">Ödeme Sonrası Açılır</button>
+    </div>
+
+    <div class="template-card locked">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Paket Servis Operasyonu</h3>
+          <p class="template-desc">Paketleme alanı, kurye teslimi, geciken siparişler ve kalite kontrol süreçleri.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">12 hazır görev. Tam içerik ödeme sonrası açılır.</p>
+      <button class="light" onclick="showPremiumLocked()">Ödeme Sonrası Açılır</button>
+    </div>
+  </div>
+
+  <div id="planScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Plan ve Ödeme</h2>
+    <p class="small">Bu ekranda işletmenin Trial / Paid durumunu kontrol edebilirsiniz.</p>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Trial Plan</h3>
+          <p class="template-desc">Demo Operasyon Checklist açık. Premium paketlerin tam içeriği kapalı.</p>
+        </div>
+        <span class="template-badge template-free">Trial</span>
+      </div>
+      <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Paid / Premium</h3>
+          <p class="template-desc">Ödeme sonrası Full Servis Restoran premium checklist eklenebilir.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Test ödeme için Telegram sohbetine şu komutu yazın: /set_paid</p>
+      <button class="primary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
+    </div>
+  </div>
+
+  <div id="employeeScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Çalışan Ekle</h2>
+    <p class="small">Owner, director ve manager çalışan ekleyebilir. Manager sadece staff ekleyebilir.</p>
+
+    <label>Ad Soyad</label>
+    <input id="employeeName" placeholder="Örn: Ahmet Yılmaz" />
+
+    <label>Rol</label>
+    <select id="employeeRole">
+      <option value="staff">Personel</option>
+      <option value="manager">Müdür / Vardiya Şefi</option>
+      <option value="director">Genel Müdür</option>
+    </select>
+
+    <label>Bölüm</label>
+    <select id="employeeZone">
+      <option value="Mutfak">Mutfak</option>
+      <option value="Salon">Salon</option>
+      <option value="Bar">Bar</option>
+      <option value="Paket Servis">Paket Servis</option>
+      <option value="Tüm Bölümler">Tüm Bölümler</option>
+    </select>
+
+    <button class="primary" onclick="sendEmployee()">Davet Kodu Oluştur</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+  <div id="addTaskScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Görev Ekle</h2>
+    <p class="small">Owner, director ve manager yeni kontrol görevi oluşturabilir.</p>
+
+    <label>Bölüm</label>
+    <select id="newTaskZone">
+      <option value="Mutfak">Mutfak</option>
+      <option value="Salon">Salon</option>
+      <option value="Bar">Bar</option>
+      <option value="Paket Servis">Paket Servis</option>
+    </select>
+
+    <label>Görev başlığı</label>
+    <input id="newTaskTitle" placeholder="Örn: Soğuk dolap sıcaklığını kontrol et" />
+
+    <label>Kontrol tipi</label>
+    <select id="newTaskType">
+      <option value="Açılış kontrolü">Açılış kontrolü</option>
+      <option value="Operasyon kontrolü">Operasyon kontrolü</option>
+      <option value="Kapanış kontrolü">Kapanış kontrolü</option>
+      <option value="Stok kontrolü">Stok kontrolü</option>
+      <option value="Temizlik kontrolü">Temizlik kontrolü</option>
+      <option value="Paket servis kontrolü">Paket servis kontrolü</option>
+    </select>
+
+    <label>Planlanan saat</label>
+    <input id="newTaskTime" type="time" value="09:00" />
+
+    <label>Fotoğraf zorunlu mu?</label>
+    <select id="newTaskPhoto">
+      <option value="1">Evet, zorunlu</option>
+      <option value="0">Hayır</option>
+    </select>
+
+    <button class="primary" onclick="sendNewTask()">Görev Oluştur</button>
+  </div>
+
+  <div id="tasksScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2 id="taskScreenTitle">Görevler</h2>
+    <p>Sistem, görevin saatine göre durumu otomatik belirler.</p>
+
+    <p class="small">Sorumlu kişi Telegram hesabına ve yetki rolüne göre otomatik kaydedilir.</p>
+
+    <div class="filter-grid">
+      <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
+      <button id="filterLate" onclick="filterTasks('Geciken', this)">Geciken</button>
+      <button id="filterWaiting" onclick="filterTasks('Bekleyen', this)">Bekleyen</button>
+      <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
+      <button onclick="filterTasks('Salon', this)">Salon</button>
+      <button onclick="filterTasks('Bar', this)">Bar</button>
+      <button onclick="filterTasks('Paket Servis', this)">Paket Servis</button>
+    </div>
+
+    <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
+
+    <div id="dynamicTasks"></div>
+
+    
+    <div class="task" data-zone="Mutfak" data-time="09:15" data-photo-required="1">
+      <div class="task-top">
+        <div>
+          <div class="badge">Mutfak · 09:15</div>
+          <div class="task-id">Görev #1</div>
+        </div>
+        <div id="state1" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Açılış öncesi mutfak temizliğini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Açılış kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment1" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done1" class="primary" onclick="completeTask(1, 'completed')">Tamamlandı</button>
+        <button id="late1" class="danger" onclick="completeTask(1, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Mutfak" data-time="12:00" data-photo-required="1">
+      <div class="task-top">
+        <div>
+          <div class="badge">Mutfak · 12:00</div>
+          <div class="task-id">Görev #2</div>
+        </div>
+        <div id="state2" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Hazırlık ürünlerinin etiket ve tarihlerini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Operasyon kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment2" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done2" class="primary" onclick="completeTask(2, 'completed')">Tamamlandı</button>
+        <button id="late2" class="danger" onclick="completeTask(2, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Salon" data-time="10:00" data-photo-required="1">
+      <div class="task-top">
+        <div>
+          <div class="badge">Salon · 10:00</div>
+          <div class="task-id">Görev #3</div>
+        </div>
+        <div id="state3" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Masa düzeni ve genel salon temizliğini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Açılış kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment3" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done3" class="primary" onclick="completeTask(3, 'completed')">Tamamlandı</button>
+        <button id="late3" class="danger" onclick="completeTask(3, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Salon" data-time="14:00" data-photo-required="0">
+      <div class="task-top">
+        <div>
+          <div class="badge">Salon · 14:00</div>
+          <div class="task-id">Görev #4</div>
+        </div>
+        <div id="state4" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Servis alanı eksiklerini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Operasyon kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-optional">Zorunlu değil</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment4" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done4" class="primary" onclick="completeTask(4, 'completed')">Tamamlandı</button>
+        <button id="late4" class="danger" onclick="completeTask(4, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Bar" data-time="10:15" data-photo-required="1">
+      <div class="task-top">
+        <div>
+          <div class="badge">Bar · 10:15</div>
+          <div class="task-id">Görev #5</div>
+        </div>
+        <div id="state5" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Bar tezgahı ve ekipman temizliğini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Açılış kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment5" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done5" class="primary" onclick="completeTask(5, 'completed')">Tamamlandı</button>
+        <button id="late5" class="danger" onclick="completeTask(5, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Bar" data-time="16:00" data-photo-required="0">
+      <div class="task-top">
+        <div>
+          <div class="badge">Bar · 16:00</div>
+          <div class="task-id">Görev #6</div>
+        </div>
+        <div id="state6" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">İçecek stok seviyesini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Stok kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-optional">Zorunlu değil</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment6" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done6" class="primary" onclick="completeTask(6, 'completed')">Tamamlandı</button>
+        <button id="late6" class="danger" onclick="completeTask(6, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Paket Servis" data-time="11:30" data-photo-required="1">
+      <div class="task-top">
+        <div>
+          <div class="badge">Paket Servis · 11:30</div>
+          <div class="task-id">Görev #7</div>
+        </div>
+        <div id="state7" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Paketleme alanı ve kurye teslim düzenini kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Paket servis kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-required">Zorunlu</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment7" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done7" class="primary" onclick="completeTask(7, 'completed')">Tamamlandı</button>
+        <button id="late7" class="danger" onclick="completeTask(7, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <div class="task" data-zone="Paket Servis" data-time="18:00" data-photo-required="0">
+      <div class="task-top">
+        <div>
+          <div class="badge">Paket Servis · 18:00</div>
+          <div class="task-id">Görev #8</div>
+        </div>
+        <div id="state8" class="state">Kontrol</div>
+      </div>
+
+      <h2 class="task-title">Eksik veya geciken siparişleri kontrol et</h2>
+
+      <div class="task-meta">
+        <div class="task-meta-item">
+          <span class="task-meta-label">Kontrol Tipi</span>
+          <span class="task-meta-value">Operasyon kontrolü</span>
+        </div>
+        <div class="task-meta-item">
+          <span class="task-meta-label">Fotoğraf</span>
+          <span class="task-meta-value photo-optional">Zorunlu değil</span>
+        </div>
+      </div>
+
+      <label class="comment-label">Yorum / Gecikme nedeni</label>
+      <textarea id="comment8" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+      <div class="task-actions">
+        <button id="done8" class="primary" onclick="completeTask(8, 'completed')">Tamamlandı</button>
+        <button id="late8" class="danger" onclick="completeTask(8, 'late')">Geç Kaldı</button>
+      </div>
+    </div>
+
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function setTelegramBackButton(visible) {
+      if (!tg.BackButton) return;
+
+      if (visible) {
+        tg.BackButton.show();
+      } else {
+        tg.BackButton.hide();
+      }
+    }
+
+    if (tg.BackButton) {
+      tg.BackButton.onClick(function() {
+        showHome();
+      });
+    }
+
+    function showHome() {
+      document.getElementById("homeScreen").classList.remove("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      updateTaskStates();
+      setTelegramBackButton(false);
+    }
+
+    function showCreateBusiness() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.remove("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+    function showEmployeeScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+
+
+    function showPlanScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+    function showChecklistScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+    function showAddTaskScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.remove("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+function getApiBaseUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("api_base") || "").replace(/\/$/, "");
+}
+
+const API_BASE_URL = getApiBaseUrl();
+
+function getTelegramUserId() {
+  const params = new URLSearchParams(window.location.search);
+  const urlUserId = params.get("telegram_user_id") || params.get("user_id") || "";
+
+  if (urlUserId) {
+    return urlUserId;
+  }
+
+  if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+    return tg.initDataUnsafe.user.id;
+  }
+
+  return "";
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderDynamicTasks(tasks) {
+  const container = document.getElementById("dynamicTasks");
+  if (!container) return;
+
+  const oldStaticTasks = document.querySelectorAll("#tasksScreen > .task");
+  oldStaticTasks.forEach(function(task) { task.remove(); });
+
+  if (!tasks || tasks.length === 0) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = tasks.map(function(task) {
+    const photoRequired = parseInt(task.requires_photo || 0, 10) === 1;
+    const photoText = photoRequired ? "Zorunlu" : "Zorunlu değil";
+    const photoClass = photoRequired ? "photo-required" : "photo-optional";
+    const safeTitle = escapeHtml(task.task_title);
+    const safeZone = escapeHtml(task.zone);
+    const safeType = escapeHtml(task.task_type);
+    const safeTime = escapeHtml(task.scheduled_time);
+    const id = parseInt(task.id, 10);
+
+    return `
+      <div class="task" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}">
+        <div class="task-top">
+          <div>
+            <div class="badge">${safeZone} · ${safeTime}</div>
+            <div class="task-id">Görev #${id}</div>
+          </div>
+          <div id="state${id}" class="state">Kontrol</div>
+        </div>
+
+        <h2 class="task-title">${safeTitle}</h2>
+
+        <div class="task-meta">
+          <div class="task-meta-item">
+            <span class="task-meta-label">Kontrol Tipi</span>
+            <span class="task-meta-value">${safeType}</span>
+          </div>
+          <div class="task-meta-item">
+            <span class="task-meta-label">Fotoğraf</span>
+            <span class="task-meta-value ${photoClass}">${photoText}</span>
+          </div>
+        </div>
+
+        <label class="comment-label">Yorum / Gecikme nedeni</label>
+        <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+        <div class="task-actions">
+          ${photoRequired ? `
+            <div id="done${id}" class="camera-action primary">
+              <span>Tamamlandı</span>
+              <input id="photoDone${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+            </div>
+            <div id="late${id}" class="camera-action danger">
+              <span>Geç Kaldı</span>
+              <input id="photoLate${id}" class="photo-input" data-task-id="${id}" data-status="late" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+            </div>
+            <div id="photoDebug${id}" class="photo-debug"></div>
+          ` : `
+            <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
+            <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
+          `}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function loadDynamicTasks() {
+  if (!API_BASE_URL) {
+    return false;
+  }
+
+  const userId = getTelegramUserId();
+  if (!userId) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(API_BASE_URL + "/api/tasks?telegram_user_id=" + encodeURIComponent(userId));
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(result.error || "Görevler alınamadı.");
+    }
+
+    renderDynamicTasks(result.tasks || []);
+    return true;
+  } catch (error) {
+    console.log("Dynamic task load error", error);
+    return false;
+  }
+}
+
+function openTasksScreen(title, filterValue, button) {
+  document.getElementById("homeScreen").classList.add("hidden");
+  document.getElementById("businessScreen").classList.add("hidden");
+  document.getElementById("employeeScreen").classList.add("hidden");
+  document.getElementById("planScreen").classList.add("hidden");
+  document.getElementById("tasksScreen").classList.remove("hidden");
+  setTelegramBackButton(true);
+  document.getElementById("taskScreenTitle").innerText = title;
+
+  loadDynamicTasks().then(function() {
+    updateTaskStates();
+    filterTasks(filterValue, button || document.getElementById("filterAll"));
+  });
+}
+
+function showTasks() {
+  openTasksScreen("Görevler", "Tümü", document.getElementById("filterAll"));
+}
+
+function showLateTasks() {
+  openTasksScreen("Geciken Görevler", "Geciken", document.getElementById("filterLate"));
+}
+
+function showZoneTasks(zone) {
+  const buttons = document.querySelectorAll(".filter-grid button");
+  let targetButton = null;
+
+  buttons.forEach(function(btn) {
+    if (btn.innerText === zone) {
+      targetButton = btn;
+    }
+  });
+
+  openTasksScreen(zone + " Görevleri", zone, targetButton);
+}
+
+function showWaitingTasks() {
+  openTasksScreen("Bekleyen Görevler", "Bekleyen", document.getElementById("filterWaiting"));
+}
+
+function getCurrentMinutes() {
+      const now = new Date();
+      return now.getHours() * 60 + now.getMinutes();
+    }
+
+    function getTaskMinutes(timeText) {
+      const parts = timeText.split(":");
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+
+    function getTaskElement(taskId) {
+      return document.querySelector('.task[data-task-id="' + taskId + '"]') ||
+        (document.querySelector('.task button[onclick*="' + taskId + '"]') || {}).closest?.(".task");
+    }
+
+    function isTaskLate(taskId) {
+      const task = getTaskElement(taskId);
+      if (!task) return false;
+      return getCurrentMinutes() > getTaskMinutes(task.dataset.time);
+    }
+
+    function isTaskEarly(taskId) {
+      const task = getTaskElement(taskId);
+      if (!task) return false;
+      return getCurrentMinutes() < getTaskMinutes(task.dataset.time);
+    }
+
+    function updateDashboard(lateCount, waitingCount) {
+      const total = document.querySelectorAll(".task").length || 0;
+      const rate = total > 0 ? Math.round((lateCount / total) * 100) : 0;
+      const metricTotal = document.getElementById("metricTotal");
+      const metricLate = document.getElementById("metricLate");
+      const metricWaiting = document.getElementById("metricWaiting");
+      const metricRate = document.getElementById("metricRate");
+      if (metricTotal) metricTotal.innerText = total;
+      if (metricLate) metricLate.innerText = lateCount;
+      if (metricWaiting) metricWaiting.innerText = waitingCount;
+      if (metricRate) metricRate.innerText = "%" + rate;
+    }
+
+    function setActionState(actionEl, text, disabled) {
+      if (!actionEl) return;
+
+      const label = actionEl.querySelector("span");
+      if (label) {
+        label.innerText = text;
+      } else {
+        actionEl.innerText = text;
+      }
+
+      const fileInput = actionEl.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.disabled = !!disabled;
+      } else {
+        actionEl.disabled = !!disabled;
+      }
+
+      if (disabled) {
+        actionEl.classList.add("disabled");
+      } else {
+        actionEl.classList.remove("disabled");
+      }
+    }
+
+    function updateTaskStates() {
+      const tasks = document.querySelectorAll(".task");
+      let lateCount = 0;
+      let waitingCount = 0;
+
+      tasks.forEach(function(task) {
+        const taskId = parseInt(task.dataset.taskId || "0", 10);
+        if (!taskId) return;
+
+        const timeText = task.dataset.time || "00:00";
+        const late = getCurrentMinutes() > getTaskMinutes(timeText);
+
+        const state = document.getElementById("state" + taskId);
+        const doneButton = document.getElementById("done" + taskId);
+        const lateButton = document.getElementById("late" + taskId);
+
+        if (late) {
+          lateCount += 1;
+          task.dataset.status = "late";
+          if (state) {
+            state.innerText = "Gecikti";
+            state.classList.remove("state-ok");
+            state.classList.add("state-late");
+          }
+          setActionState(doneButton, "Tamamlandı kapalı", true);
+          setActionState(lateButton, "Geç Kaldı", false);
+        } else {
+          waitingCount += 1;
+          task.dataset.status = "waiting";
+          if (state) {
+            state.innerText = "Bekliyor";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
+          setActionState(doneButton, "Tamamlandı", false);
+          setActionState(lateButton, "Geç Kaldı kapalı", true);
+        }
+      });
+
+      updateDashboard(lateCount, waitingCount);
+    }
+
+    function filterTasks(zone, button) {
+      updateTaskStates();
+
+      let visibleCount = 0;
+      const tasks = document.querySelectorAll(".task");
+
+      tasks.forEach(function(task) {
+        let shouldShow = false;
+
+        if (zone === "Tümü") {
+          shouldShow = true;
+        } else if (zone === "Geciken") {
+          shouldShow = task.dataset.status === "late";
+        } else if (zone === "Bekleyen") {
+          shouldShow = task.dataset.status === "waiting";
+        } else {
+          shouldShow = task.dataset.zone === zone;
+        }
+
+        if (shouldShow) {
+          task.classList.remove("hidden");
+          visibleCount += 1;
+        } else {
+          task.classList.add("hidden");
+        }
+      });
+
+      const buttons = document.querySelectorAll(".filter-grid button");
+      buttons.forEach(function(btn) { btn.classList.remove("active"); });
+      if (button) button.classList.add("active");
+
+      const emptyBox = document.getElementById("emptyBox");
+      if (emptyBox) emptyBox.style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+
+
+
+
+
+    function showPremiumLocked() {
+      const message = "Bu checklist premium pakete dahildir. Tam içerik ödeme sonrası açılır.";
+      if (tg.showAlert) {
+        tg.showAlert(message);
+      } else {
+        alert(message);
+      }
+    }
+
+    function sendChecklistTemplate(templateId) {
+      const data = {
+        action: "add_checklist_template",
+        templateId: templateId
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendNewTask() {
+      const zone = document.getElementById("newTaskZone").value;
+      const title = document.getElementById("newTaskTitle").value.trim();
+      const taskType = document.getElementById("newTaskType").value;
+      const scheduledTime = document.getElementById("newTaskTime").value;
+      const requiresPhoto = document.getElementById("newTaskPhoto").value;
+
+      if (!title) {
+        if (tg.showAlert) {
+          tg.showAlert("Görev başlığı boş olamaz.");
+        } else {
+          alert("Görev başlığı boş olamaz.");
+        }
+        return;
+      }
+
+      if (!scheduledTime) {
+        if (tg.showAlert) {
+          tg.showAlert("Planlanan saat seçilmelidir.");
+        } else {
+          alert("Planlanan saat seçilmelidir.");
+        }
+        return;
+      }
+
+      const data = {
+        action: "add_task",
+        zone: zone,
+        taskTitle: title,
+        taskType: taskType,
+        scheduledTime: scheduledTime,
+        requiresPhoto: requiresPhoto
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPlanStatusRequest() {
+      const data = {
+        action: "get_plan_status"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendManagementReportRequest() {
+      const data = {
+        action: "get_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendEmployeeListRequest() {
+      const data = {
+        action: "get_employees"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendMyRoleRequest() {
+      const data = {
+        action: "get_me"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendEmployee() {
+      const fullName = document.getElementById("employeeName").value.trim();
+      const role = document.getElementById("employeeRole").value;
+      const zone = document.getElementById("employeeZone").value;
+
+      if (!fullName) {
+        if (tg.showAlert) {
+          tg.showAlert("Ad Soyad boş olamaz.");
+        } else {
+          alert("Ad Soyad boş olamaz.");
+        }
+        return;
+      }
+
+      const data = {
+        action: "add_employee",
+        fullName: fullName,
+        role: role,
+        zone: zone
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendBusiness() {
+      const data = {
+        action: "create_business",
+        businessName: document.getElementById("businessName").value,
+        businessType: document.getElementById("businessType").value,
+        openTime: document.getElementById("openTime").value,
+        closeTime: document.getElementById("closeTime").value,
+        kitchenMin: document.getElementById("kitchenMin").value,
+        hallMin: document.getElementById("hallMin").value,
+        barMin: document.getElementById("barMin").value,
+        deliveryMin: document.getElementById("deliveryMin").value
+      };
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+function showMessage(message) {
+  if (tg.showAlert) {
+    tg.showAlert(message);
+  } else {
+    alert(message);
+  }
+}
+
+function setPhotoDebug(taskId, message, type) {
+  const el = document.getElementById("photoDebug" + taskId);
+  if (!el) return;
+  el.className = "photo-debug " + (type || "info");
+  el.textContent = message;
+}
+
+function clearPhotoDebug(taskId) {
+  const el = document.getElementById("photoDebug" + taskId);
+  if (!el) return;
+  el.className = "photo-debug";
+  el.textContent = "";
+}
+
+function safeErrorText(error) {
+  if (!error) return "Bilinmeyen hata";
+  if (error.message) return error.message;
+  return String(error);
+}
+
+window.addEventListener("error", function(event) {
+  const text = "Teknik sorun: " + (event.message || "JavaScript hatası");
+  const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
+  if (taskId) setPhotoDebug(taskId, text, "error");
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+  const text = "Teknik sorun: " + safeErrorText(event.reason);
+  const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
+  if (taskId) setPhotoDebug(taskId, text, "error");
+});
+
+let pendingCameraTask = null;
+
+let photoWatcherTimer = null;
+
+function stopPhotoInputWatcher() {
+  if (photoWatcherTimer) {
+    clearInterval(photoWatcherTimer);
+    photoWatcherTimer = null;
+  }
+}
+
+function startPhotoInputWatcher(input, taskId) {
+  stopPhotoInputWatcher();
+  if (!input || !taskId) return;
+
+  let ticks = 0;
+  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
+
+  photoWatcherTimer = setInterval(function() {
+    ticks += 1;
+
+    try {
+      if (input.files && input.files.length > 0) {
+        stopPhotoInputWatcher();
+        setPhotoDebug(taskId, "Fotoğraf hazırlanıyor...", "info");
+        handlePhotoInputEvent(input);
+        return;
+      }
+    } catch (error) {
+      stopPhotoInputWatcher();
+      setPhotoDebug(taskId, "Fotoğraf işlenemedi: " + safeErrorText(error), "error");
+      return;
+    }
+
+    if (ticks >= 40) {
+      stopPhotoInputWatcher();
+      setPhotoDebug(taskId, "Fotoğraf seçilmedi. Lütfen tekrar deneyin.", "warn");
+    }
+  }, 500);
+}
+
+
+function buildCompletionData(taskId, status) {
+  updateTaskStates();
+
+  const task = getTaskElement(taskId);
+  if (!task) {
+    return { ok: false, message: "Görev bulunamadı." };
+  }
+
+  const early = isTaskEarly(taskId);
+  const late = isTaskLate(taskId);
+  let commentEl = document.getElementById("comment" + taskId);
+  let comment = commentEl ? commentEl.value : "";
+
+  if (early && status === "late") {
+    return {
+      ok: false,
+      message: "Bu görev henüz gecikmedi. Planlanan saat: " + task.dataset.time
+    };
+  }
+
+  if (early && status === "completed") {
+    return {
+      ok: false,
+      message: "Bu görev henüz tamamlanamaz. Planlanan saat: " + task.dataset.time
+    };
+  }
+
+  if (late && status === "completed") {
+    return {
+      ok: false,
+      message: "Bu görev gecikti. Lütfen gecikme nedenini yazıp Geç Kaldı seçin."
+    };
+  }
+
+  if (late) {
+    status = "late";
+  }
+
+  if (status === "late" && comment.trim() === "") {
+    return { ok: false, message: "Geç kalma nedeni yazılmalıdır." };
+  }
+
+  return {
+    ok: true,
+    data: {
+      taskId: taskId,
+      status: status,
+      comment: comment,
+      staffName: ""
+    }
+  };
+}
+
+function openPhotoPicker(taskId, status) {
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+
+  const input = document.getElementById("photoInput" + taskId);
+  if (!input) {
+    const message = "Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.";
+    setPhotoDebug(taskId, message, "error");
+    showMessage(message);
+    return;
+  }
+
+  input.dataset.taskId = String(taskId);
+  input.dataset.status = pendingCameraTask.status;
+  input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+  input.dataset.lastHandledMarker = "";
+  input.value = "";
+
+  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
+  startPhotoInputWatcher(input, taskId);
+
+  try {
+    input.click();
+  } catch (error) {
+    const message = "Fotoğraf açılamadı: " + safeErrorText(error);
+    setPhotoDebug(taskId, message, "error");
+    showMessage(message);
+  }
+}
+
+function prepareCameraInput(taskId, status, event) {
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    if (event) event.preventDefault();
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return false;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+
+  const input = event && event.target ? event.target : null;
+  if (input && input.dataset) {
+    input.dataset.taskId = String(taskId);
+    input.dataset.status = pendingCameraTask.status;
+    input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+    input.dataset.lastHandledMarker = "";
+    input.value = "";
+  }
+
+  setPhotoDebug(taskId, "Fotoğraf açılıyor...", "info");
+  startPhotoInputWatcher(input, taskId);
+  return true;
+}
+
+function handlePhotoInputEvent(input) {
+  if (!input) return;
+
+  const file = input.files && input.files[0];
+  const marker = file ? [file.name, file.size, file.lastModified].join(":") : "no-file";
+
+  if (input.dataset.lastHandledMarker === marker) {
+    return;
+  }
+  input.dataset.lastHandledMarker = marker;
+
+  handleCameraInput(input);
+}
+
+document.addEventListener("change", function(event) {
+  const target = event.target;
+  if (target && target.classList && target.classList.contains("photo-input")) {
+    handlePhotoInputEvent(target);
+  }
+}, true);
+
+document.addEventListener("input", function(event) {
+  const target = event.target;
+  if (target && target.classList && target.classList.contains("photo-input")) {
+    handlePhotoInputEvent(target);
+  }
+}, true);
+
+function handleCameraInput(input) {
+  const taskIdFromInput = parseInt((input && input.dataset && input.dataset.taskId) || "0", 10);
+  const file = input.files && input.files[0];
+
+  try {
+    if (!file) {
+      if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf seçilmedi.", "warn");
+      return;
+    }
+
+    if (!taskIdFromInput) {
+      showMessage("Görev bilgisi alınamadı. Sayfayı kapatıp tekrar açın.");
+      return;
+    }
+
+    setPhotoDebug(taskIdFromInput, "Fotoğraf yükleniyor...", "info");
+
+    const pendingId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : 0;
+    if (!pendingCameraTask || pendingId !== taskIdFromInput) {
+      const status = (input && input.dataset && input.dataset.status) || "completed";
+      const commentEl = document.getElementById("comment" + taskIdFromInput);
+      pendingCameraTask = {
+        taskId: taskIdFromInput,
+        status: status,
+        comment: commentEl ? commentEl.value : "",
+        staffName: "",
+        startedAtMs: parseInt((input && input.dataset && input.dataset.startedAtMs) || "0", 10) || Date.now()
+      };
+    }
+
+    window.setTimeout(function() {
+      try {
+        uploadCameraPhoto(file, input);
+      } catch (innerError) {
+        setPhotoDebug(taskIdFromInput, "Fotoğraf yükleme başlatılamadı: " + safeErrorText(innerError), "error");
+        showMessage("Fotoğraf yükleme başlatılamadı: " + safeErrorText(innerError));
+      }
+    }, 50);
+  } catch (error) {
+    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf yüklenemedi: " + safeErrorText(error), "error");
+    showMessage("Fotoğraf yüklenemedi: " + safeErrorText(error));
+  }
+}
+
+async function calculateFileHash(file) {
+  if (!window.crypto || !window.crypto.subtle) {
+    return "";
+  }
+
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(byte) {
+    return byte.toString(16).padStart(2, "0");
+  }).join("");
+}
+
+function uploadCameraPhoto(file, input) {
+  stopPhotoInputWatcher();
+  const taskIdForDebug = (pendingCameraTask && pendingCameraTask.taskId) || parseInt((input && input.dataset && input.dataset.taskId) || "0", 10) || 0;
+
+  if (!file) {
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf seçilmedi.", "warn");
+    return;
+  }
+
+  if (taskIdForDebug) {
+    setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
+  }
+
+  setTimeout(function() {
+    uploadCameraPhotoDirect(file, input, taskIdForDebug);
+  }, 120);
+}
+
+async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
+  try {
+    if (!pendingCameraTask) {
+      const message = "Görev bilgisi bulunamadı.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
+
+    if (!API_BASE_URL) {
+      const message = "Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
+
+    const userId = getTelegramUserId();
+    if (!userId) {
+      const message = "Telegram kullanıcı bilgisi alınamadı.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
+
+    const startedAtMs = pendingCameraTask.startedAtMs || Date.now();
+    const fileLastModifiedMs = Number(file.lastModified || 0);
+    const fileName = file.name || "photo.jpg";
+    const fileSizeKb = Math.round((file.size || 0) / 1024);
+
+    if (taskIdForDebug) {
+      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor...", "info");
+    }
+
+    const formData = new FormData();
+    formData.append("telegram_user_id", userId);
+    formData.append("task_id", pendingCameraTask.taskId);
+    formData.append("status", pendingCameraTask.status);
+    formData.append("comment", pendingCameraTask.comment);
+    formData.append("staff_name", pendingCameraTask.staffName || "");
+    formData.append("started_at_ms", startedAtMs);
+    formData.append("photo_last_modified_ms", fileLastModifiedMs);
+    formData.append("photo_hash", "");
+    formData.append("photo", file);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(function() {
+      controller.abort();
+    }, 30000);
+
+    let response;
+    try {
+      response = await fetch(API_BASE_URL + "/upload_photo", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Görev kaydediliyor...", "info");
+
+    let result = {};
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      throw new Error("Sunucu cevabı okunamadı. HTTP " + response.status);
+    }
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || "Fotoğraf kaydedilemedi. Lütfen tekrar deneyin.");
+    }
+
+    const successMessage = "Görev başarıyla kaydedildi ✅";
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage, "ok");
+    showMessage(successMessage);
+    pendingCameraTask = null;
+    if (input) input.value = "";
+    tg.close();
+  } catch (error) {
+    if (input) input.value = "";
+    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi. Lütfen tekrar deneyin.");
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+    showMessage(message);
+  }
+}
+
+function completeTask(taskId, status) {
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    showMessage(result.message);
+    return;
+  }
+
+  const task = getTaskElement(taskId);
+  const requiresPhoto = task && task.dataset.photoRequired === "1";
+
+  if (requiresPhoto) {
+    pendingCameraTask = result.data;
+    pendingCameraTask.startedAtMs = Date.now();
+    const inputId = result.data.status === "late" ? "photoLate" + taskId : "photoDone" + taskId;
+    const input = document.getElementById(inputId) || document.getElementById("photoInput" + taskId);
+    if (input) {
+      input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+      input.dataset.lastHandledMarker = "";
+      input.value = "";
+      startPhotoInputWatcher(input, taskId);
+      input.click();
+    } else {
+      showMessage("Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.");
+    }
+    return;
+  }
+
+  const data = {
+    action: "complete_task",
+    taskId: taskId,
+    status: result.data.status,
+    comment: result.data.comment,
+    staffName: "",
+    requiresPhotoClient: "0"
+  };
+
+  tg.sendData(JSON.stringify(data));
+  tg.close();
+}
+
+    function sendReport() {
+      const data = { action: "get_report" };
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    updateTaskStates();
+  </script>
+</body>
+</html>
