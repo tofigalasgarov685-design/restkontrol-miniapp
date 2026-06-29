@@ -481,9 +481,12 @@
 
     <div class="menu-section">
       <h3>Raporlar</h3>
-      <p>Gecikme oranı, son kayıtlar, sorumlu kişi ve rol bilgilerini al.</p>
-      <div class="menu-actions single">
+      <p>Genel, fotoğraflı, bölüm ve personel raporlarını al.</p>
+      <div class="menu-actions">
         <button class="light" onclick="sendManagementReportRequest()">Yönetim Raporu</button>
+        <button class="light" onclick="sendPhotoReportRequest()">Fotoğraflı Rapor</button>
+        <button class="light" onclick="sendZoneReportRequest()">Bölüm Raporu</button>
+        <button class="light" onclick="sendStaffReportRequest()">Personel Raporu</button>
       </div>
     </div>
 
@@ -495,7 +498,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.10 direct upload no recheck.</p>
+    <p class="small">Test sürümü: dashboard v19.17 reports menu. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -1413,6 +1416,33 @@ function getCurrentMinutes() {
     function sendManagementReportRequest() {
       const data = {
         action: "get_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPhotoReportRequest() {
+      const data = {
+        action: "get_photo_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendZoneReportRequest() {
+      const data = {
+        action: "get_zone_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendStaffReportRequest() {
+      const data = {
+        action: "get_staff_report"
       };
 
       tg.sendData(JSON.stringify(data));
