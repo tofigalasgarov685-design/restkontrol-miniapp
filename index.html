@@ -529,7 +529,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.18.1 depo ayarları. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.19 hazır checklistler. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -587,7 +587,7 @@
   <div id="checklistScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Hazır Checklistler</h2>
-    <p class="small">Trial sürecinde sadece demo checklist eklenir. Premium paketlerin tam görev listesi ödeme sonrası açılır.</p>
+    <p class="small">Checklist saatleri İşletme Ayarları içindeki açılış / kapanış saatine göre otomatik hesaplanır.</p>
 
     <div class="template-card">
       <div class="template-top">
@@ -607,40 +607,92 @@
       <button class="primary" onclick="sendChecklistTemplate('demo_basic')">Demo Checklist'i Ekle</button>
     </div>
 
-    <div class="template-card locked">
+    <div class="template-card">
       <div class="template-top">
         <div>
-          <h3 class="template-title">Full Servis Restoran</h3>
-          <p class="template-desc">Servis, masa düzeni, garson operasyonu, misafir deneyimi ve kapanış kontrolleri.</p>
+          <h3 class="template-title">Mutfak Açılış Checklist</h3>
+          <p class="template-desc">Açılış saatinden önce mutfak hijyeni, soğuk dolap, ürün tarihi ve servis hazırlığı.</p>
+        </div>
+        <span class="template-badge template-free">Temel</span>
+      </div>
+      <ul class="template-items">
+        <li>Açılıştan 30 dk önce başlar</li>
+        <li>5 görev oluşturur</li>
+        <li>4 görevde fotoğraf zorunlu</li>
+      </ul>
+      <button class="primary" onclick="sendChecklistTemplate('mutfak_acilis')">Mutfak Açılış'ı Ekle</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Mutfak Kapanış Checklist</h3>
+          <p class="template-desc">Kapanış öncesi ürün kaldırma, tezgah temizliği, soğuk dolap ve son sorumlu onayı.</p>
         </div>
         <span class="template-badge template-premium">Premium</span>
       </div>
-      <p class="small">10 premium görev. Trial sürecinde tam görev listesi gösterilmez.</p>
-      <button class="primary" onclick="sendChecklistTemplate('premium_full_service')">Full Servis Restoran'ı Ekle</button>
+      <p class="small">Kapanış saatinden 30 dk önce görevleri oluşturur.</p>
+      <button class="primary" onclick="sendChecklistTemplate('mutfak_kapanis')">Mutfak Kapanış'ı Ekle</button>
     </div>
 
-    <div class="template-card locked">
+    <div class="template-card">
       <div class="template-top">
         <div>
-          <h3 class="template-title">Self Servis / Yemekhane</h3>
-          <p class="template-desc">Yemek dağıtım hattı, sıcaklık, görsel düzen, tepsi alanı ve yoğun saat kontrolleri.</p>
+          <h3 class="template-title">Salon Açılış Checklist</h3>
+          <p class="template-desc">Masa düzeni, servis ekipmanı, personel görünümü ve rezervasyon kontrolü.</p>
         </div>
         <span class="template-badge template-premium">Premium</span>
       </div>
-      <p class="small">16 hazır görev. Tam içerik ödeme sonrası açılır.</p>
-      <button class="light" onclick="showPremiumLocked()">Ödeme Sonrası Açılır</button>
+      <p class="small">Açılış saatine göre 5 salon görevi oluşturur.</p>
+      <button class="primary" onclick="sendChecklistTemplate('salon_acilis')">Salon Açılış'ı Ekle</button>
     </div>
 
-    <div class="template-card locked">
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Salon Kapanış Checklist</h3>
+          <p class="template-desc">Salon kapanış düzeni, ortak alan hijyeni ve servis ekipmanı kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Kapanış saatine göre 5 salon görevi oluşturur.</p>
+      <button class="primary" onclick="sendChecklistTemplate('salon_kapanis')">Salon Kapanış'ı Ekle</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Bar Açılış Checklist</h3>
+          <p class="template-desc">Bar hijyeni, stok, buz, garnitür ve servis ekipmanı hazırlığı.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Açılış saatine göre 4 bar görevi oluşturur.</p>
+      <button class="primary" onclick="sendChecklistTemplate('bar_acilis')">Bar Açılış'ı Ekle</button>
+    </div>
+
+    <div class="template-card">
       <div class="template-top">
         <div>
           <h3 class="template-title">Depo Kontrol Checklist</h3>
-          <p class="template-desc">Depo düzeni, stok yerleşimi, kritik ürünler ve kalite kontrol süreçleri.</p>
+          <p class="template-desc">Depo düzeni, stok seviyesi, ürün tarihi, kalite ve hijyen kontrolü.</p>
         </div>
         <span class="template-badge template-premium">Premium</span>
       </div>
-      <p class="small">12 hazır görev. Tam içerik ödeme sonrası açılır.</p>
-      <button class="light" onclick="showPremiumLocked()">Ödeme Sonrası Açılır</button>
+      <p class="small">Açılıştan sonra depo için 4 kontrol görevi oluşturur.</p>
+      <button class="primary" onclick="sendChecklistTemplate('depo_kontrol')">Depo Checklist'i Ekle</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Full Servis Restoran</h3>
+          <p class="template-desc">Mutfak, salon, bar ve depo için gün boyu ana operasyon kontrolleri.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Aktif bölümlere göre 10 görev oluşturur.</p>
+      <button class="primary" onclick="sendChecklistTemplate('premium_full_service')">Full Servis Restoran'ı Ekle</button>
     </div>
   </div>
 
