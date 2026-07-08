@@ -175,6 +175,36 @@
       font-size: 13px;
       line-height: 1.55;
     }
+    .premium-offer {
+      border: 1px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 18px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+    .premium-price {
+      font-size: 26px;
+      font-weight: 900;
+      color: #111827;
+      margin: 6px 0 2px;
+    }
+    .premium-list {
+      margin: 10px 0;
+      padding-left: 18px;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .premium-selected {
+      display: inline-block;
+      padding: 7px 10px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      margin: 6px 0 10px;
+    }
 
     .hidden { display: none; }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
@@ -529,7 +559,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.19.1 reason fix. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.20 premium ödeme ekranı. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -632,7 +662,7 @@
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Kapanış saatinden 30 dk önce görevleri oluşturur.</p>
-      <button class="primary" onclick="sendChecklistTemplate('mutfak_kapanis')">Mutfak Kapanış'ı Ekle</button>
+      <button class="primary" onclick="showPremiumPaymentScreen('Mutfak Kapanış Checklist', 'mutfak_kapanis')">Premium Aç</button>
     </div>
 
     <div class="template-card">
@@ -644,7 +674,7 @@
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Açılış saatine göre 5 salon görevi oluşturur.</p>
-      <button class="primary" onclick="sendChecklistTemplate('salon_acilis')">Salon Açılış'ı Ekle</button>
+      <button class="primary" onclick="showPremiumPaymentScreen('Salon Açılış Checklist', 'salon_acilis')">Premium Aç</button>
     </div>
 
     <div class="template-card">
@@ -656,7 +686,7 @@
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Kapanış saatine göre 5 salon görevi oluşturur.</p>
-      <button class="primary" onclick="sendChecklistTemplate('salon_kapanis')">Salon Kapanış'ı Ekle</button>
+      <button class="primary" onclick="showPremiumPaymentScreen('Salon Kapanış Checklist', 'salon_kapanis')">Premium Aç</button>
     </div>
 
     <div class="template-card">
@@ -668,7 +698,7 @@
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Açılış saatine göre 4 bar görevi oluşturur.</p>
-      <button class="primary" onclick="sendChecklistTemplate('bar_acilis')">Bar Açılış'ı Ekle</button>
+      <button class="primary" onclick="showPremiumPaymentScreen('Bar Açılış Checklist', 'bar_acilis')">Premium Aç</button>
     </div>
 
     <div class="template-card">
@@ -680,7 +710,7 @@
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Açılıştan sonra depo için 4 kontrol görevi oluşturur.</p>
-      <button class="primary" onclick="sendChecklistTemplate('depo_kontrol')">Depo Checklist'i Ekle</button>
+      <button class="primary" onclick="showPremiumPaymentScreen('Depo Kontrol Checklist', 'depo_kontrol')">Premium Aç</button>
     </div>
 
     <div class="template-card">
@@ -692,7 +722,7 @@
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Aktif bölümlere göre 10 görev oluşturur.</p>
-      <button class="primary" onclick="sendChecklistTemplate('premium_full_service')">Full Servis Restoran'ı Ekle</button>
+      <button class="primary" onclick="showPremiumPaymentScreen('Full Servis Restoran', 'premium_full_service')">Premium Aç</button>
     </div>
   </div>
 
@@ -705,7 +735,7 @@
       <div class="template-top">
         <div>
           <h3 class="template-title">Trial Plan</h3>
-          <p class="template-desc">Demo Operasyon Checklist açık. Premium paketlerin tam içeriği kapalı.</p>
+          <p class="template-desc">Demo Operasyon Checklist ve Mutfak Açılış Checklist açık. Premium paketlerin tam içeriği kapalı.</p>
         </div>
         <span class="template-badge template-free">Trial</span>
       </div>
@@ -716,12 +746,42 @@
       <div class="template-top">
         <div>
           <h3 class="template-title">Paid / Premium</h3>
-          <p class="template-desc">Ödeme sonrası Full Servis Restoran premium checklist eklenebilir.</p>
+          <p class="template-desc">Ödeme sonrası tüm premium checklistler eklenebilir.</p>
         </div>
         <span class="template-badge template-premium">Premium</span>
       </div>
       <p class="small">Test ödeme için Telegram sohbetine şu komutu yazın: /set_paid</p>
       <button class="primary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
+    </div>
+  </div>
+
+  <div id="premiumScreen" class="card hidden">
+    <button class="light top-back" onclick="showChecklistScreen()">← Hazır Checklistlere Dön</button>
+    <h2>Premium Paket</h2>
+    <p class="small">Bu ekran ödeme entegrasyonu öncesi satış ve test ekranıdır.</p>
+
+    <div class="premium-offer">
+      <span class="template-badge template-premium">Premium</span>
+      <h3 class="template-title" style="margin-top:10px;">Seçilen paket</h3>
+      <div id="premiumSelectedPackage" class="premium-selected">Premium Hazır Checklistler</div>
+      <p class="template-desc">Bu paket Trial içinde kapalıdır. Premium aktif olunca eklenebilir.</p>
+      <div class="premium-price">400 TL / ay</div>
+      <p class="small">Test fiyatı. Gerçek ödeme altyapısı bağlanınca buradan ödeme alınacak.</p>
+    </div>
+
+    <div class="template-card">
+      <h3 class="template-title">Premium ile açılacaklar</h3>
+      <ul class="premium-list">
+        <li>Mutfak Kapanış Checklist</li>
+        <li>Salon Açılış / Kapanış Checklist</li>
+        <li>Bar Açılış Checklist</li>
+        <li>Depo Kontrol Checklist</li>
+        <li>Full Servis Restoran operasyon paketi</li>
+      </ul>
+      <button class="primary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Gönder</button>
+      <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
+      <button class="light" onclick="showChecklistScreen()">Geri Dön</button>
+      <p class="small">Test için Telegram sohbetinden /set_paid yazınca premium açılır.</p>
     </div>
   </div>
 
@@ -1092,6 +1152,7 @@
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       updateTaskStates();
       setTelegramBackButton(false);
@@ -1104,6 +1165,7 @@
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
       loadBusinessSettings();
@@ -1113,6 +1175,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.remove("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -1126,6 +1189,7 @@
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.remove("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -1136,6 +1200,7 @@
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.remove("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
@@ -1147,6 +1212,7 @@
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.remove("hidden");
       document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -1282,6 +1348,7 @@ function openTasksScreen(title, filterValue, button) {
   document.getElementById("businessScreen").classList.add("hidden");
   document.getElementById("employeeScreen").classList.add("hidden");
   document.getElementById("planScreen").classList.add("hidden");
+  document.getElementById("premiumScreen").classList.add("hidden");
   document.getElementById("tasksScreen").classList.remove("hidden");
   setTelegramBackButton(true);
   document.getElementById("taskScreenTitle").innerText = title;
@@ -1451,6 +1518,36 @@ function getCurrentMinutes() {
 
 
 
+
+    let selectedPremiumPackageName = "Premium Hazır Checklistler";
+    let selectedPremiumTemplateId = "premium";
+
+    function showPremiumPaymentScreen(packageName, templateId) {
+      selectedPremiumPackageName = packageName || "Premium Hazır Checklistler";
+      selectedPremiumTemplateId = templateId || "premium";
+
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.remove("hidden");
+      document.getElementById("premiumSelectedPackage").innerText = selectedPremiumPackageName;
+      setTelegramBackButton(true);
+    }
+
+    function sendPremiumPaymentRequest() {
+      const data = {
+        action: "request_premium_payment",
+        templateId: selectedPremiumTemplateId,
+        packageName: selectedPremiumPackageName
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
 
     function showPremiumLocked() {
       const message = "Bu checklist premium pakete dahildir. Tam içerik ödeme sonrası açılır.";
