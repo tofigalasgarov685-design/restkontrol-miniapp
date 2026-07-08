@@ -468,7 +468,7 @@
       <div class="zone-card zone-mutfak" onclick="showZoneTasks('Mutfak')"><strong>Mutfak</strong><span>2 görev</span></div>
       <div class="zone-card zone-salon" onclick="showZoneTasks('Salon')"><strong>Salon</strong><span>2 görev</span></div>
       <div class="zone-card zone-bar" onclick="showZoneTasks('Bar')"><strong>Bar</strong><span>2 görev</span></div>
-      <div class="zone-card zone-paket" onclick="showZoneTasks('Paket Servis')"><strong>Paket Servis</strong><span>2 görev</span></div>
+      <div class="zone-card zone-paket" onclick="showZoneTasks('Depo')"><strong>Depo</strong><span>2 görev</span></div>
     </div>
 
     <div class="menu-section">
@@ -529,7 +529,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.18 işletme ayarları. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.18.1 depo ayarları. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -559,7 +559,7 @@
       <label class="check-row"><input id="zoneMutfak" type="checkbox" checked /> Mutfak</label>
       <label class="check-row"><input id="zoneSalon" type="checkbox" checked /> Salon</label>
       <label class="check-row"><input id="zoneBar" type="checkbox" checked /> Bar</label>
-      <label class="check-row"><input id="zonePaket" type="checkbox" checked /> Paket Servis</label>
+      <label class="check-row"><input id="zoneDepo" type="checkbox" checked /> Depo</label>
     </div>
 
     <label>Mutfak minimum personel</label>
@@ -568,8 +568,8 @@
     <input id="hallMin" type="number" min="0" value="1" />
     <label>Bar minimum personel</label>
     <input id="barMin" type="number" min="0" value="1" />
-    <label>Paket servis minimum personel</label>
-    <input id="deliveryMin" type="number" min="0" value="1" />
+    <label>Depo minimum personel</label>
+    <input id="depotMin" type="number" min="0" value="1" />
 
     <label>Varsayılan sorumlu rol</label>
     <select id="defaultResponsibleRole">
@@ -634,8 +634,8 @@
     <div class="template-card locked">
       <div class="template-top">
         <div>
-          <h3 class="template-title">Paket Servis Operasyonu</h3>
-          <p class="template-desc">Paketleme alanı, kurye teslimi, geciken siparişler ve kalite kontrol süreçleri.</p>
+          <h3 class="template-title">Depo Kontrol Checklist</h3>
+          <p class="template-desc">Depo düzeni, stok yerleşimi, kritik ürünler ve kalite kontrol süreçleri.</p>
         </div>
         <span class="template-badge template-premium">Premium</span>
       </div>
@@ -693,7 +693,7 @@
       <option value="Mutfak">Mutfak</option>
       <option value="Salon">Salon</option>
       <option value="Bar">Bar</option>
-      <option value="Paket Servis">Paket Servis</option>
+      <option value="Depo">Depo</option>
       <option value="Tüm Bölümler">Tüm Bölümler</option>
     </select>
 
@@ -712,7 +712,7 @@
       <option value="Mutfak">Mutfak</option>
       <option value="Salon">Salon</option>
       <option value="Bar">Bar</option>
-      <option value="Paket Servis">Paket Servis</option>
+      <option value="Depo">Depo</option>
     </select>
 
     <label>Görev başlığı</label>
@@ -725,7 +725,7 @@
       <option value="Kapanış kontrolü">Kapanış kontrolü</option>
       <option value="Stok kontrolü">Stok kontrolü</option>
       <option value="Temizlik kontrolü">Temizlik kontrolü</option>
-      <option value="Paket servis kontrolü">Paket servis kontrolü</option>
+      <option value="Depo kontrolü">Depo kontrolü</option>
     </select>
 
     <label>Planlanan saat</label>
@@ -754,7 +754,7 @@
       <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
       <button onclick="filterTasks('Salon', this)">Salon</button>
       <button onclick="filterTasks('Bar', this)">Bar</button>
-      <button onclick="filterTasks('Paket Servis', this)">Paket Servis</button>
+      <button onclick="filterTasks('Depo', this)">Depo</button>
     </div>
 
     <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
@@ -948,21 +948,21 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Paket Servis" data-time="11:30" data-photo-required="1">
+    <div class="task" data-zone="Depo" data-time="11:30" data-photo-required="1">
       <div class="task-top">
         <div>
-          <div class="badge">Paket Servis · 11:30</div>
+          <div class="badge">Depo · 11:30</div>
           <div class="task-id">Görev #7</div>
         </div>
         <div id="state7" class="state">Kontrol</div>
       </div>
 
-      <h2 class="task-title">Paketleme alanı ve kurye teslim düzenini kontrol et</h2>
+      <h2 class="task-title">Depo düzeni ve stok yerleşimini kontrol et</h2>
 
       <div class="task-meta">
         <div class="task-meta-item">
           <span class="task-meta-label">Kontrol Tipi</span>
-          <span class="task-meta-value">Paket servis kontrolü</span>
+          <span class="task-meta-value">Depo kontrolü</span>
         </div>
         <div class="task-meta-item">
           <span class="task-meta-label">Fotoğraf</span>
@@ -979,16 +979,16 @@
       </div>
     </div>
 
-    <div class="task" data-zone="Paket Servis" data-time="18:00" data-photo-required="0">
+    <div class="task" data-zone="Depo" data-time="18:00" data-photo-required="0">
       <div class="task-top">
         <div>
-          <div class="badge">Paket Servis · 18:00</div>
+          <div class="badge">Depo · 18:00</div>
           <div class="task-id">Görev #8</div>
         </div>
         <div id="state8" class="state">Kontrol</div>
       </div>
 
-      <h2 class="task-title">Eksik veya geciken siparişleri kontrol et</h2>
+      <h2 class="task-title">Eksik stok ve kritik ürün seviyelerini kontrol et</h2>
 
       <div class="task-meta">
         <div class="task-meta-item">
@@ -1555,7 +1555,7 @@ function getCurrentMinutes() {
       if (document.getElementById("zoneMutfak").checked) zones.push("Mutfak");
       if (document.getElementById("zoneSalon").checked) zones.push("Salon");
       if (document.getElementById("zoneBar").checked) zones.push("Bar");
-      if (document.getElementById("zonePaket").checked) zones.push("Paket Servis");
+      if (document.getElementById("zoneDepo").checked) zones.push("Depo");
       return zones;
     }
 
@@ -1568,14 +1568,14 @@ function getCurrentMinutes() {
       document.getElementById("kitchenMin").value = business.kitchenMin ?? 1;
       document.getElementById("hallMin").value = business.hallMin ?? 1;
       document.getElementById("barMin").value = business.barMin ?? 1;
-      document.getElementById("deliveryMin").value = business.deliveryMin ?? 1;
+      document.getElementById("depotMin").value = business.depotMin ?? business.deliveryMin ?? 1;
       document.getElementById("defaultResponsibleRole").value = business.defaultResponsibleRole || "manager";
 
-      const activeZones = String(business.activeZones || "Mutfak,Salon,Bar,Paket Servis").split(",").map(function(x) { return x.trim(); });
+      const activeZones = String(business.activeZones || "Mutfak,Salon,Bar,Depo").split(",").map(function(x) { return x.trim(); });
       document.getElementById("zoneMutfak").checked = activeZones.includes("Mutfak");
       document.getElementById("zoneSalon").checked = activeZones.includes("Salon");
       document.getElementById("zoneBar").checked = activeZones.includes("Bar");
-      document.getElementById("zonePaket").checked = activeZones.includes("Paket Servis");
+      document.getElementById("zoneDepo").checked = activeZones.includes("Depo");
     }
 
     async function loadBusinessSettings() {
@@ -1633,7 +1633,7 @@ function getCurrentMinutes() {
         kitchenMin: document.getElementById("kitchenMin").value,
         hallMin: document.getElementById("hallMin").value,
         barMin: document.getElementById("barMin").value,
-        deliveryMin: document.getElementById("deliveryMin").value,
+        depotMin: document.getElementById("depotMin").value,
         activeZones: activeZones.join(","),
         defaultResponsibleRole: document.getElementById("defaultResponsibleRole").value
       };
