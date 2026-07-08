@@ -49,6 +49,37 @@
     .danger { background: #dc2626; color: #ffffff; }
     .secondary { background: #111827; color: #ffffff; }
     .light { background: #e5e7eb; color: #111827; }
+    .settings-note {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px;
+      background: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .check-row input {
+      width: auto;
+      padding: 0;
+      margin: 0;
+    }
 
     .menu-section {
       border: 1px solid #e5e7eb;
@@ -498,12 +529,16 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.17 reports menu. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.18 işletme ayarları. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
   <div id="businessScreen" class="card hidden">
-    <h2>İşletme Kurulumu</h2>
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>İşletme Ayarları</h2>
+    <p class="small">Bu ayarlar Hazır Checklistler için temel alınacak. Açılış, kapanış, aktif bölümler ve minimum personel burada yönetilir.</p>
+    <div id="businessSettingsStatus" class="settings-note">Mevcut ayarlar kontrol ediliyor...</div>
+
     <label>İşletme adı</label>
     <input id="businessName" placeholder="Örn: Matryoshka" />
     <label>İşletme türü</label>
@@ -518,15 +553,32 @@
     <input id="openTime" type="time" value="09:00" />
     <label>Kapanış saati</label>
     <input id="closeTime" type="time" value="21:00" />
+
+    <label>Aktif bölümler</label>
+    <div class="checkbox-grid">
+      <label class="check-row"><input id="zoneMutfak" type="checkbox" checked /> Mutfak</label>
+      <label class="check-row"><input id="zoneSalon" type="checkbox" checked /> Salon</label>
+      <label class="check-row"><input id="zoneBar" type="checkbox" checked /> Bar</label>
+      <label class="check-row"><input id="zonePaket" type="checkbox" checked /> Paket Servis</label>
+    </div>
+
     <label>Mutfak minimum personel</label>
-    <input id="kitchenMin" type="number" value="1" />
+    <input id="kitchenMin" type="number" min="0" value="1" />
     <label>Salon minimum personel</label>
-    <input id="hallMin" type="number" value="1" />
+    <input id="hallMin" type="number" min="0" value="1" />
     <label>Bar minimum personel</label>
-    <input id="barMin" type="number" value="1" />
+    <input id="barMin" type="number" min="0" value="1" />
     <label>Paket servis minimum personel</label>
-    <input id="deliveryMin" type="number" value="1" />
-    <button class="primary" onclick="sendBusiness()">Kurulumu Tamamla</button>
+    <input id="deliveryMin" type="number" min="0" value="1" />
+
+    <label>Varsayılan sorumlu rol</label>
+    <select id="defaultResponsibleRole">
+      <option value="manager">Müdür / Vardiya Şefi</option>
+      <option value="director">Genel Müdür</option>
+      <option value="owner">İşletme Sahibi</option>
+    </select>
+
+    <button class="primary" onclick="sendBusinessSettings()">Ayarları Kaydet</button>
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
 
@@ -1002,6 +1054,7 @@
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
+      loadBusinessSettings();
     }
 
     function showEmployeeScreen() {
@@ -1492,17 +1545,97 @@ function getCurrentMinutes() {
       tg.close();
     }
 
-    function sendBusiness() {
+    function setBusinessSettingsStatus(message) {
+      const el = document.getElementById("businessSettingsStatus");
+      if (el) el.innerText = message;
+    }
+
+    function getCheckedActiveZones() {
+      const zones = [];
+      if (document.getElementById("zoneMutfak").checked) zones.push("Mutfak");
+      if (document.getElementById("zoneSalon").checked) zones.push("Salon");
+      if (document.getElementById("zoneBar").checked) zones.push("Bar");
+      if (document.getElementById("zonePaket").checked) zones.push("Paket Servis");
+      return zones;
+    }
+
+    function applyBusinessSettings(business) {
+      if (!business) return;
+      document.getElementById("businessName").value = business.businessName || "";
+      document.getElementById("businessType").value = business.businessType || "Restoran";
+      document.getElementById("openTime").value = business.openTime || "09:00";
+      document.getElementById("closeTime").value = business.closeTime || "21:00";
+      document.getElementById("kitchenMin").value = business.kitchenMin ?? 1;
+      document.getElementById("hallMin").value = business.hallMin ?? 1;
+      document.getElementById("barMin").value = business.barMin ?? 1;
+      document.getElementById("deliveryMin").value = business.deliveryMin ?? 1;
+      document.getElementById("defaultResponsibleRole").value = business.defaultResponsibleRole || "manager";
+
+      const activeZones = String(business.activeZones || "Mutfak,Salon,Bar,Paket Servis").split(",").map(function(x) { return x.trim(); });
+      document.getElementById("zoneMutfak").checked = activeZones.includes("Mutfak");
+      document.getElementById("zoneSalon").checked = activeZones.includes("Salon");
+      document.getElementById("zoneBar").checked = activeZones.includes("Bar");
+      document.getElementById("zonePaket").checked = activeZones.includes("Paket Servis");
+    }
+
+    async function loadBusinessSettings() {
+      if (!API_BASE_URL) {
+        setBusinessSettingsStatus("Mevcut ayarlar yüklenemedi. Backend URL yok. Yeni ayar kaydedebilirsiniz.");
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        setBusinessSettingsStatus("Telegram kullanıcı bilgisi alınamadı. Yeni ayar kaydedebilirsiniz.");
+        return;
+      }
+
+      try {
+        setBusinessSettingsStatus("Mevcut ayarlar yükleniyor...");
+        const response = await fetch(API_BASE_URL + "/api/business_settings?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+
+        if (!result.ok) {
+          throw new Error(result.error || "Ayarlar alınamadı.");
+        }
+
+        if (result.has_business && result.business) {
+          applyBusinessSettings(result.business);
+          setBusinessSettingsStatus("Mevcut işletme ayarları yüklendi. Değiştirip kaydedebilirsiniz.");
+        } else {
+          setBusinessSettingsStatus("Henüz kayıtlı işletme yok. İlk kurulumu buradan yapın.");
+        }
+      } catch (error) {
+        console.log("Business settings load error", error);
+        setBusinessSettingsStatus("Ayarlar yüklenemedi. Formu doldurup kaydedebilirsiniz.");
+      }
+    }
+
+    function sendBusinessSettings() {
+      const activeZones = getCheckedActiveZones();
+      if (activeZones.length === 0) {
+        showMessage("En az bir aktif bölüm seçilmelidir.");
+        return;
+      }
+
+      const businessName = document.getElementById("businessName").value.trim();
+      if (!businessName) {
+        showMessage("İşletme adı boş olamaz.");
+        return;
+      }
+
       const data = {
-        action: "create_business",
-        businessName: document.getElementById("businessName").value,
+        action: "save_business_settings",
+        businessName: businessName,
         businessType: document.getElementById("businessType").value,
         openTime: document.getElementById("openTime").value,
         closeTime: document.getElementById("closeTime").value,
         kitchenMin: document.getElementById("kitchenMin").value,
         hallMin: document.getElementById("hallMin").value,
         barMin: document.getElementById("barMin").value,
-        deliveryMin: document.getElementById("deliveryMin").value
+        deliveryMin: document.getElementById("deliveryMin").value,
+        activeZones: activeZones.join(","),
+        defaultResponsibleRole: document.getElementById("defaultResponsibleRole").value
       };
       tg.sendData(JSON.stringify(data));
       tg.close();
