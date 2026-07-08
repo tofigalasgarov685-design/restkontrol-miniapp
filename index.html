@@ -559,7 +559,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.20 premium ödeme ekranı. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.20.1 premium aktif ekle fix. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -778,10 +778,11 @@
         <li>Depo Kontrol Checklist</li>
         <li>Full Servis Restoran operasyon paketi</li>
       </ul>
-      <button class="primary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Gönder</button>
+      <button class="primary" onclick="sendSelectedPremiumChecklist()">Premium Aktifse Paketi Ekle</button>
+      <button class="secondary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Gönder</button>
       <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
       <button class="light" onclick="showChecklistScreen()">Geri Dön</button>
-      <p class="small">Test için Telegram sohbetinden /set_paid yazınca premium açılır.</p>
+      <p class="small">Trial kullanıcı ödeme talebi gönderir. Premium aktif kullanıcı paketi direkt ekler.</p>
     </div>
   </div>
 
@@ -1536,6 +1537,10 @@ function getCurrentMinutes() {
       document.getElementById("premiumScreen").classList.remove("hidden");
       document.getElementById("premiumSelectedPackage").innerText = selectedPremiumPackageName;
       setTelegramBackButton(true);
+    }
+
+    function sendSelectedPremiumChecklist() {
+      sendChecklistTemplate(selectedPremiumTemplateId);
     }
 
     function sendPremiumPaymentRequest() {
