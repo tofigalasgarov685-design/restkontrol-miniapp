@@ -529,7 +529,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.19 hazır checklistler. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.19.1 reason fix. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -1397,7 +1397,7 @@ function getCurrentMinutes() {
           state.innerText = "Gecikti";
           state.classList.remove("state-ok");
           state.classList.add("state-late");
-          setActionState(doneButton, "Tamamlandı kapalı", true);
+          setActionState(doneButton, "Tamamlandı", false);
           setActionState(lateButton, "Geç Kaldı", false);
         } else {
           waitingCount += 1;
@@ -1775,18 +1775,45 @@ function startPhotoInputWatcher(input, taskId) {
 }
 
 
-function buildCompletionData(taskId, status) {
-  updateTaskStates();
+function getTaskComment(taskId, task) {
+  let comment = "";
 
-  const task = getTaskElement(taskId);
-  if (!task) {
+  const insideTask = task ? task.querySelector("textarea") : null;
+  if (insideTask && typeof insideTask.value !== "undefined") {
+    comment = insideTask.value;
+  }
+
+  if (!comment) {
+    const byId = document.getElementById("comment" + taskId);
+    if (byId && typeof byId.value !== "undefined") {
+      comment = byId.value;
+    }
+  }
+
+  if (!comment) {
+    const byDataId = document.querySelector('.task[data-task-id="' + taskId + '"] textarea');
+    if (byDataId && typeof byDataId.value !== "undefined") {
+      comment = byDataId.value;
+    }
+  }
+
+  return String(comment || "").trim();
+}
+
+function buildCompletionData(taskId, status) {
+  const taskBeforeUpdate = getTaskElement(taskId);
+  if (!taskBeforeUpdate) {
     return { ok: false, message: "Görev bulunamadı." };
   }
 
+  const commentBeforeUpdate = getTaskComment(taskId, taskBeforeUpdate);
+
+  updateTaskStates();
+
+  const task = getTaskElement(taskId) || taskBeforeUpdate;
   const early = isTaskEarly(taskId);
   const late = isTaskLate(taskId);
-  let commentEl = document.getElementById("comment" + taskId);
-  let comment = commentEl ? commentEl.value : "";
+  let comment = getTaskComment(taskId, task) || commentBeforeUpdate;
 
   if (early && status === "late") {
     return {
@@ -1802,19 +1829,11 @@ function buildCompletionData(taskId, status) {
     };
   }
 
-  if (late && status === "completed") {
-    return {
-      ok: false,
-      message: "Bu görev gecikti. Lütfen gecikme nedenini yazıp Geç Kaldı seçin."
-    };
-  }
-
   if (late) {
     status = "late";
-  }
-
-  if (status === "late" && comment.trim() === "") {
-    return { ok: false, message: "Geç kalma nedeni yazılmalıdır." };
+    if (comment.trim() === "") {
+      return { ok: false, message: "Geç kalma nedeni yazılmalıdır." };
+    }
   }
 
   return {
