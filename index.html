@@ -633,7 +633,7 @@
 
     <div class="menu-section">
       <h3>Plan ve Ödeme</h3>
-      <p>Plan durumunu, ödeme bilgisini ve Premium erişimi buradan kontrol et.</p>
+      <p>Plan durumunu, Premium erişimi ve ödeme talebini buradan kontrol et.</p>
       <div class="menu-actions single">
         <button class="light" onclick="showPlanScreen()">Plan ve Ödeme</button>
       </div>
@@ -668,7 +668,7 @@
       </div>
     </div>
 
-    <p class="small">dashboard v19.22 trial deneyimi temizliği. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">dashboard v19.23 premium ödeme metinleri.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -887,15 +887,15 @@
   <div id="premiumScreen" class="card hidden">
     <button class="light top-back" onclick="showChecklistScreen()">← Hazır Checklistlere Dön</button>
     <h2>Premium Paket</h2>
-    <p class="small">Bu ekran Premium paket bilgisini ve ödeme talebini gösterir.</p>
+    <p class="small">Premium paket ile tüm hazır checklistler ve operasyon paketleri açılır.</p>
 
     <div class="premium-offer">
       <span class="template-badge template-premium">Premium</span>
       <h3 class="template-title" style="margin-top:10px;">Seçilen paket</h3>
       <div id="premiumSelectedPackage" class="premium-selected">Premium Hazır Checklistler</div>
-      <p class="template-desc">Bu paket Trial içinde kapalıdır. Premium aktif olunca eklenebilir.</p>
+      <p class="template-desc">Seçilen paket Premium kapsamındadır. Premium aktif olunca işletmeye eklenebilir.</p>
       <div class="premium-price">400 TL / ay</div>
-      <p class="small">Tanıtım fiyatı. Ödeme talebi gönderildiğinde işletme bilgisi Telegram sohbetine iletilir.</p>
+      <p class="small">Tanıtım fiyatı. Ödeme talebi gönderildiğinde işletme bilgileri yöneticinize iletilir.</p>
     </div>
 
     <div class="template-card">
@@ -908,10 +908,10 @@
         <li>Full Servis Restoran operasyon paketi</li>
       </ul>
       <button class="primary" onclick="sendSelectedPremiumChecklist()">Premium Aktifse Paketi Ekle</button>
-      <button class="secondary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Gönder</button>
+      <button class="secondary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Oluştur</button>
       <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
       <button class="light" onclick="showChecklistScreen()">Geri Dön</button>
-      <p class="small">Trial kullanıcısı ödeme talebi gönderir. Premium aktifse paket direkt eklenir.</p>
+      <p class="small">Premium aktifse paketi direkt ekleyebilirsiniz. Aktif değilse ödeme talebi oluşturun.</p>
     </div>
   </div>
 
@@ -1557,8 +1557,8 @@ async function loadPlanStatus() {
   ], "Güncel plan özeti için Telegram butonunu kullanın.");
 
   renderPlanFeatureList("lockedFeaturesList", [
-    "Online ödeme altyapısı sonraki aşamada bağlanacak",
-    "Canlı plan kartları ödeme altyapısı sonrası geliştirilecek"
+    "Online ödeme bağlantısı hazırlanıyor",
+    "Ödeme talebi şu an Telegram üzerinden manuel takip edilir"
   ], "Kilitli özellik yok.");
 
   renderPlanChecklistList([
