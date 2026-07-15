@@ -668,7 +668,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.21 plan durumu ekranı. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.21.1 plan api fix. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -1466,6 +1466,81 @@ function renderPlanStatus(result) {
   }
 }
 
+async function fetchJsonSafe(url) {
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch (error) {
+    console.log("Plan fetch error", error);
+    return null;
+  }
+}
+
+function buildPlanFallbackFromBusinessSettings(result) {
+  if (!result || !result.ok) return null;
+
+  if (!result.has_business || !result.business) {
+    return {
+      ok: true,
+      has_business: false,
+      business_id: null,
+      business_name: "",
+      plan_type: "trial",
+      plan_label: "İşletme yok",
+      is_paid: false,
+      access_text: "Önce İşletme Ayarları kaydedilmelidir.",
+      open_features: [],
+      locked_features: [],
+      checklist_templates: []
+    };
+  }
+
+  const business = result.business;
+  const isPaid = !!business.isPaid || business.planType === "paid";
+
+  return {
+    ok: true,
+    has_business: true,
+    business_id: business.id,
+    business_name: business.businessName || "-",
+    plan_type: isPaid ? "paid" : "trial",
+    plan_label: isPaid ? "Paid / Premium aktif" : "Trial",
+    is_paid: isPaid,
+    access_text: isPaid ? "Demo, Temel ve Premium checklistler açık." : "Trial sürecinde Demo Operasyon Checklist ve Mutfak Açılış Checklist açık. Premium içerik kapalı.",
+    open_features: isPaid ? [
+      "Demo Operasyon Checklist",
+      "Mutfak Açılış Checklist",
+      "Tüm Premium checklist paketleri",
+      "Premium paketleri işletmeye ekleme",
+      "Fotoğraflı raporlar ve gecikme yorumları"
+    ] : [
+      "Demo Operasyon Checklist",
+      "Mutfak Açılış Checklist",
+      "Görev tamamlama ve fotoğraflı kontrol",
+      "Temel raporlar"
+    ],
+    locked_features: isPaid ? [] : [
+      "Mutfak Kapanış Checklist",
+      "Salon Açılış / Kapanış Checklist",
+      "Bar Açılış Checklist",
+      "Depo Kontrol Checklist",
+      "Full Servis Restoran operasyon paketi"
+    ],
+    checklist_templates: [
+      { name: "Demo Operasyon Checklist", access: "free", opened: true, installed: false },
+      { name: "Mutfak Açılış Checklist", access: "free", opened: true, installed: false },
+      { name: "Mutfak Kapanış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Salon Açılış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Salon Kapanış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Bar Açılış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Depo Kontrol Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Full Servis Restoran", access: "premium", opened: isPaid, installed: false }
+    ]
+  };
+}
+
 async function loadPlanStatus() {
   setPlanStatusMessage("Plan bilgisi yükleniyor...", "");
 
@@ -1480,14 +1555,33 @@ async function loadPlanStatus() {
     return;
   }
 
-  try {
-    const response = await fetch(API_BASE_URL + "/api/plan_status?telegram_user_id=" + encodeURIComponent(userId));
-    const result = await response.json();
-    renderPlanStatus(result);
-  } catch (error) {
-    console.log("Plan status load error", error);
-    setPlanStatusMessage("Plan bilgisi alınamadı. Telegram'a Plan Özeti Gönder butonunu kullanın.", "warning");
+  const encodedUserId = encodeURIComponent(userId);
+
+  const primary = await fetchJsonSafe(API_BASE_URL + "/api/plan-status?telegram_user_id=" + encodedUserId);
+  if (primary && primary.ok) {
+    renderPlanStatus(primary);
+    return;
   }
+
+  const legacy = await fetchJsonSafe(API_BASE_URL + "/api/plan_status?telegram_user_id=" + encodedUserId);
+  if (legacy && legacy.ok) {
+    renderPlanStatus(legacy);
+    return;
+  }
+
+  const settings = await fetchJsonSafe(API_BASE_URL + "/api/business_settings?telegram_user_id=" + encodedUserId);
+  const fallback = buildPlanFallbackFromBusinessSettings(settings);
+  if (fallback) {
+    renderPlanStatus(fallback);
+    return;
+  }
+
+  if (primary) {
+    renderPlanStatus(primary);
+    return;
+  }
+
+  setPlanStatusMessage("Plan bilgisi alınamadı. Telegram'a Plan Özeti Gönder butonunu kullanın.", "warning");
 }
 
 function renderDynamicTasks(tasks) {
