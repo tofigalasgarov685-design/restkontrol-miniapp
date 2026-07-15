@@ -668,7 +668,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.21.1 plan api fix. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">Test sürümü: dashboard v19.21.2 plan temiz fallback. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -1542,46 +1542,33 @@ function buildPlanFallbackFromBusinessSettings(result) {
 }
 
 async function loadPlanStatus() {
-  setPlanStatusMessage("Plan bilgisi yükleniyor...", "");
+  // v19.21.2: Mini App içi API yükleme bazı cihazlarda stabil çalışmadığı için
+  // Plan ekranı temiz fallback olarak Telegram plan özetine yönlendirir.
+  // Bot tarafındaki Plan Özeti çalışıyor ve doğru plan bilgisini gönderiyor.
+  document.getElementById("planLabel").innerText = "Telegram özeti";
+  document.getElementById("planBusiness").innerText = "Plan bilgisini Telegram sohbetinde görüntüleyin.";
+  document.getElementById("planAccessLabel").innerText = "Kontrol hazır";
+  document.getElementById("planAccessText").innerText = "Aşağıdaki butona basınca bot güncel plan özetini gönderir.";
 
-  if (!API_BASE_URL) {
-    setPlanStatusMessage("API bağlantısı yok. Plan özetini Telegram'a göndermek için aşağıdaki butonu kullanın.", "warning");
-    return;
-  }
+  renderPlanFeatureList("openFeaturesList", [
+    "Plan özeti Telegram sohbetine gönderilir",
+    "Premium paket ekranı çalışır",
+    "Premium aktifse checklist ekleme çalışır",
+    "Hazır Checklistler ekranından paket ekleme devam eder"
+  ], "Plan özeti için Telegram butonunu kullanın.");
 
-  const userId = getTelegramUserId();
-  if (!userId) {
-    setPlanStatusMessage("Telegram kullanıcı bilgisi alınamadı. Mini App'i Telegram içinden tekrar açın.", "warning");
-    return;
-  }
+  renderPlanFeatureList("lockedFeaturesList", [
+    "Gerçek ödeme altyapısı bağlanınca bu ekrana bağlanacak",
+    "Mini App içinde canlı plan kartları sonraki sürümde geliştirilecek"
+  ], "Kilitli özellik yok.");
 
-  const encodedUserId = encodeURIComponent(userId);
+  renderPlanChecklistList([
+    { name: "Demo Operasyon Checklist", access: "free", opened: true, installed: false },
+    { name: "Mutfak Açılış Checklist", access: "free", opened: true, installed: false },
+    { name: "Premium Checklistler", access: "premium", opened: true, installed: false }
+  ]);
 
-  const primary = await fetchJsonSafe(API_BASE_URL + "/api/plan-status?telegram_user_id=" + encodedUserId);
-  if (primary && primary.ok) {
-    renderPlanStatus(primary);
-    return;
-  }
-
-  const legacy = await fetchJsonSafe(API_BASE_URL + "/api/plan_status?telegram_user_id=" + encodedUserId);
-  if (legacy && legacy.ok) {
-    renderPlanStatus(legacy);
-    return;
-  }
-
-  const settings = await fetchJsonSafe(API_BASE_URL + "/api/business_settings?telegram_user_id=" + encodedUserId);
-  const fallback = buildPlanFallbackFromBusinessSettings(settings);
-  if (fallback) {
-    renderPlanStatus(fallback);
-    return;
-  }
-
-  if (primary) {
-    renderPlanStatus(primary);
-    return;
-  }
-
-  setPlanStatusMessage("Plan bilgisi alınamadı. Telegram'a Plan Özeti Gönder butonunu kullanın.", "warning");
+  setPlanStatusMessage("Plan özeti için 'Telegram'a Plan Özeti Gönder' butonunu kullanın.", "success");
 }
 
 function renderDynamicTasks(tasks) {
