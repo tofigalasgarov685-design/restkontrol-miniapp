@@ -625,7 +625,7 @@
 
     <div class="menu-section">
       <h3>Hazır Checklistler</h3>
-      <p>Hazır operasyon şablonlarını incele. Trial sürecinde sadece demo paket eklenebilir.</p>
+      <p>Trial paketlerini ve Premium operasyon şablonlarını buradan yönetin.</p>
       <div class="menu-actions single">
         <button class="light" onclick="showChecklistScreen()">Hazır Checklistleri Aç</button>
       </div>
@@ -633,7 +633,7 @@
 
     <div class="menu-section">
       <h3>Plan ve Ödeme</h3>
-      <p>Trial / Paid durumunu gör. Test ödemesi sonrası premium checklist açılır.</p>
+      <p>Plan durumunu, ödeme bilgisini ve Premium erişimi buradan kontrol et.</p>
       <div class="menu-actions single">
         <button class="light" onclick="showPlanScreen()">Plan ve Ödeme</button>
       </div>
@@ -668,7 +668,7 @@
       </div>
     </div>
 
-    <p class="small">Test sürümü: dashboard v19.21.2 plan temiz fallback. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
+    <p class="small">dashboard v19.22 trial deneyimi temizliği. Fotoğraf akışı v19.10 ile aynı bırakıldı.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -732,9 +732,9 @@
       <div class="template-top">
         <div>
           <h3 class="template-title">Demo Operasyon Checklist</h3>
-          <p class="template-desc">Sistemin nasıl çalıştığını göstermek için 5 örnek görev.</p>
+          <p class="template-desc">Trial içinde açık 5 örnek operasyon görevi.</p>
         </div>
-        <span class="template-badge template-free">Ücretsiz</span>
+        <span class="template-badge template-free">Temel</span>
       </div>
       <ul class="template-items">
         <li>Açılış öncesi genel temizlik kontrolü</li>
@@ -838,7 +838,7 @@
   <div id="planScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Plan Durumu</h2>
-    <p class="small">İşletmenin Trial / Premium durumunu, açık ve kilitli checklistleri buradan kontrol edin.</p>
+    <p class="small">Plan durumunu, açık paketleri ve ödeme sürecini buradan kontrol edin.</p>
 
     <div id="planStatusBox" class="plan-status-box">Plan bilgisi yükleniyor...</div>
 
@@ -878,7 +878,7 @@
       <span class="template-badge template-premium">Premium</span>
       <h3 class="template-title" style="margin-top:10px;">Premium Paket</h3>
       <div class="premium-price">400 TL / ay</div>
-      <p class="small">Test fiyatı. Gerçek ödeme altyapısı bağlanınca bu ekran satış ve ödeme ekranı olarak kullanılacak.</p>
+      <p class="small">Tanıtım fiyatı. Ödeme talebi Telegram sohbetine gönderilir.</p>
       <button class="primary" onclick="showPremiumPaymentScreen('Premium Hazır Checklistler', 'premium_full_service')">Premium Paketleri Aç</button>
       <button class="secondary" onclick="sendPlanStatusRequest()">Telegram'a Plan Özeti Gönder</button>
     </div>
@@ -887,7 +887,7 @@
   <div id="premiumScreen" class="card hidden">
     <button class="light top-back" onclick="showChecklistScreen()">← Hazır Checklistlere Dön</button>
     <h2>Premium Paket</h2>
-    <p class="small">Bu ekran ödeme entegrasyonu öncesi satış ve test ekranıdır.</p>
+    <p class="small">Bu ekran Premium paket bilgisini ve ödeme talebini gösterir.</p>
 
     <div class="premium-offer">
       <span class="template-badge template-premium">Premium</span>
@@ -895,7 +895,7 @@
       <div id="premiumSelectedPackage" class="premium-selected">Premium Hazır Checklistler</div>
       <p class="template-desc">Bu paket Trial içinde kapalıdır. Premium aktif olunca eklenebilir.</p>
       <div class="premium-price">400 TL / ay</div>
-      <p class="small">Test fiyatı. Gerçek ödeme altyapısı bağlanınca buradan ödeme alınacak.</p>
+      <p class="small">Tanıtım fiyatı. Ödeme talebi gönderildiğinde işletme bilgisi Telegram sohbetine iletilir.</p>
     </div>
 
     <div class="template-card">
@@ -911,7 +911,7 @@
       <button class="secondary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Gönder</button>
       <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
       <button class="light" onclick="showChecklistScreen()">Geri Dön</button>
-      <p class="small">Trial kullanıcı ödeme talebi gönderir. Premium aktif kullanıcı paketi direkt ekler.</p>
+      <p class="small">Trial kullanıcısı ödeme talebi gönderir. Premium aktifse paket direkt eklenir.</p>
     </div>
   </div>
 
@@ -1542,24 +1542,23 @@ function buildPlanFallbackFromBusinessSettings(result) {
 }
 
 async function loadPlanStatus() {
-  // v19.21.2: Mini App içi API yükleme bazı cihazlarda stabil çalışmadığı için
-  // Plan ekranı temiz fallback olarak Telegram plan özetine yönlendirir.
-  // Bot tarafındaki Plan Özeti çalışıyor ve doğru plan bilgisini gönderiyor.
+  // v19.22: Plan ekranı v1.0 için temiz Telegram özeti akışıyla gösterilir.
+  // Bot tarafındaki Plan Özeti güncel plan bilgisini gönderir.
   document.getElementById("planLabel").innerText = "Telegram özeti";
   document.getElementById("planBusiness").innerText = "Plan bilgisini Telegram sohbetinde görüntüleyin.";
   document.getElementById("planAccessLabel").innerText = "Kontrol hazır";
   document.getElementById("planAccessText").innerText = "Aşağıdaki butona basınca bot güncel plan özetini gönderir.";
 
   renderPlanFeatureList("openFeaturesList", [
-    "Plan özeti Telegram sohbetine gönderilir",
-    "Premium paket ekranı çalışır",
-    "Premium aktifse checklist ekleme çalışır",
-    "Hazır Checklistler ekranından paket ekleme devam eder"
-  ], "Plan özeti için Telegram butonunu kullanın.");
+    "Güncel plan özeti Telegram sohbetine gönderilir",
+    "Premium paket ekranı açık",
+    "Premium aktifse checklist ekleme açık",
+    "Hazır Checklistler ekranından paket ekleme açık"
+  ], "Güncel plan özeti için Telegram butonunu kullanın.");
 
   renderPlanFeatureList("lockedFeaturesList", [
-    "Gerçek ödeme altyapısı bağlanınca bu ekrana bağlanacak",
-    "Mini App içinde canlı plan kartları sonraki sürümde geliştirilecek"
+    "Online ödeme altyapısı sonraki aşamada bağlanacak",
+    "Canlı plan kartları ödeme altyapısı sonrası geliştirilecek"
   ], "Kilitli özellik yok.");
 
   renderPlanChecklistList([
@@ -1568,7 +1567,7 @@ async function loadPlanStatus() {
     { name: "Premium Checklistler", access: "premium", opened: true, installed: false }
   ]);
 
-  setPlanStatusMessage("Plan özeti için 'Telegram'a Plan Özeti Gönder' butonunu kullanın.", "success");
+  setPlanStatusMessage("Güncel plan özeti için 'Telegram'a Plan Özeti Gönder' butonunu kullanın.", "success");
 }
 
 function renderDynamicTasks(tasks) {
