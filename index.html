@@ -663,12 +663,13 @@
     <div class="menu-section">
       <h3>Ayarlar</h3>
       <p>İşletme bilgileri ve minimum personel ayarlarını düzenle.</p>
-      <div class="menu-actions single">
+      <div class="menu-actions">
         <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
+        <button class="light" onclick="showCleanupScreen()">Başlangıç Temizliği</button>
       </div>
     </div>
 
-    <p class="small">dashboard v19.23.1 ödeme talebi buton fix.</p>
+    <p class="small">dashboard v19.24 başlangıç temizliği.</p>
     <p class="small">Mini App fotoğraf akışı sadeleştirildi. Seçimden sonra tekrar görev kontrolü yapılmaz, direkt upload başlar.</p>
   </div>
 
@@ -722,6 +723,30 @@
   </div>
 
 
+
+
+
+  <div id="cleanupScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Başlangıç Temizliği</h2>
+    <p class="small">Gerçek kullanıma geçmeden önce deneme görevlerini ve eski tamamlanma kayıtlarını sıfırlamak için kullanılır.</p>
+
+    <div class="settings-note">
+      Bu işlem görevleri, fotoğraflı tamamlanma kayıtlarını ve hazır checklist ekleme kayıtlarını temizler.
+      İşletme ayarları, çalışanlar, roller ve plan durumu korunur.
+    </div>
+
+    <div class="menu-actions single" style="margin-top:14px;">
+      <button class="secondary" onclick="sendCleanupSummaryRequest()">Temizlik Özeti Gönder</button>
+    </div>
+
+    <div class="menu-actions single" style="margin-top:10px;">
+      <button class="danger" onclick="sendCleanupBusinessData()">Görev ve Rapor Kayıtlarını Temizle</button>
+    </div>
+
+    <p class="small">Temizlikten sonra Hazır Checklistler paketleri tekrar eklenebilir.</p>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
 
   <div id="checklistScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
@@ -1283,7 +1308,9 @@
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
       updateTaskStates();
       setTelegramBackButton(false);
     }
@@ -1296,6 +1323,7 @@
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
       loadBusinessSettings();
@@ -1306,6 +1334,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.remove("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -1320,6 +1349,7 @@
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.remove("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
       loadPlanStatus();
@@ -1337,6 +1367,19 @@
       setTelegramBackButton(true);
     }
 
+    function showCleanupScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+    }
+
     function showAddTaskScreen() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
@@ -1344,6 +1387,7 @@
       document.getElementById("addTaskScreen").classList.remove("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
@@ -1869,6 +1913,32 @@ function getCurrentMinutes() {
         action: "request_premium_payment",
         templateId: selectedPremiumTemplateId,
         packageName: selectedPremiumPackageName
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+
+    function sendCleanupSummaryRequest() {
+      const data = {
+        action: "cleanup_summary"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendCleanupBusinessData() {
+      const message = "Görevler, tamamlanma kayıtları ve eklenmiş checklist kayıtları temizlenecek. İşletme ayarları, çalışanlar ve plan korunacak. Devam edilsin mi?";
+      const approved = confirm(message);
+
+      if (!approved) {
+        return;
+      }
+
+      const data = {
+        action: "cleanup_business_data"
       };
 
       tg.sendData(JSON.stringify(data));
