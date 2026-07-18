@@ -317,6 +317,49 @@
 
     .single-action { grid-column: 1 / -1; }
     .hidden-action { display: none !important; }
+
+    .control-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
+    .control-summary-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .control-summary-card strong {
+      display: block;
+      font-size: 22px;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .control-summary-card span {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 800;
+    }
+    .task-completed-box {
+      border: 1px solid #bbf7d0;
+      background: #f0fdf4;
+      color: #166534;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+    .task-completed-box.late-completed {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: #9a3412;
+    }
+    .task.is-completed {
+      opacity: 0.92;
+    }
+
     .hidden { display: none; }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
     .dashboard-grid {
@@ -584,7 +627,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.0.3 yeni ana yapı: kontrol, checklist, çalışan, rapor ve ödeme ekranları tek menüde toplandı.</p>
+    <p>v20.1 Bugünkü Kontroller ekranı güçlendirildi: açık, geciken, fotoğraf bekleyen ve tamamlanan kontroller ayrıldı.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -597,11 +640,11 @@
       </div>
       <div class="metric">
         <div id="metricWaiting" class="number">0</div>
-        <div class="label">Bekleyen</div>
+        <div class="label">Fotoğraf Bekleyen</div>
       </div>
       <div class="metric">
         <div id="metricRate" class="number">%0</div>
-        <div class="label">Geç oranı</div>
+        <div class="label">Tamamlanan</div>
       </div>
     </div>
 
@@ -621,7 +664,7 @@
       <p>Hazır paketler, şablon mantığı ve ileride kontrol atama akışı burada birleşecek.</p>
       <div class="menu-actions">
         <button class="light" onclick="showChecklistScreen()">Hazır Checklistler</button>
-        <button class="light" onclick="showV20InfoScreen('Checklist Şablonları', 'Bu ekran v20.1/v20.2 içinde gelecek. Amaç: mutfak, salon, bar ve depo için düzenlenebilir kontrol noktaları oluşturmak.')">Checklist Şablonları</button>
+        <button class="light" onclick="showV20InfoScreen('Checklist Şablonları', 'Bu ekran v20.2 içinde gelecek. Amaç: mutfak, salon, bar ve depo için düzenlenebilir kontrol noktaları oluşturmak.')">Checklist Şablonları</button>
         <button class="light" onclick="showV20InfoScreen('Kontrol Atama', 'Bu ekran v20.3 içinde gelecek. Amaç: bir checklisti tarih, bölüm, sorumlu müdür ve personele atamak.')">Kontrol Atama</button>
         <button class="light" onclick="showV20InfoScreen('Müdür Onayı', 'Bu ekran v20.4 içinde gelecek. Amaç: fotoğraf gönderilen kontrolleri kabul etmek veya iade etmek.')">Müdür Onayı</button>
       </div>
@@ -665,14 +708,14 @@
       <p>Önce menü ve akış netleşiyor. Sonra sırasıyla şablon, atama ve müdür onayı eklenecek.</p>
       <ul class="template-items">
         <li>v20.0.3: Yeni Ana Menü</li>
-        <li>v20.1: Bugünkü Kontroller ekranını güçlendirme</li>
+        <li>v20.1: Bugünkü Kontroller ekranını güçlendirme ✅</li>
         <li>v20.2: Checklist Şablonları</li>
         <li>v20.3: Checklist Atama</li>
         <li>v20.4: Kontrolde / Kabul / İade akışı</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.0.3 yeni ana menü. Fotoğraf akışı v19.24.1 ile aynı bırakıldı; tek buton: sistem geciken görevi otomatik geç durumuna alır.</p>
+    <p class="small">dashboard v20.1 bugünkü kontroller ekranı. Fotoğraf akışı korunur; durum, filtre ve sayaçlar güçlendirildi.</p>
   </div>
 
   <div id="v20InfoScreen" class="card hidden">
@@ -1027,15 +1070,25 @@
 
   <div id="tasksScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
-    <h2 id="taskScreenTitle">Görevler</h2>
-    <p>Sistem, görevin saatine göre durumu otomatik belirler.</p>
+    <h2 id="taskScreenTitle">Bugünkü Kontroller</h2>
+    <p>Bugünkü kontrol noktaları durumlarına göre ayrılır. Saat geçtiyse sistem otomatik olarak gecikme durumuna alır.</p>
+
+    <div class="control-summary-grid">
+      <div class="control-summary-card"><strong id="taskSummaryTotal">0</strong><span>Toplam</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryOpen">0</strong><span>Açık</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryLate">0</strong><span>Geciken</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryPhoto">0</strong><span>Fotoğraf Bekleyen</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryDone">0</strong><span>Tamamlanan</span></div>
+    </div>
 
     <p class="small">Sorumlu kişi Telegram hesabına ve yetki rolüne göre otomatik kaydedilir.</p>
 
     <div class="filter-grid">
       <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
+      <button id="filterOpen" onclick="filterTasks('Açık', this)">Açık</button>
       <button id="filterLate" onclick="filterTasks('Geciken', this)">Geciken</button>
-      <button id="filterWaiting" onclick="filterTasks('Bekleyen', this)">Bekleyen</button>
+      <button id="filterPhoto" onclick="filterTasks('Fotoğraflı', this)">Fotoğraflı</button>
+      <button id="filterDone" onclick="filterTasks('Tamamlanan', this)">Tamamlanan</button>
       <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
       <button onclick="filterTasks('Salon', this)">Salon</button>
       <button onclick="filterTasks('Bar', this)">Bar</button>
@@ -1416,6 +1469,7 @@ function renderDynamicTasks(tasks) {
 
   if (!tasks || tasks.length === 0) {
     container.innerHTML = "";
+    updateDashboard({ total: 0, open: 0, late: 0, photo: 0, done: 0 });
     return;
   }
 
@@ -1428,9 +1482,42 @@ function renderDynamicTasks(tasks) {
     const safeType = escapeHtml(task.task_type);
     const safeTime = escapeHtml(task.scheduled_time);
     const id = parseInt(task.id, 10);
+    const completionStatus = escapeHtml(task.completion_status || "");
+    const completedAt = escapeHtml(task.completed_at || "");
+    const completionComment = escapeHtml(task.completion_comment || "");
+    const completionStaffName = escapeHtml(task.completion_staff_name || "");
+    const hasCompletion = completionStatus !== "";
+    const completedBoxClass = completionStatus === "late" ? "task-completed-box late-completed" : "task-completed-box";
+    const completedText = completionStatus === "late" ? "Geç tamamlandı" : "Tamamlandı";
+
+    const actionHtml = hasCompletion ? `
+        <div class="${completedBoxClass}">
+          <strong>${completedText}</strong><br>
+          ${completedAt ? `Zaman: ${completedAt}<br>` : ``}
+          ${completionStaffName ? `Sorumlu: ${completionStaffName}<br>` : ``}
+          ${completionComment ? `Yorum: ${completionComment}` : `Bu kontrol bugün kaydedildi.`}
+        </div>
+      ` : `
+        <label class="comment-label">Yorum / Gecikme nedeni</label>
+        <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Saat geçtiyse sistem otomatik olarak geç kaydeder.</p>` : ``}
+
+        <div class="task-actions">
+          ${photoRequired ? `
+            <div id="done${id}" class="camera-action primary" style="grid-column:1 / -1;">
+              <span>Fotoğraf Çek ve Tamamla</span>
+              <input id="photoInput${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+            </div>
+            <div id="photoDebug${id}" class="photo-debug"></div>
+          ` : `
+            <button id="done${id}" class="primary" style="grid-column:1 / -1;" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
+          `}
+        </div>
+      `;
 
     return `
-      <div class="task" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}">
+      <div class="task${hasCompletion ? ' is-completed' : ''}" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}" data-completed="${hasCompletion ? 1 : 0}" data-completion-status="${completionStatus}">
         <div class="task-top">
           <div>
             <div class="badge">${safeZone} · ${safeTime}</div>
@@ -1452,29 +1539,14 @@ function renderDynamicTasks(tasks) {
           </div>
         </div>
 
-        <label class="comment-label">Yorum / Gecikme nedeni</label>
-        <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
-
-        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Saat geçtiyse sistem otomatik olarak geç kaydeder.</p>` : ``}
-
-        <div class="task-actions">
-          ${photoRequired ? `
-            <div id="done${id}" class="camera-action primary" style="grid-column:1 / -1;">
-              <span>Fotoğraf Çek ve Tamamla</span>
-              <input id="photoInput${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
-            </div>
-            <div id="photoDebug${id}" class="photo-debug"></div>
-          ` : `
-            <button id="done${id}" class="primary" style="grid-column:1 / -1;" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
-          `}
-        </div>
+        ${actionHtml}
       </div>
     `;
   }).join("");
 }
 
 async function loadDynamicTasks() {
-  // v20.0.3: görev ekranında eski demo/static görev gösterme; tamamlamada tek ana buton.
+  // v20.1: Bugünkü Kontroller için görevler API üzerinden alınır; tamamlananlar bugünkü kayıt durumuyla gelir.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -1522,7 +1594,7 @@ function openTasksScreen(title, filterValue, button) {
 }
 
 function showTasks() {
-  openTasksScreen("Görevler", "Tümü", document.getElementById("filterAll"));
+  openTasksScreen("Bugünkü Kontroller", "Tümü", document.getElementById("filterAll"));
 }
 
 function showLateTasks() {
@@ -1543,7 +1615,7 @@ function showZoneTasks(zone) {
 }
 
 function showWaitingTasks() {
-  openTasksScreen("Bekleyen Görevler", "Bekleyen", document.getElementById("filterWaiting"));
+  openTasksScreen("Açık Kontroller", "Açık", document.getElementById("filterOpen"));
 }
 
 function getCurrentMinutes() {
@@ -1573,13 +1645,22 @@ function getCurrentMinutes() {
       return getCurrentMinutes() < getTaskMinutes(task.dataset.time);
     }
 
-    function updateDashboard(lateCount, waitingCount) {
-      const total = document.querySelectorAll(".task").length || 0;
-      const rate = total > 0 ? Math.round((lateCount / total) * 100) : 0;
-      document.getElementById("metricTotal").innerText = total;
-      document.getElementById("metricLate").innerText = lateCount;
-      document.getElementById("metricWaiting").innerText = waitingCount;
-      document.getElementById("metricRate").innerText = "%" + rate;
+    function setSummaryValue(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.innerText = value;
+    }
+
+    function updateDashboard(summary) {
+      summary = summary || { total: 0, open: 0, late: 0, photo: 0, done: 0 };
+      setSummaryValue("metricTotal", summary.total || 0);
+      setSummaryValue("metricLate", summary.late || 0);
+      setSummaryValue("metricWaiting", summary.photo || 0);
+      setSummaryValue("metricRate", summary.done || 0);
+      setSummaryValue("taskSummaryTotal", summary.total || 0);
+      setSummaryValue("taskSummaryOpen", summary.open || 0);
+      setSummaryValue("taskSummaryLate", summary.late || 0);
+      setSummaryValue("taskSummaryPhoto", summary.photo || 0);
+      setSummaryValue("taskSummaryDone", summary.done || 0);
     }
 
     function setActionState(actionEl, text, disabled) {
@@ -1630,12 +1711,13 @@ function getCurrentMinutes() {
 
     function updateTaskStates() {
       const tasks = document.querySelectorAll(".task");
-      let lateCount = 0;
-      let waitingCount = 0;
+      const summary = { total: tasks.length, open: 0, late: 0, photo: 0, done: 0 };
 
       tasks.forEach(function(task) {
         const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
         const taskId = parseInt(taskIdText, 10);
+        const isCompleted = task.dataset.completed === "1";
+        const completionStatus = task.dataset.completionStatus || "";
         const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
         const photoRequired = task.dataset.photoRequired === "1";
 
@@ -1645,29 +1727,46 @@ function getCurrentMinutes() {
 
         hideManualLateButton(lateButton);
 
+        if (isCompleted) {
+          summary.done += 1;
+          task.dataset.status = "completed";
+          if (state) {
+            state.innerText = completionStatus === "late" ? "Geç Tamamlandı" : "Tamamlandı";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
+          return;
+        }
+
+        summary.open += 1;
+        if (photoRequired) summary.photo += 1;
+
         if (late) {
-          lateCount += 1;
+          summary.late += 1;
           task.dataset.status = "late";
-          state.innerText = "Gecikti";
-          state.classList.remove("state-ok");
-          state.classList.add("state-late");
+          if (state) {
+            state.innerText = "Gecikti";
+            state.classList.remove("state-ok");
+            state.classList.add("state-late");
+          }
           setMainActionVisual(doneButton, "late");
           setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Geç Bildir" : "Geç Bildir", false);
         } else {
-          waitingCount += 1;
           task.dataset.status = "waiting";
-          state.innerText = "Bekliyor";
-          state.classList.remove("state-late");
-          state.classList.add("state-ok");
+          if (state) {
+            state.innerText = "Açık";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
           setMainActionVisual(doneButton, "completed");
           setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Tamamla" : "Tamamlandı", false);
         }
       });
 
-      updateDashboard(lateCount, waitingCount);
+      updateDashboard(summary);
     }
 
-    function filterTasks(zone, button) {
+    function filterTasks(filterValue, button) {
       updateTaskStates();
 
       let visibleCount = 0;
@@ -1675,15 +1774,23 @@ function getCurrentMinutes() {
 
       tasks.forEach(function(task) {
         let shouldShow = false;
+        const isCompleted = task.dataset.completed === "1";
+        const photoRequired = task.dataset.photoRequired === "1";
 
-        if (zone === "Tümü") {
+        if (filterValue === "Tümü") {
           shouldShow = true;
-        } else if (zone === "Geciken") {
-          shouldShow = task.dataset.status === "late";
-        } else if (zone === "Bekleyen") {
-          shouldShow = task.dataset.status === "waiting";
+        } else if (filterValue === "Açık") {
+          shouldShow = !isCompleted;
+        } else if (filterValue === "Geciken") {
+          shouldShow = !isCompleted && task.dataset.status === "late";
+        } else if (filterValue === "Bekleyen") {
+          shouldShow = !isCompleted && task.dataset.status === "waiting";
+        } else if (filterValue === "Fotoğraflı") {
+          shouldShow = !isCompleted && photoRequired;
+        } else if (filterValue === "Tamamlanan") {
+          shouldShow = isCompleted;
         } else {
-          shouldShow = task.dataset.zone === zone;
+          shouldShow = task.dataset.zone === filterValue;
         }
 
         if (shouldShow) {
@@ -1696,10 +1803,11 @@ function getCurrentMinutes() {
 
       const buttons = document.querySelectorAll(".filter-grid button");
       buttons.forEach(function(btn) { btn.classList.remove("active"); });
-      button.classList.add("active");
+      if (button) button.classList.add("active");
 
       document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
     }
+
 
 
 
