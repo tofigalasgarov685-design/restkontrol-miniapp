@@ -315,6 +315,8 @@
       .plan-checklist-row { align-items: flex-start; }
     }
 
+    .single-action { grid-column: 1 / -1; }
+    .hidden-action { display: none !important; }
     .hidden { display: none; }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
     .dashboard-grid {
@@ -582,7 +584,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.0.1 yeni ana yapı: kontrol, checklist, çalışan, rapor ve ödeme ekranları tek menüde toplandı.</p>
+    <p>v20.0.2 yeni ana yapı: kontrol, checklist, çalışan, rapor ve ödeme ekranları tek menüde toplandı.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -662,7 +664,7 @@
       <h3>v20 Yol Haritası</h3>
       <p>Önce menü ve akış netleşiyor. Sonra sırasıyla şablon, atama ve müdür onayı eklenecek.</p>
       <ul class="template-items">
-        <li>v20.0.1: Yeni Ana Menü</li>
+        <li>v20.0.2: Yeni Ana Menü</li>
         <li>v20.1: Bugünkü Kontroller ekranını güçlendirme</li>
         <li>v20.2: Checklist Şablonları</li>
         <li>v20.3: Checklist Atama</li>
@@ -670,7 +672,7 @@
       </ul>
     </div>
 
-    <p class="small">dashboard v20.0.1 yeni ana menü. Fotoğraf akışı v19.24.1 ile aynı bırakıldı; fotoğraf zorunlu görevlerde buton adı netleştirildi.</p>
+    <p class="small">dashboard v20.0.2 yeni ana menü. Fotoğraf akışı v19.24.1 ile aynı bırakıldı; geciken görevlerde sistem otomatik geç durumuna alır.</p>
   </div>
 
   <div id="v20InfoScreen" class="card hidden">
@@ -1453,7 +1455,7 @@ function renderDynamicTasks(tasks) {
         <label class="comment-label">Yorum / Gecikme nedeni</label>
         <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
 
-        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Yeşil veya kırmızı buton kamerayı açar.</p>` : ``}
+        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Saat geçtiyse sistem otomatik olarak geç kaydeder.</p>` : ``}
 
         <div class="task-actions">
           ${photoRequired ? `
@@ -1477,7 +1479,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.0.1: görev ekranında eski demo/static görev gösterme.
+  // v20.0.2: görev ekranında eski demo/static görev gösterme.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -1609,6 +1611,28 @@ function getCurrentMinutes() {
       }
     }
 
+    function setMainActionVisual(actionEl, mode) {
+      if (!actionEl) return;
+      actionEl.classList.add("single-action");
+      actionEl.style.gridColumn = "1 / -1";
+
+      if (mode === "late") {
+        actionEl.classList.remove("primary");
+        actionEl.classList.add("danger");
+      } else {
+        actionEl.classList.remove("danger");
+        actionEl.classList.add("primary");
+      }
+    }
+
+    function hideManualLateButton(lateButton) {
+      if (!lateButton) return;
+      lateButton.classList.add("hidden-action");
+      lateButton.style.display = "none";
+      const fileInput = lateButton.querySelector('input[type="file"]');
+      if (fileInput) fileInput.disabled = true;
+    }
+
     function updateTaskStates() {
       const tasks = document.querySelectorAll(".task");
       let lateCount = 0;
@@ -1618,10 +1642,13 @@ function getCurrentMinutes() {
         const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
         const taskId = parseInt(taskIdText, 10);
         const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
+        const photoRequired = task.dataset.photoRequired === "1";
 
         const state = document.getElementById("state" + taskId);
         const doneButton = document.getElementById("done" + taskId);
         const lateButton = document.getElementById("late" + taskId);
+
+        hideManualLateButton(lateButton);
 
         if (late) {
           lateCount += 1;
@@ -1629,16 +1656,16 @@ function getCurrentMinutes() {
           state.innerText = "Gecikti";
           state.classList.remove("state-ok");
           state.classList.add("state-late");
-          setActionState(doneButton, "Tamamlandı", false);
-          setActionState(lateButton, "Geç Kaldı", false);
+          setMainActionVisual(doneButton, "late");
+          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Geç Bildir" : "Geç Bildir", false);
         } else {
           waitingCount += 1;
           task.dataset.status = "waiting";
           state.innerText = "Bekliyor";
           state.classList.remove("state-late");
           state.classList.add("state-ok");
-          setActionState(doneButton, "Tamamlandı", false);
-          setActionState(lateButton, "Geç Kaldı kapalı", true);
+          setMainActionVisual(doneButton, "completed");
+          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Tamamla" : "Tamamlandı", false);
         }
       });
 
@@ -2068,28 +2095,31 @@ function startPhotoInputWatcher(input, taskId) {
 
 
 function getTaskComment(taskId, task) {
-  let comment = "";
+  const fields = [];
 
-  const insideTask = task ? task.querySelector("textarea") : null;
-  if (insideTask && typeof insideTask.value !== "undefined") {
-    comment = insideTask.value;
+  const byId = document.getElementById("comment" + taskId);
+  if (byId) fields.push(byId);
+
+  if (task) {
+    const exactInside = task.querySelector('#comment' + taskId);
+    if (exactInside) fields.push(exactInside);
+
+    const insideTask = task.querySelector("textarea");
+    if (insideTask) fields.push(insideTask);
   }
 
-  if (!comment) {
-    const byId = document.getElementById("comment" + taskId);
-    if (byId && typeof byId.value !== "undefined") {
-      comment = byId.value;
+  const byDataId = document.querySelector('.task[data-task-id="' + taskId + '"] textarea');
+  if (byDataId) fields.push(byDataId);
+
+  for (const field of fields) {
+    if (!field) continue;
+    const value = typeof field.value !== "undefined" ? field.value : field.textContent;
+    if (String(value || "").trim() !== "") {
+      return String(value || "").trim();
     }
   }
 
-  if (!comment) {
-    const byDataId = document.querySelector('.task[data-task-id="' + taskId + '"] textarea');
-    if (byDataId && typeof byDataId.value !== "undefined") {
-      comment = byDataId.value;
-    }
-  }
-
-  return String(comment || "").trim();
+  return "";
 }
 
 function buildCompletionData(taskId, status) {
@@ -2179,6 +2209,9 @@ function openPhotoPicker(taskId, status) {
 }
 
 function prepareCameraInput(taskId, status, event) {
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
   clearPhotoDebug(taskId);
   const result = buildCompletionData(taskId, status);
 
