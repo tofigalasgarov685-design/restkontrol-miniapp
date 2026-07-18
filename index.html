@@ -584,7 +584,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.0.2 yeni ana yapı: kontrol, checklist, çalışan, rapor ve ödeme ekranları tek menüde toplandı.</p>
+    <p>v20.0.3 yeni ana yapı: kontrol, checklist, çalışan, rapor ve ödeme ekranları tek menüde toplandı.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -664,7 +664,7 @@
       <h3>v20 Yol Haritası</h3>
       <p>Önce menü ve akış netleşiyor. Sonra sırasıyla şablon, atama ve müdür onayı eklenecek.</p>
       <ul class="template-items">
-        <li>v20.0.2: Yeni Ana Menü</li>
+        <li>v20.0.3: Yeni Ana Menü</li>
         <li>v20.1: Bugünkü Kontroller ekranını güçlendirme</li>
         <li>v20.2: Checklist Şablonları</li>
         <li>v20.3: Checklist Atama</li>
@@ -672,7 +672,7 @@
       </ul>
     </div>
 
-    <p class="small">dashboard v20.0.2 yeni ana menü. Fotoğraf akışı v19.24.1 ile aynı bırakıldı; geciken görevlerde sistem otomatik geç durumuna alır.</p>
+    <p class="small">dashboard v20.0.3 yeni ana menü. Fotoğraf akışı v19.24.1 ile aynı bırakıldı; tek buton: sistem geciken görevi otomatik geç durumuna alır.</p>
   </div>
 
   <div id="v20InfoScreen" class="card hidden">
@@ -1459,18 +1459,13 @@ function renderDynamicTasks(tasks) {
 
         <div class="task-actions">
           ${photoRequired ? `
-            <div id="done${id}" class="camera-action primary">
+            <div id="done${id}" class="camera-action primary" style="grid-column:1 / -1;">
               <span>Fotoğraf Çek ve Tamamla</span>
-              <input id="photoDone${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
-            </div>
-            <div id="late${id}" class="camera-action danger">
-              <span>Fotoğraf Çek ve Geç Bildir</span>
-              <input id="photoLate${id}" class="photo-input" data-task-id="${id}" data-status="late" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'late', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+              <input id="photoInput${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
             </div>
             <div id="photoDebug${id}" class="photo-debug"></div>
           ` : `
-            <button id="done${id}" class="primary" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
-            <button id="late${id}" class="danger" onclick="completeTask(${id}, 'late')">Geç Kaldı</button>
+            <button id="done${id}" class="primary" style="grid-column:1 / -1;" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
           `}
         </div>
       </div>
@@ -1479,7 +1474,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.0.2: görev ekranında eski demo/static görev gösterme.
+  // v20.0.3: görev ekranında eski demo/static görev gösterme; tamamlamada tek ana buton.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
