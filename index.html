@@ -360,6 +360,74 @@
       opacity: 0.92;
     }
 
+    .template-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .template-summary-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .template-summary-card strong {
+      display: block;
+      font-size: 24px;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .template-summary-card span {
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .template-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .template-meta-box {
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .template-meta-box span {
+      display: block;
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .template-meta-box strong {
+      font-size: 14px;
+      color: #111827;
+    }
+    .template-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .template-action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .template-action-row button {
+      margin-top: 0;
+      padding: 12px;
+      font-size: 14px;
+    }
+    @media (max-width: 420px) {
+      .template-summary-grid, .template-meta-grid, .template-action-row { grid-template-columns: 1fr; }
+    }
+
     .hidden { display: none; }
     .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
     .dashboard-grid {
@@ -627,7 +695,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.1 Bugünkü Kontroller ekranı güçlendirildi: açık, geciken, fotoğraf bekleyen ve tamamlanan kontroller ayrıldı.</p>
+    <p>v20.2 Checklist Şablonları eklendi: restoranın kendi kontrol şablonları artık ayrı ekranda görülebilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -664,7 +732,7 @@
       <p>Hazır paketler, şablon mantığı ve ileride kontrol atama akışı burada birleşecek.</p>
       <div class="menu-actions">
         <button class="light" onclick="showChecklistScreen()">Hazır Checklistler</button>
-        <button class="light" onclick="showV20InfoScreen('Checklist Şablonları', 'Bu ekran v20.2 içinde gelecek. Amaç: mutfak, salon, bar ve depo için düzenlenebilir kontrol noktaları oluşturmak.')">Checklist Şablonları</button>
+        <button class="light" onclick="showTemplateScreen()">Checklist Şablonları</button>
         <button class="light" onclick="showV20InfoScreen('Kontrol Atama', 'Bu ekran v20.3 içinde gelecek. Amaç: bir checklisti tarih, bölüm, sorumlu müdür ve personele atamak.')">Kontrol Atama</button>
         <button class="light" onclick="showV20InfoScreen('Müdür Onayı', 'Bu ekran v20.4 içinde gelecek. Amaç: fotoğraf gönderilen kontrolleri kabul etmek veya iade etmek.')">Müdür Onayı</button>
       </div>
@@ -709,13 +777,134 @@
       <ul class="template-items">
         <li>v20.0.3: Yeni Ana Menü</li>
         <li>v20.1: Bugünkü Kontroller ekranını güçlendirme ✅</li>
-        <li>v20.2: Checklist Şablonları</li>
+        <li>v20.2: Checklist Şablonları ✅</li>
         <li>v20.3: Checklist Atama</li>
         <li>v20.4: Kontrolde / Kabul / İade akışı</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.1 bugünkü kontroller ekranı. Fotoğraf akışı korunur; durum, filtre ve sayaçlar güçlendirildi.</p>
+    <p class="small">dashboard v20.2 checklist şablonları ekranı. Fotoğraf akışı ve Bugünkü Kontroller v20.1 mantığı korunur.</p>
+  </div>
+
+  <div id="templateScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Checklist Şablonları</h2>
+    <p>Restoranın kendi operasyon standartları için kullanılacak şablonlar. Şimdilik görüntüleme ekranıdır; düzenleme ve yeni şablon oluşturma sonraki adımda eklenecek.</p>
+
+    <div class="template-summary-grid">
+      <div class="template-summary-card"><strong>5</strong><span>Şablon</span></div>
+      <div class="template-summary-card"><strong>4</strong><span>Bölüm</span></div>
+      <div class="template-summary-card"><strong>3</strong><span>Fotoğraflı şablon</span></div>
+      <div class="template-summary-card"><strong>v20.3</strong><span>Atama adımı</span></div>
+    </div>
+
+    <div class="settings-note">
+      Akış: Şablon hazırlanır → bugüne atanır → kontrol noktaları oluşur → personel fotoğraf gönderir → müdür onaylar.
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Mutfak Açılış Checklist</div>
+          <p class="template-desc">Açılış öncesi hijyen, soğuk dolap, hazırlık, ekipman ve servis öncesi mutfak kontrolü.</p>
+        </div>
+        <span class="template-badge template-free">Aktif</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Mutfak</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Açılış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>5 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>3 zorunlu</strong></div>
+      </div>
+      <ul class="template-items">
+        <li>Açılış öncesi genel mutfak hijyen kontrolü</li>
+        <li>Soğuk dolap sıcaklık ve kapak kontrolü</li>
+        <li>Hazırlık ürünleri ve istasyon kontrolü</li>
+      </ul>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugünkü kontrole uygun</span>
+        <span class="plan-badge-installed">Hazır paket bağlantılı</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showV20InfoScreen('Mutfak Açılış Checklist', 'Bu şablon şu anda Hazır Checklistler üzerinden görev oluşturuyor. v20.3 içinde tarih, müdür ve personele atama ekranına bağlanacak.')">Detay</button>
+        <button class="secondary" onclick="showV20InfoScreen('Kontrol Atama', 'Bu buton v20.3 içinde aktif olacak. Şablon seçilecek, tarih ve sorumlu kişi atanacak.')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Mutfak Kapanış Checklist</div>
+          <p class="template-desc">Kapanış temizliği, ekipman kapatma, ürün saklama, dolap ve istasyon kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Mutfak</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Kapanış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>5 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>4 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Premium açık</span>
+        <span class="plan-badge-installed">Hazır paket bağlantılı</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showV20InfoScreen('Mutfak Kapanış Checklist', 'Kapanış şablonu Premium paket üzerinden eklenebilir. Düzenleme ekranı v20.2.1 sonrasında gelecek.')">Detay</button>
+        <button class="secondary" onclick="showChecklistScreen()">Hazır Paketleri Aç</button>
+      </div>
+    </div>
+
+    <div class="template-card locked">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Salon Açılış Checklist</div>
+          <p class="template-desc">Masa düzeni, temizlik, menü, servis ekipmanı ve misafir alanı açılış kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Taslak</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Salon</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Açılış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>Hazırlanacak</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>Opsiyonel</strong></div>
+      </div>
+    </div>
+
+    <div class="template-card locked">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Bar Açılış / Kapanış Checklist</div>
+          <p class="template-desc">Bar istasyonu, bardak, stok, temizlik ve kapanış düzeni kontrolleri.</p>
+        </div>
+        <span class="template-badge template-premium">Taslak</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Bar</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Günlük</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>Hazırlanacak</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>Zorunlu olabilir</strong></div>
+      </div>
+    </div>
+
+    <div class="template-card locked">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Depo / Sarf Malzeme Kontrolü</div>
+          <p class="template-desc">Depo düzeni, temizlik, düşük stok ve teslim alma kontrolü. Sarf malzeme modülüne hazırlık.</p>
+        </div>
+        <span class="template-badge template-premium">Sonra</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Depo</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Günlük</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>Hazırlanacak</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>Opsiyonel</strong></div>
+      </div>
+    </div>
+
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.2.1 içinde şablon noktalarını görüntüleme, v20.2.2 içinde yeni nokta ekleme, v20.3 içinde bugüne atama ekranı gelecek.')">Sonraki Adımı Göster</button>
+    <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
   <div id="v20InfoScreen" class="card hidden">
@@ -1133,6 +1322,7 @@
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("cleanupScreen").classList.add("hidden");
       updateTaskStates();
       setTelegramBackButton(false);
@@ -1148,9 +1338,26 @@
       document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.remove("hidden");
       document.getElementById("v20InfoTitle").innerText = title;
       document.getElementById("v20InfoText").innerText = detail;
+      setTelegramBackButton(true);
+    }
+
+    function showTemplateScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.remove("hidden");
       setTelegramBackButton(true);
     }
 
@@ -1166,6 +1373,7 @@
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       setTelegramBackButton(true);
       loadBusinessSettings();
     }
@@ -1178,6 +1386,7 @@
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
 
@@ -1194,6 +1403,7 @@
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       setTelegramBackButton(true);
       loadPlanStatus();
     }
@@ -1208,6 +1418,7 @@
       document.getElementById("checklistScreen").classList.remove("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
 
@@ -1221,6 +1432,7 @@
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("cleanupScreen").classList.remove("hidden");
       setTelegramBackButton(true);
     }
@@ -1235,6 +1447,7 @@
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
       setTelegramBackButton(true);
     }
 
@@ -1546,7 +1759,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.1: Bugünkü Kontroller için görevler API üzerinden alınır; tamamlananlar bugünkü kayıt durumuyla gelir.
+  // v20.2: Checklist Şablonları ekranı eklendi; Bugünkü Kontroller API akışı korunur.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -1583,6 +1796,7 @@ function openTasksScreen(title, filterValue, button) {
   document.getElementById("planScreen").classList.add("hidden");
   document.getElementById("premiumScreen").classList.add("hidden");
   document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
   document.getElementById("tasksScreen").classList.remove("hidden");
   setTelegramBackButton(true);
   document.getElementById("taskScreenTitle").innerText = title;
