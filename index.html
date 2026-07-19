@@ -752,12 +752,26 @@
       background: #fafafa;
       margin-top: 12px;
     }
+    .approval-pending {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+    }
+    .task-rejected-box {
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.3 Bugüne Ata eklendi: seçilen checklist şablonu bugünkü kontrol görevlerine atanabilir.</p>
+    <p>v20.4 Müdür Onayı eklendi: fotoğraflı kontroller önce onaya düşer, müdür kabul veya iade eder.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -770,7 +784,7 @@
       </div>
       <div class="metric">
         <div id="metricWaiting" class="number">0</div>
-        <div class="label">Fotoğraf Bekleyen</div>
+        <div class="label">Onay Bekleyen</div>
       </div>
       <div class="metric">
         <div id="metricRate" class="number">%0</div>
@@ -796,7 +810,7 @@
         <button class="light" onclick="showChecklistScreen()">Hazır Checklistler</button>
         <button class="light" onclick="showTemplateScreen()">Checklist Şablonları</button>
         <button class="light" onclick="showTemplateScreen()">Kontrol Atama</button>
-        <button class="light" onclick="showV20InfoScreen('Müdür Onayı', 'Bu ekran v20.4 içinde gelecek. Amaç: fotoğraf gönderilen kontrolleri kabul etmek veya iade etmek.')">Müdür Onayı</button>
+        <button class="light" onclick="sendPendingApprovalRequest()">Müdür Onayı</button>
       </div>
     </div>
 
@@ -819,6 +833,7 @@
         <button class="light" onclick="sendPhotoReportRequest()">Fotoğraflı Rapor</button>
         <button class="light" onclick="sendZoneReportRequest()">Bölüm Raporu</button>
         <button class="light" onclick="sendStaffReportRequest()">Personel Raporu</button>
+        <button class="light" onclick="sendPendingApprovalRequest()">Onay Bekleyenler</button>
         <button class="light" onclick="showV20InfoScreen('Bildirimler', 'Bu ekran sonraki sürümde geciken kontroller, onay bekleyen fotoğraflar, iade edilen görevler ve ödeme hatırlatmaları için kullanılacak.')">Bildirimler</button>
       </div>
     </div>
@@ -841,12 +856,13 @@
         <li>v20.1: Bugünkü Kontroller ekranını güçlendirme ✅</li>
         <li>v20.2: Checklist Şablonları ✅</li>
         <li>v20.2.1: Şablon Detay ekranı ✅</li>
-        <li>v20.3: Checklist Atama ✅</li>
+        <li>v20.4: Checklist Atama ✅</li>
+        <li>v20.4: Müdür Onayı ✅</li>
         <li>v20.4: Kontrolde / Kabul / İade akışı</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.3 bugüne atama ekranı. Şablon Detay korunur; seçilen şablon Bugünkü Kontroller görevlerine dönüştürülür.</p>
+    <p class="small">dashboard v20.4 müdür onayı ekranı. Fotoğraflı kontroller Onay Bekliyor durumuna düşer; müdür Kabul Et / İade Et yapar.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -978,7 +994,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.3 ile şablonu Bugünkü Kontroller ekranına atama açıldı. Sonraki adım v20.4 içinde müdür onayıdır.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.4 ile fotoğraflı kontroller için müdür onayı açıldı. Sonraki adım iade nedeni ve onay ekranını daha detaylı hale getirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1399,6 +1415,7 @@
       <div class="control-summary-card"><strong id="taskSummaryOpen">0</strong><span>Açık</span></div>
       <div class="control-summary-card"><strong id="taskSummaryLate">0</strong><span>Geciken</span></div>
       <div class="control-summary-card"><strong id="taskSummaryPhoto">0</strong><span>Fotoğraf Bekleyen</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryApproval">0</strong><span>Onay Bekleyen</span></div>
       <div class="control-summary-card"><strong id="taskSummaryDone">0</strong><span>Tamamlanan</span></div>
     </div>
 
@@ -1409,6 +1426,7 @@
       <button id="filterOpen" onclick="filterTasks('Açık', this)">Açık</button>
       <button id="filterLate" onclick="filterTasks('Geciken', this)">Geciken</button>
       <button id="filterPhoto" onclick="filterTasks('Fotoğraflı', this)">Fotoğraflı</button>
+      <button id="filterApproval" onclick="filterTasks('Onay', this)">Onay Bekleyen</button>
       <button id="filterDone" onclick="filterTasks('Tamamlanan', this)">Tamamlanan</button>
       <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
       <button onclick="filterTasks('Salon', this)">Salon</button>
@@ -1981,6 +1999,27 @@ async function loadPlanStatus() {
   setPlanStatusMessage("Güncel plan özeti için 'Telegram'a Plan Özeti Gönder' butonunu kullanın.", "success");
 }
 
+function isApprovedCompletionStatus(status) {
+  return status === "completed" || status === "late";
+}
+
+function isPendingApprovalStatus(status) {
+  return status === "pending_completed" || status === "pending_late";
+}
+
+function isRejectedCompletionStatus(status) {
+  return status === "rejected" || status === "rejected_late";
+}
+
+function getCompletionStatusText(status) {
+  if (status === "late") return "Geç tamamlandı";
+  if (status === "completed") return "Tamamlandı";
+  if (status === "pending_late") return "Geç tamamlandı · Onay bekliyor";
+  if (status === "pending_completed") return "Onay bekliyor";
+  if (isRejectedCompletionStatus(status)) return "İade edildi";
+  return "Kontrol";
+}
+
 function renderDynamicTasks(tasks) {
   const container = document.getElementById("dynamicTasks");
   if (!container) return;
@@ -1990,7 +2029,7 @@ function renderDynamicTasks(tasks) {
 
   if (!tasks || tasks.length === 0) {
     container.innerHTML = "";
-    updateDashboard({ total: 0, open: 0, late: 0, photo: 0, done: 0 });
+    updateDashboard({ total: 0, open: 0, late: 0, photo: 0, approval: 0, done: 0 });
     return;
   }
 
@@ -2003,31 +2042,43 @@ function renderDynamicTasks(tasks) {
     const safeType = escapeHtml(task.task_type);
     const safeTime = escapeHtml(task.scheduled_time);
     const id = parseInt(task.id, 10);
-    const completionStatus = escapeHtml(task.completion_status || "");
+    const completionStatusRaw = String(task.completion_status || "");
+    const completionStatus = escapeHtml(completionStatusRaw);
     const completedAt = escapeHtml(task.completed_at || "");
     const completionComment = escapeHtml(task.completion_comment || "");
     const completionStaffName = escapeHtml(task.completion_staff_name || "");
-    const hasCompletion = completionStatus !== "";
-    const completedBoxClass = completionStatus === "late" ? "task-completed-box late-completed" : "task-completed-box";
-    const completedText = completionStatus === "late" ? "Geç tamamlandı" : "Tamamlandı";
+    const isApproved = isApprovedCompletionStatus(completionStatusRaw);
+    const isPendingApproval = isPendingApprovalStatus(completionStatusRaw);
+    const isRejected = isRejectedCompletionStatus(completionStatusRaw);
+    const completedBoxClass = completionStatusRaw === "late" ? "task-completed-box late-completed" : (isPendingApproval ? "task-completed-box approval-pending" : "task-completed-box");
+    const completedText = getCompletionStatusText(completionStatusRaw);
 
-    const actionHtml = hasCompletion ? `
+    const reviewBoxHtml = isRejected ? `
+        <div class="task-rejected-box">
+          <strong>İade edildi</strong><br>
+          Bu kontrol müdür tarafından iade edildi. Yeni fotoğrafla tekrar gönderin.
+          ${completionComment ? `<br>Yorum: ${completionComment}` : ``}
+        </div>
+      ` : ``;
+
+    const actionHtml = (isApproved || isPendingApproval) ? `
         <div class="${completedBoxClass}">
           <strong>${completedText}</strong><br>
           ${completedAt ? `Zaman: ${completedAt}<br>` : ``}
           ${completionStaffName ? `Sorumlu: ${completionStaffName}<br>` : ``}
-          ${completionComment ? `Yorum: ${completionComment}` : `Bu kontrol bugün kaydedildi.`}
+          ${completionComment ? `Yorum: ${completionComment}` : (isPendingApproval ? `Müdür Kabul Et / İade Et yapana kadar görev tamamlanmış sayılmaz.` : `Bu kontrol bugün kaydedildi.`)}
         </div>
       ` : `
+        ${reviewBoxHtml}
         <label class="comment-label">Yorum / Gecikme nedeni</label>
         <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
 
-        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Saat geçtiyse sistem otomatik olarak geç kaydeder.</p>` : ``}
+        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Saat geçtiyse sistem otomatik olarak geç kaydeder. Gönderilen fotoğraf müdür onayına düşer.</p>` : ``}
 
         <div class="task-actions">
           ${photoRequired ? `
             <div id="done${id}" class="camera-action primary" style="grid-column:1 / -1;">
-              <span>Fotoğraf Çek ve Tamamla</span>
+              <span>Fotoğraf Çek ve Onaya Gönder</span>
               <input id="photoInput${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
             </div>
             <div id="photoDebug${id}" class="photo-debug"></div>
@@ -2038,7 +2089,7 @@ function renderDynamicTasks(tasks) {
       `;
 
     return `
-      <div class="task${hasCompletion ? ' is-completed' : ''}" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}" data-completed="${hasCompletion ? 1 : 0}" data-completion-status="${completionStatus}">
+      <div class="task${isApproved ? ' is-completed' : ''}" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}" data-completed="${isApproved ? 1 : 0}" data-approval-pending="${isPendingApproval ? 1 : 0}" data-rejected="${isRejected ? 1 : 0}" data-completion-status="${completionStatus}">
         <div class="task-top">
           <div>
             <div class="badge">${safeZone} · ${safeTime}</div>
@@ -2067,7 +2118,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.3: Bugüne Ata ekranı eklendi; şablon seçilip bugünkü kontrol görevlerine aktarılır.
+  // v20.4: Müdür Onayı eklendi; fotoğraf kaydı önce onaya düşer.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2173,15 +2224,16 @@ function getCurrentMinutes() {
     }
 
     function updateDashboard(summary) {
-      summary = summary || { total: 0, open: 0, late: 0, photo: 0, done: 0 };
+      summary = summary || { total: 0, open: 0, late: 0, photo: 0, approval: 0, done: 0 };
       setSummaryValue("metricTotal", summary.total || 0);
       setSummaryValue("metricLate", summary.late || 0);
-      setSummaryValue("metricWaiting", summary.photo || 0);
+      setSummaryValue("metricWaiting", summary.approval || 0);
       setSummaryValue("metricRate", summary.done || 0);
       setSummaryValue("taskSummaryTotal", summary.total || 0);
       setSummaryValue("taskSummaryOpen", summary.open || 0);
       setSummaryValue("taskSummaryLate", summary.late || 0);
       setSummaryValue("taskSummaryPhoto", summary.photo || 0);
+      setSummaryValue("taskSummaryApproval", summary.approval || 0);
       setSummaryValue("taskSummaryDone", summary.done || 0);
     }
 
@@ -2233,12 +2285,14 @@ function getCurrentMinutes() {
 
     function updateTaskStates() {
       const tasks = document.querySelectorAll(".task");
-      const summary = { total: tasks.length, open: 0, late: 0, photo: 0, done: 0 };
+      const summary = { total: tasks.length, open: 0, late: 0, photo: 0, approval: 0, done: 0 };
 
       tasks.forEach(function(task) {
         const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
         const taskId = parseInt(taskIdText, 10);
         const isCompleted = task.dataset.completed === "1";
+        const approvalPending = task.dataset.approvalPending === "1";
+        const isRejected = task.dataset.rejected === "1";
         const completionStatus = task.dataset.completionStatus || "";
         const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
         const photoRequired = task.dataset.photoRequired === "1";
@@ -2248,6 +2302,17 @@ function getCurrentMinutes() {
         const lateButton = document.getElementById("late" + taskId);
 
         hideManualLateButton(lateButton);
+
+        if (approvalPending) {
+          summary.approval += 1;
+          task.dataset.status = "approval";
+          if (state) {
+            state.innerText = "Onay Bekliyor";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
+          return;
+        }
 
         if (isCompleted) {
           summary.done += 1;
@@ -2263,6 +2328,12 @@ function getCurrentMinutes() {
         summary.open += 1;
         if (photoRequired) summary.photo += 1;
 
+        if (isRejected && state) {
+          state.innerText = "İade Edildi";
+          state.classList.remove("state-ok");
+          state.classList.add("state-late");
+        }
+
         if (late) {
           summary.late += 1;
           task.dataset.status = "late";
@@ -2272,7 +2343,7 @@ function getCurrentMinutes() {
             state.classList.add("state-late");
           }
           setMainActionVisual(doneButton, "late");
-          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Geç Bildir" : "Geç Bildir", false);
+          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Onaya Gönder" : "Geç Bildir", false);
         } else {
           task.dataset.status = "waiting";
           if (state) {
@@ -2281,7 +2352,7 @@ function getCurrentMinutes() {
             state.classList.add("state-ok");
           }
           setMainActionVisual(doneButton, "completed");
-          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Tamamla" : "Tamamlandı", false);
+          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Onaya Gönder" : "Tamamlandı", false);
         }
       });
 
@@ -2297,6 +2368,7 @@ function getCurrentMinutes() {
       tasks.forEach(function(task) {
         let shouldShow = false;
         const isCompleted = task.dataset.completed === "1";
+        const approvalPending = task.dataset.approvalPending === "1";
         const photoRequired = task.dataset.photoRequired === "1";
 
         if (filterValue === "Tümü") {
@@ -2308,7 +2380,9 @@ function getCurrentMinutes() {
         } else if (filterValue === "Bekleyen") {
           shouldShow = !isCompleted && task.dataset.status === "waiting";
         } else if (filterValue === "Fotoğraflı") {
-          shouldShow = !isCompleted && photoRequired;
+          shouldShow = !isCompleted && !approvalPending && photoRequired;
+        } else if (filterValue === "Onay") {
+          shouldShow = approvalPending;
         } else if (filterValue === "Tamamlanan") {
           shouldShow = isCompleted;
         } else {
@@ -2502,6 +2576,15 @@ function getCurrentMinutes() {
     function sendStaffReportRequest() {
       const data = {
         action: "get_staff_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPendingApprovalRequest() {
+      const data = {
+        action: "get_pending_approvals"
       };
 
       tg.sendData(JSON.stringify(data));
@@ -3050,7 +3133,7 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
       throw new Error(result.error || "Fotoğraf kaydedilemedi.");
     }
 
-    const successMessage = "Fotoğraf ile görev kaydedildi.";
+    const successMessage = result.message || "Fotoğraf müdür onayına gönderildi.";
     if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage, "ok");
     showMessage(successMessage);
     pendingCameraTask = null;
