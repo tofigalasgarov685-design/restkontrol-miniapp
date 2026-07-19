@@ -757,7 +757,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.2.1 Şablon Detay ekranı eklendi: checklist içindeki kontrol noktaları artık ayrı ekranda görülebilir.</p>
+    <p>v20.3 Bugüne Ata eklendi: seçilen checklist şablonu bugünkü kontrol görevlerine atanabilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -795,7 +795,7 @@
       <div class="menu-actions">
         <button class="light" onclick="showChecklistScreen()">Hazır Checklistler</button>
         <button class="light" onclick="showTemplateScreen()">Checklist Şablonları</button>
-        <button class="light" onclick="showV20InfoScreen('Kontrol Atama', 'Bu ekran v20.3 içinde gelecek. Amaç: bir checklisti tarih, bölüm, sorumlu müdür ve personele atamak.')">Kontrol Atama</button>
+        <button class="light" onclick="showTemplateScreen()">Kontrol Atama</button>
         <button class="light" onclick="showV20InfoScreen('Müdür Onayı', 'Bu ekran v20.4 içinde gelecek. Amaç: fotoğraf gönderilen kontrolleri kabul etmek veya iade etmek.')">Müdür Onayı</button>
       </div>
     </div>
@@ -841,12 +841,12 @@
         <li>v20.1: Bugünkü Kontroller ekranını güçlendirme ✅</li>
         <li>v20.2: Checklist Şablonları ✅</li>
         <li>v20.2.1: Şablon Detay ekranı ✅</li>
-        <li>v20.3: Checklist Atama</li>
+        <li>v20.3: Checklist Atama ✅</li>
         <li>v20.4: Kontrolde / Kabul / İade akışı</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.2.1 şablon detay ekranı. Fotoğraf akışı ve Bugünkü Kontroller v20.1 mantığı korunur.</p>
+    <p class="small">dashboard v20.3 bugüne atama ekranı. Şablon Detay korunur; seçilen şablon Bugünkü Kontroller görevlerine dönüştürülür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -890,7 +890,7 @@
       </div>
       <div class="template-action-row">
         <button class="light" onclick="showTemplateDetailScreen('mutfak_acilis')">Detay</button>
-        <button class="secondary" onclick="showV20InfoScreen('Kontrol Atama', 'Bu buton v20.3 içinde aktif olacak. Şablon seçilecek, tarih ve sorumlu kişi atanacak.')">Bugüne Ata</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('mutfak_acilis')">Bugüne Ata</button>
       </div>
     </div>
 
@@ -914,7 +914,7 @@
       </div>
       <div class="template-action-row">
         <button class="light" onclick="showTemplateDetailScreen('mutfak_kapanis')">Detay</button>
-        <button class="secondary" onclick="showChecklistScreen()">Hazır Paketleri Aç</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('mutfak_kapanis')">Bugüne Ata</button>
       </div>
     </div>
 
@@ -978,7 +978,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.2.1 ile şablon detayları açıldı. Sonraki adım v20.2.2 içinde yeni nokta ekleme, v20.3 içinde bugüne atama ekranıdır.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.3 ile şablonu Bugünkü Kontroller ekranına atama açıldı. Sonraki adım v20.4 içinde müdür onayıdır.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1003,8 +1003,40 @@
 
     <div id="templateDetailPoints"></div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Bugüne Ata', 'Bu şablonu tarih, müdür ve personele atama ekranı v20.3 içinde açılacak.')">Bugüne Ata</button>
+    <button class="secondary" onclick="showTemplateAssignScreen(currentTemplateDetailKey)">Bugüne Ata</button>
     <button class="light" onclick="showTemplateScreen()">Şablonlara Dön</button>
+  </div>
+
+  <div id="templateAssignScreen" class="card hidden">
+    <button class="light top-back" onclick="showTemplateScreen()">← Şablonlara Dön</button>
+    <h2 id="templateAssignTitle">Bugüne Ata</h2>
+    <p id="templateAssignDesc">Seçilen checklist şablonu bugünkü kontrol görevlerine dönüştürülür.</p>
+
+    <div class="detail-header-box">
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong id="templateAssignZone">-</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong id="templateAssignType">-</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong id="templateAssignCount">-</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong id="templateAssignPhoto">-</strong></div>
+      </div>
+    </div>
+
+    <div class="settings-note">
+      Sistem işletme açılış/kapanış saatlerine göre görev saatlerini oluşturur. Daha önce eklenen aynı şablon tekrar eklenmez.
+    </div>
+
+    <div class="menu-section">
+      <h3>Atama akışı</h3>
+      <ul class="template-items">
+        <li>Şablondaki kontrol noktaları Bugünkü Kontroller ekranına görev olarak eklenir.</li>
+        <li>Fotoğraf zorunlu noktalar personelden yeni fotoğraf ister.</li>
+        <li>Saat geçtiyse sistem görevi otomatik Geç Kaldı durumunda işler.</li>
+        <li>Müdür kabul / iade akışı v20.4 içinde eklenecek.</li>
+      </ul>
+    </div>
+
+    <button class="primary" onclick="confirmAssignTemplateToday()">Bugüne Ata ve Görevleri Oluştur</button>
+    <button class="light" onclick="showTemplateScreen()">Vazgeç</button>
   </div>
 
   <div id="v20InfoScreen" class="card hidden">
@@ -1395,6 +1427,9 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    let currentTemplateDetailKey = "mutfak_acilis";
+    let currentAssignTemplateKey = "mutfak_acilis";
+
     const checklistTemplateDetails = {
       mutfak_acilis: {
         title: "Mutfak Açılış Checklist",
@@ -1492,6 +1527,7 @@
       document.getElementById("v20InfoScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
       document.getElementById("cleanupScreen").classList.add("hidden");
       updateTaskStates();
       setTelegramBackButton(false);
@@ -1509,6 +1545,7 @@
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.remove("hidden");
       document.getElementById("v20InfoTitle").innerText = title;
       document.getElementById("v20InfoText").innerText = detail;
@@ -1527,6 +1564,7 @@
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
       document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.remove("hidden");
       setTelegramBackButton(true);
@@ -1534,7 +1572,8 @@
 
 
     function showTemplateDetailScreen(templateKey) {
-      const data = checklistTemplateDetails[templateKey] || checklistTemplateDetails.mutfak_acilis;
+      currentTemplateDetailKey = templateKey || "mutfak_acilis";
+      const data = checklistTemplateDetails[currentTemplateDetailKey] || checklistTemplateDetails.mutfak_acilis;
 
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
@@ -1547,6 +1586,7 @@
       document.getElementById("tasksScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
       document.getElementById("templateDetailScreen").classList.remove("hidden");
 
       document.getElementById("templateDetailTitle").innerText = data.title;
@@ -1585,6 +1625,48 @@
       });
 
       setTelegramBackButton(true);
+    }
+
+
+    function showTemplateAssignScreen(templateKey) {
+      currentAssignTemplateKey = templateKey || currentTemplateDetailKey || "mutfak_acilis";
+      const data = checklistTemplateDetails[currentAssignTemplateKey] || checklistTemplateDetails.mutfak_acilis;
+
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.remove("hidden");
+
+      document.getElementById("templateAssignTitle").innerText = data.title + " — Bugüne Ata";
+      document.getElementById("templateAssignDesc").innerText = data.desc;
+      document.getElementById("templateAssignZone").innerText = data.zone;
+      document.getElementById("templateAssignType").innerText = data.type;
+      document.getElementById("templateAssignCount").innerText = data.points.length + " kontrol";
+      document.getElementById("templateAssignPhoto").innerText = data.photo;
+
+      setTelegramBackButton(true);
+    }
+
+    function confirmAssignTemplateToday() {
+      if (!currentAssignTemplateKey) {
+        if (tg.showAlert) {
+          tg.showAlert("Önce bir checklist şablonu seçin.");
+        } else {
+          alert("Önce bir checklist şablonu seçin.");
+        }
+        return;
+      }
+
+      sendChecklistAssignToday(currentAssignTemplateKey);
     }
 
 
@@ -1985,7 +2067,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.2.1: Şablon detay ekranı eklendi; Bugünkü Kontroller API akışı korunur.
+  // v20.3: Bugüne Ata ekranı eklendi; şablon seçilip bugünkü kontrol görevlerine aktarılır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2321,6 +2403,16 @@ function getCurrentMinutes() {
       } else {
         alert(message);
       }
+    }
+
+    function sendChecklistAssignToday(templateId) {
+      const data = {
+        action: "assign_checklist_today",
+        templateId: templateId
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
     }
 
     function sendChecklistTemplate(templateId) {
