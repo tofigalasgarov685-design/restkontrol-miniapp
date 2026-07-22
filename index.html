@@ -766,12 +766,53 @@
       margin: 10px 0;
       font-size: 14px;
     }
+
+    .approval-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .approval-card {
+      border: 1px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .approval-photo {
+      width: 100%;
+      max-height: 360px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid #fde68a;
+      background: #f3f4f6;
+      margin: 10px 0 12px;
+    }
+    .approval-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .approval-message {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #eef2ff;
+      color: #3730a3;
+      display: none;
+      font-size: 14px;
+    }
+    .approval-message.error {
+      background: #fef2f2;
+      color: #991b1b;
+    }
   </style>
 </head>
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.4 Müdür Onayı eklendi: fotoğraflı kontroller önce onaya düşer, müdür kabul veya iade eder.</p>
+    <p>v20.5 Onay Bekleyenler Mini App içine alındı: müdür fotoğrafı görür, kabul veya iade eder.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -810,7 +851,7 @@
         <button class="light" onclick="showChecklistScreen()">Hazır Checklistler</button>
         <button class="light" onclick="showTemplateScreen()">Checklist Şablonları</button>
         <button class="light" onclick="showTemplateScreen()">Kontrol Atama</button>
-        <button class="light" onclick="sendPendingApprovalRequest()">Müdür Onayı</button>
+        <button class="light" onclick="showApprovalScreen()">Müdür Onayı</button>
       </div>
     </div>
 
@@ -833,7 +874,7 @@
         <button class="light" onclick="sendPhotoReportRequest()">Fotoğraflı Rapor</button>
         <button class="light" onclick="sendZoneReportRequest()">Bölüm Raporu</button>
         <button class="light" onclick="sendStaffReportRequest()">Personel Raporu</button>
-        <button class="light" onclick="sendPendingApprovalRequest()">Onay Bekleyenler</button>
+        <button class="light" onclick="showApprovalScreen()">Onay Bekleyenler</button>
         <button class="light" onclick="showV20InfoScreen('Bildirimler', 'Bu ekran sonraki sürümde geciken kontroller, onay bekleyen fotoğraflar, iade edilen görevler ve ödeme hatırlatmaları için kullanılacak.')">Bildirimler</button>
       </div>
     </div>
@@ -858,11 +899,11 @@
         <li>v20.2.1: Şablon Detay ekranı ✅</li>
         <li>v20.4: Checklist Atama ✅</li>
         <li>v20.4: Müdür Onayı ✅</li>
-        <li>v20.4: Kontrolde / Kabul / İade akışı</li>
+        <li>v20.5: Onay Bekleyenler Mini App ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.4 müdür onayı ekranı. Fotoğraflı kontroller Onay Bekliyor durumuna düşer; müdür Kabul Et / İade Et yapar.</p>
+    <p class="small">dashboard v20.5 onay ekranı. Onay Bekleyenler artık Mini App içinde fotoğrafla beraber açılır.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -994,7 +1035,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.4 ile fotoğraflı kontroller için müdür onayı açıldı. Sonraki adım iade nedeni ve onay ekranını daha detaylı hale getirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.5 ile Onay Bekleyenler Mini App içine alındı. Sonraki adım iade nedeni yazma alanıdır.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1441,6 +1482,25 @@
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
 
+  <div id="approvalScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Onay Bekleyenler</h2>
+    <p>Personelin gönderdiği fotoğraflı kontroller burada görünür. Müdür fotoğrafı kontrol eder, sonra kabul veya iade eder.</p>
+
+    <div class="control-summary-grid">
+      <div class="control-summary-card"><strong id="approvalSummaryTotal">0</strong><span>Bekleyen</span></div>
+      <div class="control-summary-card"><strong id="approvalSummaryPhoto">0</strong><span>Fotoğraflı</span></div>
+      <div class="control-summary-card"><strong id="approvalSummaryLate">0</strong><span>Geç</span></div>
+    </div>
+
+    <div id="approvalStatusMessage" class="approval-message"></div>
+    <div id="approvalEmptyBox" class="empty-box">Onay bekleyen kontrol yok.</div>
+    <div id="approvalList" class="approval-list"></div>
+
+    <button class="secondary" onclick="loadPendingApprovals()">Yenile</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
@@ -1542,6 +1602,7 @@
       document.getElementById("premiumScreen").classList.add("hidden");
       document.getElementById("cleanupScreen").classList.add("hidden");
       document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.add("hidden");
       document.getElementById("v20InfoScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("templateDetailScreen").classList.add("hidden");
@@ -2118,7 +2179,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.4: Müdür Onayı eklendi; fotoğraf kaydı önce onaya düşer.
+  // v20.5: Onay Bekleyenler Mini App içine alındı; müdür kabul/iade işlemini burada yapar.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2156,6 +2217,7 @@ function openTasksScreen(title, filterValue, button) {
   document.getElementById("premiumScreen").classList.add("hidden");
   document.getElementById("v20InfoScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
+  document.getElementById("approvalScreen").classList.add("hidden");
   document.getElementById("tasksScreen").classList.remove("hidden");
   setTelegramBackButton(true);
   document.getElementById("taskScreenTitle").innerText = title;
@@ -2582,13 +2644,152 @@ function getCurrentMinutes() {
       tg.close();
     }
 
-    function sendPendingApprovalRequest() {
-      const data = {
-        action: "get_pending_approvals"
-      };
 
-      tg.sendData(JSON.stringify(data));
-      tg.close();
+    function setApprovalStatus(message, isError) {
+      const box = document.getElementById("approvalStatusMessage");
+      if (!box) return;
+      box.innerText = message || "";
+      box.classList.toggle("error", !!isError);
+      box.style.display = message ? "block" : "none";
+    }
+
+    function showApprovalScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+      loadPendingApprovals();
+    }
+
+    async function loadPendingApprovals() {
+      const list = document.getElementById("approvalList");
+      const empty = document.getElementById("approvalEmptyBox");
+      if (!list || !empty) return;
+
+      setApprovalStatus("Onay bekleyen kontroller yükleniyor...", false);
+      list.innerHTML = "";
+      empty.style.display = "none";
+
+      if (!API_BASE_URL) {
+        setApprovalStatus("Backend URL yok. PUBLIC_BASE_URL kontrol edilmeli.", true);
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        setApprovalStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/pending_approvals?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Onay listesi alınamadı.");
+        }
+        renderPendingApprovals(result.items || []);
+        setApprovalStatus((result.items || []).length ? "Onay bekleyen kontroller yüklendi." : "Onay bekleyen kontrol yok.", false);
+      } catch (error) {
+        renderPendingApprovals([]);
+        setApprovalStatus(safeErrorText(error) || "Onay listesi alınamadı.", true);
+      }
+    }
+
+    function renderPendingApprovals(items) {
+      const list = document.getElementById("approvalList");
+      const empty = document.getElementById("approvalEmptyBox");
+      document.getElementById("approvalSummaryTotal").innerText = items.length;
+      document.getElementById("approvalSummaryPhoto").innerText = items.filter(function(item) { return item.has_photo; }).length;
+      document.getElementById("approvalSummaryLate").innerText = items.filter(function(item) { return String(item.status || "").indexOf("late") >= 0; }).length;
+
+      if (!items.length) {
+        list.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+      list.innerHTML = items.map(function(item) {
+        const completionId = parseInt(item.completion_id || 0, 10);
+        const photoHtml = item.photo_url ? `<img class="approval-photo" src="${escapeHtml(item.photo_url)}" alt="Kontrol fotoğrafı">` : `<div class="task-rejected-box">Fotoğraf Mini App içinde gösterilemiyor. Telegram raporundan kontrol edin.</div>`;
+        const roleLine = item.actor_role_label ? `<br>Rol: ${escapeHtml(item.actor_role_label)}` : "";
+        const zoneLine = item.actor_zone ? `<br>Yetki Bölümü: ${escapeHtml(item.actor_zone)}` : "";
+        const commentLine = item.comment ? `<br>Yorum: ${escapeHtml(item.comment)}` : "";
+        return `
+          <div class="approval-card" id="approvalCard${completionId}">
+            <div class="task-top">
+              <div>
+                <div class="badge">${escapeHtml(item.zone)} · ${escapeHtml(item.scheduled_time)}</div>
+                <div class="task-id">Kayıt #${completionId} · Görev #${escapeHtml(item.task_id)}</div>
+              </div>
+              <div class="state state-ok">Onay Bekliyor</div>
+            </div>
+            <h2 class="task-title">${escapeHtml(item.task_title)}</h2>
+            ${photoHtml}
+            <div class="task-completed-box approval-pending">
+              <strong>${escapeHtml(item.status_text)}</strong><br>
+              Gönderen: ${escapeHtml(item.staff_name || "-")}<br>
+              Zaman: ${escapeHtml(item.completed_at || "-")}${roleLine}${zoneLine}${commentLine}
+            </div>
+            <div class="approval-actions">
+              <button class="primary" onclick="reviewApproval(${completionId}, 'approve')">Kabul Et</button>
+              <button class="danger" onclick="reviewApproval(${completionId}, 'reject')">İade Et</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function reviewApproval(completionId, action) {
+      if (!API_BASE_URL) {
+        setApprovalStatus("Backend URL yok.", true);
+        return;
+      }
+      const userId = getTelegramUserId();
+      if (!userId) {
+        setApprovalStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      const label = action === "approve" ? "kabul" : "iade";
+      setApprovalStatus("Kontrol " + label + " işlemi gönderiliyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/review_completion", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            completion_id: completionId,
+            action: action,
+            reviewer_name: (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) ? tg.initDataUnsafe.user.first_name : "Müdür"
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Onay işlemi tamamlanamadı.");
+        }
+        setApprovalStatus(result.message || "İşlem tamamlandı.", false);
+        await loadPendingApprovals();
+        await loadDynamicTasks();
+      } catch (error) {
+        setApprovalStatus(safeErrorText(error) || "Onay işlemi tamamlanamadı.", true);
+      }
+    }
+
+    function sendPendingApprovalRequest() {
+      showApprovalScreen();
     }
 
     function sendEmployeeListRequest() {
