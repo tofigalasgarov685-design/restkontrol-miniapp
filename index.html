@@ -807,12 +807,86 @@
       background: #fef2f2;
       color: #991b1b;
     }
+
+
+    .live-camera-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(17, 24, 39, 0.92);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .live-camera-modal.hidden {
+      display: none !important;
+    }
+    .live-camera-panel {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+    .live-camera-panel h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      color: #111827;
+    }
+    .live-camera-panel p {
+      margin: 0 0 12px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .live-camera-view {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      background: #111827;
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    #liveCameraVideo,
+    #liveCameraPreview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .live-camera-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .live-camera-actions button {
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .live-camera-actions .full {
+      grid-column: 1 / -1;
+    }
+    .live-camera-fallback {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+    }
+
   </style>
 </head>
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.6 UX düzeltmesi: fotoğraf gönderildikten sonra Mini App kapanmaz; ekran içeride kalır ve görev Onay Bekliyor olarak yenilenir.</p>
+    <p>v20.7 Gerçek Kamera Modu: fotoğraf önce Mini App içindeki kameradan çekilir; galeri ana yol değildir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -900,11 +974,11 @@
         <li>v20.4: Checklist Atama ✅</li>
         <li>v20.4: Müdür Onayı ✅</li>
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
-        <li>v20.6: Fotoğraf sonrası Mini App açık kalır ✅</li>
+        <li>v20.7: Gerçek kamera modu ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.6 fotoğraf sonrası Mini App açık kalır. Onay Bekleyenler Mini App içinde fotoğrafla beraber açılır.</p>
+    <p class="small">dashboard v20.7 gerçek kamera modu. Fotoğraf çekimi Mini App içinde açılan kamera ekranından yapılır.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1036,7 +1110,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.6 ile fotoğraf gönderildikten sonra Mini App kapanmaz. Sonraki adım iade nedeni yazma alanını müdür tarafında zorunlu hale getirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.7 ile fotoğraf çekimi gerçek kamera ekranına alındı. Sonraki adım iade nedeni yazma alanını müdür tarafında zorunlu hale getirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1501,6 +1575,31 @@
     <button class="secondary" onclick="loadPendingApprovals()">Yenile</button>
     <button class="light" onclick="showHome()">Geri Dön</button>
   </div>
+
+
+
+  <div id="liveCameraModal" class="live-camera-modal hidden" role="dialog" aria-modal="true" aria-labelledby="liveCameraTitle">
+    <div class="live-camera-panel">
+      <h2 id="liveCameraTitle">Kamera ile Fotoğraf Çek</h2>
+      <p id="liveCameraHelp">Görev fotoğrafı şimdi çekilmelidir. Galeri ana yol değildir.</p>
+      <div class="live-camera-view">
+        <video id="liveCameraVideo" autoplay playsinline muted></video>
+        <canvas id="liveCameraCanvas" class="hidden"></canvas>
+        <img id="liveCameraPreview" class="hidden" alt="Çekilen görev fotoğrafı önizlemesi">
+      </div>
+      <div class="live-camera-actions">
+        <button id="liveCameraShootButton" type="button" class="primary" onclick="captureLiveCameraPhoto()">Fotoğrafı Çek</button>
+        <button id="liveCameraRetakeButton" type="button" class="secondary hidden" onclick="retakeLiveCameraPhoto()">Tekrar Çek</button>
+        <button id="liveCameraSendButton" type="button" class="primary hidden" onclick="sendLiveCameraPhoto()">Onaya Gönder</button>
+        <button type="button" class="danger" onclick="closeLiveCameraModal(true)">İptal</button>
+      </div>
+      <div id="liveCameraFallbackBox" class="live-camera-fallback hidden">
+        Kamera açılamazsa yedek dosya seçici kullanılabilir.
+        <button type="button" class="light" onclick="openLiveCameraFallback()">Yedek: Dosya Seç</button>
+      </div>
+    </div>
+  </div>
+
 
   <script>
     const tg = window.Telegram.WebApp;
@@ -2139,10 +2238,10 @@ function renderDynamicTasks(tasks) {
 
         <div class="task-actions">
           ${photoRequired ? `
-            <div id="done${id}" class="camera-action primary" style="grid-column:1 / -1;">
-              <span>Fotoğraf Çek ve Onaya Gönder</span>
-              <input id="photoInput${id}" class="photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onclick="return prepareCameraInput(${id}, 'completed', event)" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
-            </div>
+            <button id="done${id}" type="button" class="camera-action primary" style="grid-column:1 / -1;" onclick="openLiveCamera(${id}, 'completed')">
+              <span>Kamerayı Aç ve Fotoğraf Çek</span>
+            </button>
+            <input id="photoInput${id}" class="photo-input hidden-photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
             <div id="photoDebug${id}" class="photo-debug"></div>
           ` : `
             <button id="done${id}" class="primary" style="grid-column:1 / -1;" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
@@ -2180,7 +2279,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.6: Fotoğraf gönderiminden sonra Mini App kapanmaz; görev listesi içeride yenilenir.
+  // v20.7: Gerçek kamera modu eklendi; galeri sadece kamera açılamazsa yedek olarak kullanılır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2990,6 +3089,14 @@ window.addEventListener("unhandledrejection", function(event) {
 
 let pendingCameraTask = null;
 
+let liveCameraStream = null;
+let liveCameraTaskId = 0;
+let liveCameraStatus = "completed";
+let liveCameraInput = null;
+let liveCameraPreviewUrl = "";
+let liveCameraFile = null;
+
+
 let photoWatcherTimer = null;
 
 function stopPhotoInputWatcher() {
@@ -3004,7 +3111,7 @@ function startPhotoInputWatcher(input, taskId) {
   if (!input || !taskId) return;
 
   let ticks = 0;
-  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  setPhotoDebug(taskId, "Yedek dosya seçici açılıyor...", "info");
 
   photoWatcherTimer = setInterval(function() {
     ticks += 1;
@@ -3105,6 +3212,211 @@ function buildCompletionData(taskId, status) {
   };
 }
 
+
+function setLiveCameraHelp(message, isError) {
+  const help = document.getElementById("liveCameraHelp");
+  if (!help) return;
+  help.innerText = message;
+  help.style.color = isError ? "#b91c1c" : "#6b7280";
+}
+
+function stopLiveCameraStream() {
+  if (liveCameraStream) {
+    try {
+      liveCameraStream.getTracks().forEach(function(track) { track.stop(); });
+    } catch (error) {}
+  }
+  liveCameraStream = null;
+}
+
+function resetLiveCameraPreview() {
+  const video = document.getElementById("liveCameraVideo");
+  const preview = document.getElementById("liveCameraPreview");
+  const shootButton = document.getElementById("liveCameraShootButton");
+  const retakeButton = document.getElementById("liveCameraRetakeButton");
+  const sendButton = document.getElementById("liveCameraSendButton");
+
+  if (liveCameraPreviewUrl) {
+    try { URL.revokeObjectURL(liveCameraPreviewUrl); } catch (error) {}
+  }
+  liveCameraPreviewUrl = "";
+  liveCameraFile = null;
+
+  if (preview) {
+    preview.src = "";
+    preview.classList.add("hidden");
+  }
+  if (video) video.classList.remove("hidden");
+  if (shootButton) shootButton.classList.remove("hidden");
+  if (retakeButton) retakeButton.classList.add("hidden");
+  if (sendButton) sendButton.classList.add("hidden");
+}
+
+function closeLiveCameraModal(clearPending) {
+  stopLiveCameraStream();
+  const modal = document.getElementById("liveCameraModal");
+  if (modal) modal.classList.add("hidden");
+  resetLiveCameraPreview();
+  if (clearPending) {
+    pendingCameraTask = null;
+  }
+  liveCameraTaskId = 0;
+  liveCameraStatus = "completed";
+  liveCameraInput = null;
+}
+
+async function openLiveCamera(taskId, status) {
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+  if (!result.ok) {
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+  liveCameraTaskId = taskId;
+  liveCameraStatus = pendingCameraTask.status || status || "completed";
+  liveCameraInput = document.getElementById("photoInput" + taskId);
+
+  if (liveCameraInput && liveCameraInput.dataset) {
+    liveCameraInput.dataset.taskId = String(taskId);
+    liveCameraInput.dataset.status = liveCameraStatus;
+    liveCameraInput.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+    liveCameraInput.dataset.lastHandledMarker = "";
+    liveCameraInput.value = "";
+  }
+
+  const modal = document.getElementById("liveCameraModal");
+  const video = document.getElementById("liveCameraVideo");
+  const fallback = document.getElementById("liveCameraFallbackBox");
+  if (modal) modal.classList.remove("hidden");
+  if (fallback) fallback.classList.add("hidden");
+  resetLiveCameraPreview();
+  setLiveCameraHelp("Kamera açılıyor. Fotoğrafı şimdi çekin; galeri ana yol değildir.", false);
+  setPhotoDebug(taskId, "Kamera açılıyor...", "info");
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setLiveCameraHelp("Bu cihazda Mini App içi kamera açılamadı. Yedek dosya seçici kullanılabilir.", true);
+    if (fallback) fallback.classList.remove("hidden");
+    setPhotoDebug(taskId, "Mini App içi kamera desteklenmiyor.", "warn");
+    return;
+  }
+
+  try {
+    stopLiveCameraStream();
+    liveCameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 1600 }
+      }
+    });
+    if (video) {
+      video.srcObject = liveCameraStream;
+      await video.play();
+    }
+    setLiveCameraHelp("Kamera hazır. Fotoğrafı çekip onaya gönderin.", false);
+    setPhotoDebug(taskId, "Kamera hazır. Fotoğraf çekin.", "ok");
+  } catch (error) {
+    setLiveCameraHelp("Kamera izni alınamadı veya kamera açılamadı. Kamera iznini açıp tekrar deneyin.", true);
+    if (fallback) fallback.classList.remove("hidden");
+    setPhotoDebug(taskId, "Kamera açılamadı: " + safeErrorText(error), "error");
+  }
+}
+
+function captureLiveCameraPhoto() {
+  const video = document.getElementById("liveCameraVideo");
+  const canvas = document.getElementById("liveCameraCanvas");
+  const preview = document.getElementById("liveCameraPreview");
+  const shootButton = document.getElementById("liveCameraShootButton");
+  const retakeButton = document.getElementById("liveCameraRetakeButton");
+  const sendButton = document.getElementById("liveCameraSendButton");
+
+  if (!video || !canvas || !video.videoWidth || !video.videoHeight) {
+    setLiveCameraHelp("Kamera görüntüsü hazır değil. Birkaç saniye bekleyip tekrar deneyin.", true);
+    if (liveCameraTaskId) setPhotoDebug(liveCameraTaskId, "Kamera görüntüsü hazır değil.", "warn");
+    return;
+  }
+
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, width, height);
+
+  canvas.toBlob(function(blob) {
+    if (!blob) {
+      setLiveCameraHelp("Fotoğraf alınamadı. Tekrar deneyin.", true);
+      return;
+    }
+
+    const fileName = "kamera_gorev_" + liveCameraTaskId + "_" + Date.now() + ".jpg";
+    liveCameraFile = new File([blob], fileName, { type: "image/jpeg", lastModified: Date.now() });
+
+    if (liveCameraPreviewUrl) {
+      try { URL.revokeObjectURL(liveCameraPreviewUrl); } catch (error) {}
+    }
+    liveCameraPreviewUrl = URL.createObjectURL(blob);
+    if (preview) {
+      preview.src = liveCameraPreviewUrl;
+      preview.classList.remove("hidden");
+    }
+    if (video) video.classList.add("hidden");
+    if (shootButton) shootButton.classList.add("hidden");
+    if (retakeButton) retakeButton.classList.remove("hidden");
+    if (sendButton) sendButton.classList.remove("hidden");
+
+    setLiveCameraHelp("Fotoğraf çekildi. Kontrol edip onaya gönderin.", false);
+    if (liveCameraTaskId) setPhotoDebug(liveCameraTaskId, "Fotoğraf çekildi. Onaya gönderebilirsiniz.", "ok");
+  }, "image/jpeg", 0.88);
+}
+
+function retakeLiveCameraPhoto() {
+  resetLiveCameraPreview();
+  setLiveCameraHelp("Kamera hazır. Yeni fotoğraf çekin.", false);
+  if (liveCameraTaskId) setPhotoDebug(liveCameraTaskId, "Tekrar fotoğraf çekiliyor.", "info");
+}
+
+function sendLiveCameraPhoto() {
+  if (!liveCameraFile) {
+    setLiveCameraHelp("Önce fotoğraf çekin.", true);
+    return;
+  }
+
+  const taskId = liveCameraTaskId;
+  const file = liveCameraFile;
+  const input = liveCameraInput || document.getElementById("photoInput" + taskId);
+
+  if (input && input.dataset) {
+    input.dataset.taskId = String(taskId);
+    input.dataset.status = liveCameraStatus;
+    input.dataset.startedAtMs = String((pendingCameraTask && pendingCameraTask.startedAtMs) || Date.now());
+    input.dataset.lastHandledMarker = "";
+  }
+
+  closeLiveCameraModal(false);
+  if (taskId) setPhotoDebug(taskId, "Kamera fotoğrafı onaya gönderiliyor...", "info");
+  uploadCameraPhoto(file, input);
+}
+
+function openLiveCameraFallback() {
+  const taskId = liveCameraTaskId;
+  const status = liveCameraStatus || "completed";
+  closeLiveCameraModal(false);
+  if (taskId) {
+    setPhotoDebug(taskId, "Yedek dosya seçici açılıyor. Normal kullanımda kamera tercih edilir.", "warn");
+    openPhotoPicker(taskId, status);
+  }
+}
+
 function openPhotoPicker(taskId, status) {
   clearPhotoDebug(taskId);
   const result = buildCompletionData(taskId, status);
@@ -3132,7 +3444,7 @@ function openPhotoPicker(taskId, status) {
   input.dataset.lastHandledMarker = "";
   input.value = "";
 
-  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  setPhotoDebug(taskId, "Yedek dosya seçici açılıyor...", "info");
   startPhotoInputWatcher(input, taskId);
 
   try {
@@ -3170,7 +3482,7 @@ function prepareCameraInput(taskId, status, event) {
     input.value = "";
   }
 
-  setPhotoDebug(taskId, "Fotoğraf seçici açılıyor...", "info");
+  setPhotoDebug(taskId, "Yedek dosya seçici açılıyor...", "info");
   startPhotoInputWatcher(input, taskId);
   return true;
 }
@@ -3378,19 +3690,7 @@ function completeTask(taskId, status) {
   const requiresPhoto = task && task.dataset.photoRequired === "1";
 
   if (requiresPhoto) {
-    pendingCameraTask = result.data;
-    pendingCameraTask.startedAtMs = Date.now();
-    const inputId = result.data.status === "late" ? "photoLate" + taskId : "photoDone" + taskId;
-    const input = document.getElementById(inputId) || document.getElementById("photoInput" + taskId);
-    if (input) {
-      input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
-      input.dataset.lastHandledMarker = "";
-      input.value = "";
-      startPhotoInputWatcher(input, taskId);
-      input.click();
-    } else {
-      showMessage("Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.");
-    }
+    openLiveCamera(taskId, result.data.status);
     return;
   }
 
