@@ -859,6 +859,11 @@
       object-fit: cover;
       display: block;
     }
+    #liveCameraVideo.hidden,
+    #liveCameraPreview.hidden,
+    #liveCameraCanvas.hidden {
+      display: none !important;
+    }
     .live-camera-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -886,7 +891,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.7 Gerçek Kamera Modu: fotoğraf önce Mini App içindeki kameradan çekilir; galeri ana yol değildir.</p>
+    <p>v20.7.1 Kamera Önizleme Düzeltmesi: fotoğraf çekildikten sonra ekranda tek önizleme görünür; canlı kamera görüntüsü kapanır.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -974,11 +979,11 @@
         <li>v20.4: Checklist Atama ✅</li>
         <li>v20.4: Müdür Onayı ✅</li>
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
-        <li>v20.7: Gerçek kamera modu ✅</li>
+        <li>v20.7.1: Gerçek kamera modu ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.7 gerçek kamera modu. Fotoğraf çekimi Mini App içinde açılan kamera ekranından yapılır.</p>
+    <p class="small">dashboard v20.7.1 kamera önizleme düzeltmesi. Fotoğraf çekimi sonrası ekranda sadece çekilen fotoğraf önizlemesi görünür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1110,7 +1115,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.7 ile fotoğraf çekimi gerçek kamera ekranına alındı. Sonraki adım iade nedeni yazma alanını müdür tarafında zorunlu hale getirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.7.1 ile fotoğraf çekimi gerçek kamera ekranına alındı. Sonraki adım iade nedeni yazma alanını müdür tarafında zorunlu hale getirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -2279,7 +2284,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.7: Gerçek kamera modu eklendi; galeri sadece kamera açılamazsa yedek olarak kullanılır.
+  // v20.7.1: Gerçek kamera modu eklendi; galeri sadece kamera açılamazsa yedek olarak kullanılır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
