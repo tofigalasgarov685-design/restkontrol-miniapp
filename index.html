@@ -812,7 +812,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.5 Onay Bekleyenler Mini App içine alındı: müdür fotoğrafı görür, kabul veya iade eder.</p>
+    <p>v20.6 UX düzeltmesi: fotoğraf gönderildikten sonra Mini App kapanmaz; ekran içeride kalır ve görev Onay Bekliyor olarak yenilenir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -900,10 +900,11 @@
         <li>v20.4: Checklist Atama ✅</li>
         <li>v20.4: Müdür Onayı ✅</li>
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
+        <li>v20.6: Fotoğraf sonrası Mini App açık kalır ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.5 onay ekranı. Onay Bekleyenler artık Mini App içinde fotoğrafla beraber açılır.</p>
+    <p class="small">dashboard v20.6 fotoğraf sonrası Mini App açık kalır. Onay Bekleyenler Mini App içinde fotoğrafla beraber açılır.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1035,7 +1036,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.5 ile Onay Bekleyenler Mini App içine alındı. Sonraki adım iade nedeni yazma alanıdır.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.6 ile fotoğraf gönderildikten sonra Mini App kapanmaz. Sonraki adım iade nedeni yazma alanını müdür tarafında zorunlu hale getirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -2179,7 +2180,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.5: Onay Bekleyenler Mini App içine alındı; müdür kabul/iade işlemini burada yapar.
+  // v20.6: Fotoğraf gönderiminden sonra Mini App kapanmaz; görev listesi içeride yenilenir.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2939,6 +2940,22 @@ function showMessage(message) {
   }
 }
 
+async function refreshTasksAfterPhotoUpload(taskId, successMessage) {
+  try {
+    await loadDynamicTasks();
+    updateTaskStates();
+    filterTasks("Tümü", document.getElementById("filterAll"));
+    if (taskId) {
+      const taskEl = document.querySelector('[data-task-id="' + taskId + '"]');
+      if (taskEl && typeof taskEl.scrollIntoView === "function") {
+        taskEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  } catch (refreshError) {
+    console.log("Photo upload refresh error", refreshError);
+  }
+}
+
 function setPhotoDebug(taskId, message, type) {
   const el = document.getElementById("photoDebug" + taskId);
   if (!el) return;
@@ -3335,11 +3352,12 @@ async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
     }
 
     const successMessage = result.message || "Fotoğraf müdür onayına gönderildi.";
-    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage, "ok");
-    showMessage(successMessage);
+    const uploadedTaskId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : taskIdForDebug;
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage + " Mini App açık kaldı; görev yenileniyor...", "ok");
     pendingCameraTask = null;
     if (input) input.value = "";
-    tg.close();
+    await refreshTasksAfterPhotoUpload(uploadedTaskId, successMessage);
+    showMessage(successMessage);
   } catch (error) {
     if (input) input.value = "";
     const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi.");
