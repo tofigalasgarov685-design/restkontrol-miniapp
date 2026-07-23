@@ -960,7 +960,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v21.1 Join Duplicate Protection: çalışan daveti, kopyalanabilir davet mesajı ve join süreci Mini App içinde daha net yönetilir.</p>
+    <p>v22.0 Bölümler Ekranı: aktif/pasif bölümler, çalışan ve görev sayıları Mini App içinde yönetilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -1008,8 +1008,8 @@
       <p>Personel, roller, davet kodları ve aktif restoran bölümleri.</p>
       <div class="menu-actions">
         <button class="light" onclick="showEmployeesScreen()">Çalışanlar</button>
-        <button class="light" onclick="showEmployeesScreen()">Çalışan Listesi</button>
-        <button class="light" onclick="showCreateBusiness()">Bölümler / İşletme Ayarları</button>
+        <button class="light" onclick="showDepartmentsScreen()">Bölümler</button>
+        <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
         <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
       </div>
     </div>
@@ -1050,11 +1050,11 @@
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
         <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
-        <li>v21.1: Join duplicate protection ✅</li>
+        <li>v22.0: Join duplicate protection ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v21.1 join duplicate protection ve telegram reset. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
+    <p class="small">dashboard v22.0 bölümler ekranı. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1186,7 +1186,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v21.1 ile join duplicate protection ve telegram reset eklendi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v22.0 ile join duplicate protection ve telegram reset eklendi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1530,10 +1530,40 @@
     </div>
   </div>
 
+  <div id="departmentsScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Bölümler</h2>
+    <p class="small">v22.0: restoran bölümlerini aktif/pasif yönetin, çalışan ve görev kullanımını görün. Kullanımda olan bölüm silinemez.</p>
+
+    <div class="template-summary-grid">
+      <div class="template-summary-card"><strong id="departmentSummaryTotal">0</strong><span>Toplam bölüm</span></div>
+      <div class="template-summary-card"><strong id="departmentSummaryActive">0</strong><span>Aktif</span></div>
+      <div class="template-summary-card"><strong id="departmentSummaryPassive">0</strong><span>Pasif</span></div>
+      <div class="template-summary-card"><strong id="departmentSummaryCustom">0</strong><span>Özel bölüm</span></div>
+    </div>
+
+    <div id="departmentStatusMessage" class="approval-message"></div>
+    <div id="departmentEmptyBox" class="empty-box">Henüz bölüm bulunamadı.</div>
+    <div id="departmentList" class="approval-list"></div>
+
+    <div class="menu-section">
+      <h3>Yeni Bölüm Ekle</h3>
+      <p class="small">Örn: Teras, Paket Servis, Kasap, Pastane. Bölüm eklendikten sonra çalışan ve görev formlarında görünür.</p>
+      <div class="employee-form-grid">
+        <label>Bölüm adı</label>
+        <input id="newDepartmentName" placeholder="Örn: Teras" />
+      </div>
+      <button class="primary" onclick="createDepartmentFromMiniApp()">Bölüm Ekle</button>
+      <button class="light" onclick="loadDepartments()">Listeyi Yenile</button>
+      <button class="secondary" onclick="showCreateBusiness()">İşletme Ayarları</button>
+    </div>
+  </div>
+
+
   <div id="employeesScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışanlar</h2>
-    <p class="small">v21.1: personel listesi, rol, bölüm, bağlantı durumu, davet kodu, join duplicate protection ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
+    <p class="small">v22.0: personel listesi, rol, bölüm, bağlantı durumu, davet mesajı ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
@@ -1879,6 +1909,271 @@
       });
     }
 
+
+    function setDepartmentStatus(message, isError) {
+      const el = document.getElementById("departmentStatusMessage");
+      if (!el) return;
+      el.innerText = message || "";
+      el.className = isError ? "approval-message error" : "approval-message";
+    }
+
+    function updateDepartmentSummary(summary) {
+      summary = summary || {};
+      document.getElementById("departmentSummaryTotal").innerText = summary.total || 0;
+      document.getElementById("departmentSummaryActive").innerText = summary.active || 0;
+      document.getElementById("departmentSummaryPassive").innerText = summary.passive || 0;
+      document.getElementById("departmentSummaryCustom").innerText = summary.custom || 0;
+    }
+
+    function updateDepartmentSelectOptions(items) {
+      const activeItems = (items || []).filter(function(item) { return Number(item.is_active) === 1; });
+      const selectIds = ["employeeV20Zone", "employeeZone", "newTaskZone"];
+
+      selectIds.forEach(function(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        const current = select.value;
+        select.innerHTML = "";
+
+        activeItems.forEach(function(item) {
+          const option = document.createElement("option");
+          option.value = item.name;
+          option.textContent = item.name;
+          select.appendChild(option);
+        });
+
+        if (selectId === "employeeV20Zone" || selectId === "employeeZone") {
+          const option = document.createElement("option");
+          option.value = "Tüm Bölümler";
+          option.textContent = "Tüm Bölümler";
+          select.appendChild(option);
+        }
+
+        if (current) {
+          const exists = Array.from(select.options).some(function(option) { return option.value === current; });
+          if (exists) select.value = current;
+        }
+      });
+    }
+
+    function renderDepartments(items) {
+      const list = document.getElementById("departmentList");
+      const empty = document.getElementById("departmentEmptyBox");
+      list.innerHTML = "";
+
+      if (!items || !items.length) {
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      items.forEach(function(item) {
+        const active = Number(item.is_active) === 1;
+        const canDeactivate = Number(item.can_deactivate) === 1;
+        const canActivate = Number(item.can_activate) === 1;
+        const canDelete = Number(item.can_delete) === 1;
+        const defaultBadge = Number(item.is_default) === 1 ? "Temel" : "Özel";
+        const lockedText = item.lock_reason ? `<p class="small">${escapeHtml(item.lock_reason)} Silme/pasifleştirme için önce kullanım temizlenmeli.</p>` : "";
+
+        const card = document.createElement("div");
+        card.className = "employee-card";
+        card.innerHTML = `
+          <div class="employee-top">
+            <div>
+              <div class="task-id">Bölüm #${escapeHtml(item.id)}</div>
+              <div class="employee-name">${escapeHtml(item.name)}</div>
+            </div>
+            <span class="state">${escapeHtml(item.status_label || (active ? "Aktif" : "Pasif"))}</span>
+          </div>
+          <div class="task-meta">
+            <div class="task-meta-item"><span class="task-meta-label">Tür</span><span class="task-meta-value">${defaultBadge}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Çalışan</span><span class="task-meta-value">${escapeHtml(item.employee_count || 0)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Görev</span><span class="task-meta-value">${escapeHtml(item.task_count || 0)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Durum</span><span class="task-meta-value ${active ? 'photo-ok' : 'photo-bad'}">${active ? 'Aktif' : 'Pasif'}</span></div>
+          </div>
+          <div class="menu-actions single" style="margin-top:10px;">
+            ${canActivate ? `<button class="primary" onclick="toggleDepartmentStatus(${Number(item.id) || 0}, 1)">Aktif Et</button>` : ``}
+            ${active ? `<button class="light" onclick="toggleDepartmentStatus(${Number(item.id) || 0}, 0)" ${canDeactivate ? '' : 'disabled'}>Pasifleştir</button>` : ``}
+            ${canDelete ? `<button class="danger" onclick="deleteDepartmentFromMiniApp(${Number(item.id) || 0})">Sil</button>` : ``}
+          </div>
+          ${lockedText}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function showDepartmentsScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.remove("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.add("hidden");
+      document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+      loadDepartments();
+    }
+
+    async function loadDepartments() {
+      if (!API_BASE_URL) {
+        updateDepartmentSummary({ total: 0, active: 0, passive: 0, custom: 0 });
+        renderDepartments([]);
+        setDepartmentStatus("Backend URL yok. PUBLIC_BASE_URL kontrol edilmeli.", true);
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        updateDepartmentSummary({ total: 0, active: 0, passive: 0, custom: 0 });
+        renderDepartments([]);
+        setDepartmentStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      setDepartmentStatus("Bölümler yükleniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölümler alınamadı.");
+        }
+        updateDepartmentSummary(result.summary || {});
+        renderDepartments(result.items || []);
+        updateDepartmentSelectOptions(result.items || []);
+        setDepartmentStatus((result.items || []).length ? "Bölümler yüklendi." : "Henüz bölüm yok.", false);
+      } catch (error) {
+        updateDepartmentSummary({ total: 0, active: 0, passive: 0, custom: 0 });
+        renderDepartments([]);
+        setDepartmentStatus(safeErrorText(error) || "Bölümler alınamadı.", true);
+      }
+    }
+
+    async function loadDepartmentOptionsForSelects() {
+      if (!API_BASE_URL) return;
+      const userId = getTelegramUserId();
+      if (!userId) return;
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (response.ok && result.ok) updateDepartmentSelectOptions(result.items || []);
+      } catch (error) {
+        console.log("Department options load error", error);
+      }
+    }
+
+    async function createDepartmentFromMiniApp() {
+      const name = document.getElementById("newDepartmentName").value.trim();
+      const userId = getTelegramUserId();
+
+      if (!name) {
+        setDepartmentStatus("Bölüm adı boş olamaz.", true);
+        return;
+      }
+
+      if (!API_BASE_URL || !userId) {
+        setDepartmentStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      setDepartmentStatus("Bölüm ekleniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            action: "add",
+            name: name
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölüm eklenemedi.");
+        }
+        document.getElementById("newDepartmentName").value = "";
+        setDepartmentStatus(result.message || "Bölüm eklendi.", false);
+        await loadDepartments();
+      } catch (error) {
+        setDepartmentStatus(safeErrorText(error) || "Bölüm eklenemedi.", true);
+      }
+    }
+
+    async function toggleDepartmentStatus(departmentId, makeActive) {
+      const userId = getTelegramUserId();
+      if (!API_BASE_URL || !userId) {
+        setDepartmentStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      setDepartmentStatus(makeActive ? "Bölüm aktif ediliyor..." : "Bölüm pasifleştiriliyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            action: "toggle",
+            department_id: departmentId,
+            is_active: makeActive ? 1 : 0
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölüm durumu değiştirilemedi.");
+        }
+        setDepartmentStatus(result.message || "Bölüm durumu güncellendi.", false);
+        await loadDepartments();
+      } catch (error) {
+        setDepartmentStatus(safeErrorText(error) || "Bölüm durumu değiştirilemedi.", true);
+      }
+    }
+
+    async function deleteDepartmentFromMiniApp(departmentId) {
+      const userId = getTelegramUserId();
+      if (!API_BASE_URL || !userId) {
+        setDepartmentStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      const confirmed = window.confirm("Bu bölüm silinsin mi? Kullanımda olan bölüm silinemez.");
+      if (!confirmed) return;
+
+      setDepartmentStatus("Bölüm siliniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            action: "delete",
+            department_id: departmentId
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölüm silinemedi.");
+        }
+        setDepartmentStatus(result.message || "Bölüm silindi.", false);
+        await loadDepartments();
+      } catch (error) {
+        setDepartmentStatus(safeErrorText(error) || "Bölüm silinemedi.", true);
+      }
+    }
+
     function showEmployeesScreen() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
@@ -1894,8 +2189,10 @@
       document.getElementById("templateScreen").classList.add("hidden");
       document.getElementById("templateDetailScreen").classList.add("hidden");
       document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.remove("hidden");
       setTelegramBackButton(true);
+      loadDepartmentOptionsForSelects();
       loadEmployees();
     }
 
@@ -2039,6 +2336,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -2060,6 +2358,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -2080,6 +2379,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -2103,6 +2403,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -2161,6 +2462,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -2201,6 +2503,7 @@
       document.getElementById("businessScreen").classList.remove("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -2232,6 +2535,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.remove("hidden");
@@ -2249,6 +2553,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
@@ -2264,6 +2569,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
@@ -2280,6 +2586,7 @@
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.remove("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
@@ -2288,6 +2595,7 @@
       document.getElementById("v20InfoScreen").classList.add("hidden");
       document.getElementById("templateScreen").classList.add("hidden");
       setTelegramBackButton(true);
+      loadDepartmentOptionsForSelects();
     }
 
 function getApiBaseUrl() {
@@ -2634,7 +2942,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v21.1: Join duplicate protection ve Telegram bağlantısı sıfırlama Mini App içinde çalışır.
+  // v22.0: Join duplicate protection ve Telegram bağlantısı sıfırlama Mini App içinde çalışır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2669,6 +2977,7 @@ function openTasksScreen(title, filterValue, button) {
   document.getElementById("businessScreen").classList.add("hidden");
   document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
   document.getElementById("planScreen").classList.add("hidden");
   document.getElementById("premiumScreen").classList.add("hidden");
   document.getElementById("v20InfoScreen").classList.add("hidden");
@@ -2939,6 +3248,7 @@ function getCurrentMinutes() {
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
@@ -3115,6 +3425,7 @@ function getCurrentMinutes() {
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
       document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
