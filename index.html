@@ -767,6 +767,41 @@
       font-size: 14px;
     }
 
+    .employee-card {
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .employee-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .employee-name {
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+    }
+    .employee-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      border: 1px dashed #9ca3af;
+      border-radius: 12px;
+      padding: 9px 10px;
+      margin-top: 8px;
+      color: #111827;
+      font-weight: 900;
+      letter-spacing: .4px;
+    }
+    .employee-form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
     .approval-list {
       display: flex;
       flex-direction: column;
@@ -925,7 +960,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.8.1 İade Nedeni Kayıt Düzeltmesi: müdür iade ederken nedeni yazmak zorundadır; personel iade sebebini görür.</p>
+    <p>v20.9 Çalışanlar Ekranı: çalışan listesi, roller, bölümler ve davet kodları artık Mini App içinde yönetilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -972,8 +1007,8 @@
       <h3>Ekip ve Bölümler</h3>
       <p>Personel, roller, davet kodları ve aktif restoran bölümleri.</p>
       <div class="menu-actions">
-        <button class="light" onclick="showEmployeeScreen()">Çalışan Ekle</button>
-        <button class="light" onclick="sendEmployeeListRequest()">Çalışan Listesi</button>
+        <button class="light" onclick="showEmployeesScreen()">Çalışanlar</button>
+        <button class="light" onclick="showEmployeesScreen()">Çalışan Listesi</button>
         <button class="light" onclick="showCreateBusiness()">Bölümler / İşletme Ayarları</button>
         <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
       </div>
@@ -1015,10 +1050,11 @@
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
         <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
+        <li>v20.9: Çalışanlar ekranı ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.8.1 iade nedeni kayıt düzeltmesi. Müdür iade ederken sebep yazar, personel görevi neden geri aldığını görür.</p>
+    <p class="small">dashboard v20.9 çalışanlar ekranı. Çalışan listesi, rol, bölüm, bağlantı durumu ve davet kodları Mini App içinde görünür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1150,7 +1186,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.8.1 ile iade nedeni kayıt düzeltmesi yapıldı. Sonraki adım personel ve davet akışını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.9 ile çalışan listesi ve davet kodu ekranı Mini App içine alındı. Sonraki adım davet/join akışını daha temiz hale getirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1494,6 +1530,53 @@
     </div>
   </div>
 
+  <div id="employeesScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Çalışanlar</h2>
+    <p class="small">v20.9: personel listesi, rol, bölüm, bağlantı durumu ve davet kodları Mini App içinde yönetilir.</p>
+
+    <div class="template-summary-grid">
+      <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
+      <div class="template-summary-card"><strong id="employeeSummaryActive">0</strong><span>Aktif</span></div>
+      <div class="template-summary-card"><strong id="employeeSummaryConnected">0</strong><span>Bağlandı</span></div>
+      <div class="template-summary-card"><strong id="employeeSummaryWaiting">0</strong><span>Davet bekliyor</span></div>
+    </div>
+
+    <div id="employeeStatusMessage" class="approval-message"></div>
+    <div id="employeeEmptyBox" class="empty-box">Henüz çalışan eklenmemiş.</div>
+    <div id="employeeList" class="approval-list"></div>
+
+    <div class="menu-section">
+      <h3>Yeni Çalışan Daveti</h3>
+      <p class="small">Davet kodu oluşturulur. Çalışan kendi telefonundan bota girip bu kodla işletmeye bağlanır.</p>
+
+      <div class="employee-form-grid">
+        <label>Ad Soyad</label>
+        <input id="employeeV20Name" placeholder="Örn: Ahmet Yılmaz" />
+
+        <label>Rol</label>
+        <select id="employeeV20Role">
+          <option value="staff">Personel</option>
+          <option value="manager">Müdür / Vardiya Şefi</option>
+          <option value="director">Genel Müdür</option>
+        </select>
+
+        <label>Bölüm</label>
+        <select id="employeeV20Zone">
+          <option value="Mutfak">Mutfak</option>
+          <option value="Salon">Salon</option>
+          <option value="Bar">Bar</option>
+          <option value="Depo">Depo</option>
+          <option value="Tüm Bölümler">Tüm Bölümler</option>
+        </select>
+      </div>
+
+      <button class="primary" onclick="createEmployeeFromMiniApp()">Davet Kodu Oluştur</button>
+      <button class="light" onclick="loadEmployees()">Listeyi Yenile</button>
+    </div>
+  </div>
+
+
   <div id="employeeScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışan Ekle</h2>
@@ -1732,10 +1815,177 @@
       });
     }
 
+
+    function setEmployeeStatus(message, isError) {
+      const box = document.getElementById("employeeStatusMessage");
+      if (!box) return;
+      box.innerText = message || "";
+      box.classList.toggle("error", !!isError);
+      box.style.display = message ? "block" : "none";
+    }
+
+    function updateEmployeeSummary(summary) {
+      summary = summary || { total: 0, active: 0, connected: 0, waiting: 0 };
+      document.getElementById("employeeSummaryTotal").innerText = summary.total || 0;
+      document.getElementById("employeeSummaryActive").innerText = summary.active || 0;
+      document.getElementById("employeeSummaryConnected").innerText = summary.connected || 0;
+      document.getElementById("employeeSummaryWaiting").innerText = summary.waiting || 0;
+    }
+
+    function renderEmployees(items) {
+      const list = document.getElementById("employeeList");
+      const empty = document.getElementById("employeeEmptyBox");
+      if (!list || !empty) return;
+
+      list.innerHTML = "";
+
+      if (!items || !items.length) {
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      items.forEach(function(item) {
+        const code = item.invite_code || "";
+        const connected = String(item.connection_label || "").toLowerCase().indexOf("bağlandı") >= 0 || String(item.connection_label || "").toLowerCase().indexOf("baglandi") >= 0;
+        const card = document.createElement("div");
+        card.className = "employee-card";
+        card.innerHTML = `
+          <div class="employee-top">
+            <div>
+              <div class="task-id">Çalışan #${escapeHtml(item.id)}</div>
+              <div class="employee-name">${escapeHtml(item.full_name)}</div>
+            </div>
+            <span class="state">${escapeHtml(item.status_label || "Aktif")}</span>
+          </div>
+          <div class="task-meta">
+            <div class="task-meta-item"><span class="task-meta-label">Rol</span><span class="task-meta-value">${escapeHtml(item.role_label || item.role)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Bölüm</span><span class="task-meta-value">${escapeHtml(item.zone)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Bağlantı</span><span class="task-meta-value ${connected ? 'photo-ok' : 'photo-bad'}">${escapeHtml(item.connection_label)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Katılım</span><span class="task-meta-value">${escapeHtml(item.joined_at || '-')}</span></div>
+          </div>
+          ${!connected && code ? `
+            <div class="employee-code">/join ${escapeHtml(code)}</div>
+            <button class="light" onclick="copyJoinCode('${escapeHtml(code)}')">Kodu Kopyala</button>
+          ` : ``}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function showEmployeesScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.add("hidden");
+      document.getElementById("v20InfoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+      loadEmployees();
+    }
+
+    async function loadEmployees() {
+      if (!API_BASE_URL) {
+        updateEmployeeSummary({ total: 0, active: 0, connected: 0, waiting: 0 });
+        renderEmployees([]);
+        setEmployeeStatus("Backend URL yok. PUBLIC_BASE_URL kontrol edilmeli.", true);
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        updateEmployeeSummary({ total: 0, active: 0, connected: 0, waiting: 0 });
+        renderEmployees([]);
+        setEmployeeStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      setEmployeeStatus("Çalışan listesi yükleniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/employees?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Çalışan listesi alınamadı.");
+        }
+        updateEmployeeSummary(result.summary || {});
+        renderEmployees(result.items || []);
+        setEmployeeStatus((result.items || []).length ? "Çalışan listesi yüklendi." : "Henüz çalışan eklenmemiş.", false);
+      } catch (error) {
+        updateEmployeeSummary({ total: 0, active: 0, connected: 0, waiting: 0 });
+        renderEmployees([]);
+        setEmployeeStatus(safeErrorText(error) || "Çalışan listesi alınamadı.", true);
+      }
+    }
+
+    async function createEmployeeFromMiniApp() {
+      const fullName = document.getElementById("employeeV20Name").value.trim();
+      const role = document.getElementById("employeeV20Role").value;
+      const zone = document.getElementById("employeeV20Zone").value;
+      const userId = getTelegramUserId();
+
+      if (!fullName) {
+        setEmployeeStatus("Ad Soyad boş olamaz.", true);
+        return;
+      }
+
+      if (!API_BASE_URL || !userId) {
+        setEmployeeStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      setEmployeeStatus("Davet kodu oluşturuluyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/employees", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            full_name: fullName,
+            role: role,
+            zone: zone
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Çalışan eklenemedi.");
+        }
+        document.getElementById("employeeV20Name").value = "";
+        setEmployeeStatus((result.message || "Çalışan daveti oluşturuldu.") + " " + (result.join_command || ""), false);
+        await loadEmployees();
+      } catch (error) {
+        setEmployeeStatus(safeErrorText(error) || "Çalışan eklenemedi.", true);
+      }
+    }
+
+    async function copyJoinCode(code) {
+      const text = "/join " + code;
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        }
+        setEmployeeStatus("Davet kodu kopyalandı: " + text, false);
+      } catch (error) {
+        setEmployeeStatus("Davet kodu: " + text, false);
+      }
+    }
+
     function showHome() {
       document.getElementById("homeScreen").classList.remove("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -1756,6 +2006,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -1775,6 +2026,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -1797,6 +2049,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -1854,6 +2107,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -1893,6 +2147,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.remove("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
@@ -1923,6 +2178,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.remove("hidden");
@@ -1939,6 +2195,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
@@ -1953,6 +2210,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
@@ -1968,6 +2226,7 @@
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.remove("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("premiumScreen").classList.add("hidden");
@@ -2322,7 +2581,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.8.1: İade nedeni hem sunucuda hem yedek kayıtta saklanır; personel ekranında kaybolmaz.
+  // v20.9: Çalışanlar ekranı Mini App içinde liste, özet ve davet kodu ile çalışır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2356,6 +2615,7 @@ function openTasksScreen(title, filterValue, button) {
   document.getElementById("homeScreen").classList.add("hidden");
   document.getElementById("businessScreen").classList.add("hidden");
   document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
   document.getElementById("planScreen").classList.add("hidden");
   document.getElementById("premiumScreen").classList.add("hidden");
   document.getElementById("v20InfoScreen").classList.add("hidden");
@@ -2625,6 +2885,7 @@ function getCurrentMinutes() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
@@ -2800,6 +3061,7 @@ function getCurrentMinutes() {
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
       document.getElementById("addTaskScreen").classList.add("hidden");
       document.getElementById("checklistScreen").classList.add("hidden");
       document.getElementById("planScreen").classList.add("hidden");
