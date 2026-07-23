@@ -960,7 +960,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v22.0 Bölümler Ekranı: aktif/pasif bölümler, çalışan ve görev sayıları Mini App içinde yönetilir.</p>
+    <p>v22.0.1 Bölümler Görev Sayısı Fix: aktif/pasif bölümler, çalışan ve görev sayıları Mini App içinde yönetilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -1050,11 +1050,11 @@
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
         <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
-        <li>v22.0: Join duplicate protection ✅</li>
+        <li>v22.0.1: Bölümler görev sayısı fix ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v22.0 bölümler ekranı. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
+    <p class="small">dashboard v22.0.1 bölümler görev sayısı fix. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1186,7 +1186,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v22.0 ile join duplicate protection ve telegram reset eklendi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v22.0.1 ile bölümler görev sayısı gösterimi düzeltildi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1533,7 +1533,7 @@
   <div id="departmentsScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Bölümler</h2>
-    <p class="small">v22.0: restoran bölümlerini aktif/pasif yönetin, çalışan ve görev kullanımını görün. Kullanımda olan bölüm silinemez.</p>
+    <p class="small">v22.0.1: restoran bölümlerini aktif/pasif yönetin, çalışan ve görev kullanımını görün. Kullanımda olan bölüm silinemez.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="departmentSummaryTotal">0</strong><span>Toplam bölüm</span></div>
@@ -1563,7 +1563,7 @@
   <div id="employeesScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışanlar</h2>
-    <p class="small">v22.0: personel listesi, rol, bölüm, bağlantı durumu, davet mesajı ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
+    <p class="small">v22.0.1: personel listesi, rol, bölüm, bağlantı durumu, davet mesajı ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
@@ -1988,8 +1988,8 @@
           </div>
           <div class="task-meta">
             <div class="task-meta-item"><span class="task-meta-label">Tür</span><span class="task-meta-value">${defaultBadge}</span></div>
-            <div class="task-meta-item"><span class="task-meta-label">Çalışan</span><span class="task-meta-value">${escapeHtml(item.employee_count || 0)}</span></div>
-            <div class="task-meta-item"><span class="task-meta-label">Görev</span><span class="task-meta-value">${escapeHtml(item.task_count || 0)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Çalışan</span><span class="task-meta-value">${escapeHtml(displayCount(item.employee_count))}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Görev</span><span class="task-meta-value">${escapeHtml(displayCount(item.task_count))}</span></div>
             <div class="task-meta-item"><span class="task-meta-label">Durum</span><span class="task-meta-value ${active ? 'photo-ok' : 'photo-bad'}">${active ? 'Aktif' : 'Pasif'}</span></div>
           </div>
           <div class="menu-actions single" style="margin-top:10px;">
@@ -2621,12 +2621,20 @@ function getTelegramUserId() {
 }
 
 function escapeHtml(value) {
-  return String(value || "")
+  if (value === null || value === undefined) return "";
+  return String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function displayCount(value) {
+  if (value === null || value === undefined || value === "") return "0";
+  const numberValue = Number(value);
+  if (Number.isFinite(numberValue)) return String(numberValue);
+  return String(value);
 }
 
 
@@ -2942,7 +2950,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v22.0: Join duplicate protection ve Telegram bağlantısı sıfırlama Mini App içinde çalışır.
+  // v22.0.1: Bölümler görev sayısı 0 değerini boş göstermeden çalışır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
