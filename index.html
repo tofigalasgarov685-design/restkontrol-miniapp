@@ -925,7 +925,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.8 İade Nedeni Zorunlu: müdür iade ederken nedeni yazmak zorundadır; personel iade sebebini görür.</p>
+    <p>v20.8.1 İade Nedeni Kayıt Düzeltmesi: müdür iade ederken nedeni yazmak zorundadır; personel iade sebebini görür.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -1014,11 +1014,11 @@
         <li>v20.4: Müdür Onayı ✅</li>
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
-        <li>v20.8: İade nedeni zorunlu ✅</li>
+        <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.8 iade nedeni zorunlu. Müdür iade ederken sebep yazar, personel görevi neden geri aldığını görür.</p>
+    <p class="small">dashboard v20.8.1 iade nedeni kayıt düzeltmesi. Müdür iade ederken sebep yazar, personel görevi neden geri aldığını görür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1150,7 +1150,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.8 ile iade nedeni zorunlu hale getirildi. Sonraki adım personel ve davet akışını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.8.1 ile iade nedeni kayıt düzeltmesi yapıldı. Sonraki adım personel ve davet akışını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -2247,7 +2247,8 @@ function renderDynamicTasks(tasks) {
     const completionStatus = escapeHtml(completionStatusRaw);
     const completedAt = escapeHtml(task.completed_at || "");
     const completionComment = escapeHtml(task.completion_comment || "");
-    const completionReviewReason = escapeHtml(task.completion_review_reason || "");
+    const cachedRejectReason = localStorage.getItem("rk_reject_reason_task_" + id) || "";
+    const completionReviewReason = escapeHtml(task.completion_review_reason || cachedRejectReason || "");
     const completionStaffName = escapeHtml(task.completion_staff_name || "");
     const isApproved = isApprovedCompletionStatus(completionStatusRaw);
     const isPendingApproval = isPendingApprovalStatus(completionStatusRaw);
@@ -2321,7 +2322,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.8: İade nedeni zorunlu hale getirildi; reject işlemi sebep yazılmadan gönderilmez.
+  // v20.8.1: İade nedeni hem sunucuda hem yedek kayıtta saklanır; personel ekranında kaybolmaz.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2948,6 +2949,12 @@ function getCurrentMinutes() {
         const result = await response.json();
         if (!response.ok || !result.ok) {
           throw new Error(result.error || "Onay işlemi tamamlanamadı.");
+        }
+        if (action === "reject" && result.task_id) {
+          localStorage.setItem("rk_reject_reason_task_" + result.task_id, reviewReason);
+        }
+        if (action === "approve" && result.task_id) {
+          localStorage.removeItem("rk_reject_reason_task_" + result.task_id);
         }
         setApprovalStatus(result.message || "İşlem tamamlandı.", false);
         await loadPendingApprovals();
