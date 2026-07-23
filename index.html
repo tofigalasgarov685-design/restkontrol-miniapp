@@ -960,7 +960,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v21.0.1 Davet / Join Buton Düzeltmesi: çalışan daveti, kopyalanabilir davet mesajı ve join süreci Mini App içinde daha net yönetilir.</p>
+    <p>v21.1 Join Duplicate Protection: çalışan daveti, kopyalanabilir davet mesajı ve join süreci Mini App içinde daha net yönetilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -1050,11 +1050,11 @@
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
         <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
-        <li>v21.0.1: Davet / Join buton düzeltmesi ✅</li>
+        <li>v21.1: Join duplicate protection ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v21.0.1 davet / join buton düzeltmesi. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
+    <p class="small">dashboard v21.1 join duplicate protection ve telegram reset. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1186,7 +1186,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v21.0.1 ile davet/join butonları düzeltildi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v21.1 ile join duplicate protection ve telegram reset eklendi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1533,7 +1533,7 @@
   <div id="employeesScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışanlar</h2>
-    <p class="small">v21.0.1: personel listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde yönetilir.</p>
+    <p class="small">v21.1: personel listesi, rol, bölüm, bağlantı durumu, davet kodu, join duplicate protection ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
@@ -1870,6 +1870,10 @@
             <button class="light" onclick="copyJoinCode('${escapeHtml(code)}')">Kodu Kopyala</button>
             <button class="secondary" onclick="copyInviteMessage('${escapeHtml(code)}', '${escapeHtml(item.full_name)}', '${escapeHtml(item.role_label || item.role)}', '${escapeHtml(item.zone)}')">Davet Mesajını Kopyala</button>
           ` : ``}
+          ${connected ? `
+            <button class="light" onclick="resetEmployeeTelegram(${Number(item.id) || 0})">Telegram Bağlantısını Sıfırla</button>
+            <p class="small">Yanlış Telegram hesabı bağlandıysa bu butonla çalışanı yeniden davet edilebilir hale getirebilirsiniz.</p>
+          ` : ``}
         `;
         list.appendChild(card);
       });
@@ -1995,6 +1999,38 @@
         setEmployeeStatus("Davet mesajı kopyalandı.", false);
       } catch (error) {
         setEmployeeStatus("Davet mesajı: " + text, false);
+      }
+    }
+
+    async function resetEmployeeTelegram(employeeId) {
+      const userId = getTelegramUserId();
+      if (!API_BASE_URL || !userId) {
+        setEmployeeStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      const confirmed = window.confirm("Bu çalışanın Telegram bağlantısı sıfırlansın mı? Çalışan tekrar davet kodu ile bağlanabilecek.");
+      if (!confirmed) return;
+
+      setEmployeeStatus("Telegram bağlantısı sıfırlanıyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/reset_employee_telegram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            employee_id: employeeId
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Telegram bağlantısı sıfırlanamadı.");
+        }
+        setEmployeeStatus((result.message || "Telegram bağlantısı sıfırlandı.") + " Yeni kod: " + (result.join_command || "-"), false);
+        await loadEmployees();
+      } catch (error) {
+        setEmployeeStatus(safeErrorText(error) || "Telegram bağlantısı sıfırlanamadı.", true);
       }
     }
 
@@ -2598,7 +2634,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v21.0.1: Davet / Join akışı Mini App içinde liste, özet, davet kodu ve davet mesajı ile çalışır.
+  // v21.1: Join duplicate protection ve Telegram bağlantısı sıfırlama Mini App içinde çalışır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
