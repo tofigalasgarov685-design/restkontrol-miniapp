@@ -960,7 +960,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v22.0.1 Bölümler Görev Sayısı Fix: aktif/pasif bölümler, çalışan ve görev sayıları Mini App içinde yönetilir.</p>
+    <p>v23.0 Personel Yetki Sınırları: personel sadece kendi bölümündeki görevleri görür, yönetim ekranları sadece yetkili rollere açıktır.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -981,6 +981,8 @@
       </div>
     </div>
 
+    <div id="personelAccessBanner" class="status-box hidden"></div>
+
     <div class="menu-section">
       <h3>Bugünkü Kontroller</h3>
       <p>Günlük kontrol noktalarını, gecikenleri ve bekleyen işleri takip et.</p>
@@ -988,11 +990,11 @@
         <button class="secondary" onclick="showTasks()">Bugünkü Kontroller</button>
         <button class="danger" onclick="showLateTasks()">Gecikenler</button>
         <button class="primary" onclick="showWaitingTasks()">Bekleyenler</button>
-        <button class="light" onclick="showAddTaskScreen()">Manuel Görev Ekle</button>
+        <button id="manualTaskButton" class="light" onclick="showAddTaskScreen()">Manuel Görev Ekle</button>
       </div>
     </div>
 
-    <div class="menu-section">
+    <div class="menu-section" data-management-only="1">
       <h3>Checklist Yönetimi</h3>
       <p>Hazır paketler, şablon mantığı ve ileride kontrol atama akışı burada birleşecek.</p>
       <div class="menu-actions">
@@ -1003,7 +1005,7 @@
       </div>
     </div>
 
-    <div class="menu-section">
+    <div class="menu-section" data-management-only="1">
       <h3>Ekip ve Bölümler</h3>
       <p>Personel, roller, davet kodları ve aktif restoran bölümleri.</p>
       <div class="menu-actions">
@@ -1014,7 +1016,7 @@
       </div>
     </div>
 
-    <div class="menu-section">
+    <div class="menu-section" data-management-only="1">
       <h3>Raporlar ve Bildirimler</h3>
       <p>Yönetim, fotoğraf, bölüm, personel raporları ve bekleyen uyarılar.</p>
       <div class="menu-actions">
@@ -1027,7 +1029,7 @@
       </div>
     </div>
 
-    <div class="menu-section">
+    <div class="menu-section" data-management-only="1">
       <h3>Plan, Ödeme ve Kurulum</h3>
       <p>Trial/Premium durumu, ödeme talebi ve telefona kurulum bilgileri.</p>
       <div class="menu-actions">
@@ -1050,11 +1052,11 @@
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
         <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
-        <li>v22.0.1: Bölümler görev sayısı fix ✅</li>
+        <li>v23.0: Personel yetki sınırları ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v22.0.1 bölümler görev sayısı fix. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
+    <p class="small">dashboard v23.0 personel yetki sınırları. Personel kendi bölümündeki görevleri görür; yönetici ekip, bölüm, rapor ve onay ekranlarını yönetir.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1186,7 +1188,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v22.0.1 ile bölümler görev sayısı gösterimi düzeltildi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v23.0 ile personel yetki sınırları eklendi. Sonraki adım görev atama ve personel ekranlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1533,7 +1535,7 @@
   <div id="departmentsScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Bölümler</h2>
-    <p class="small">v22.0.1: restoran bölümlerini aktif/pasif yönetin, çalışan ve görev kullanımını görün. Kullanımda olan bölüm silinemez.</p>
+    <p class="small">v23.0: restoran bölümlerini aktif/pasif yönetin, çalışan ve görev kullanımını görün. Kullanımda olan bölüm silinemez.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="departmentSummaryTotal">0</strong><span>Toplam bölüm</span></div>
@@ -1563,7 +1565,7 @@
   <div id="employeesScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışanlar</h2>
-    <p class="small">v22.0.1: personel listesi, rol, bölüm, bağlantı durumu, davet mesajı ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
+    <p class="small">v23.0: personel listesi, rol, bölüm, bağlantı durumu, davet mesajı ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
@@ -1677,7 +1679,7 @@
   <div id="tasksScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2 id="taskScreenTitle">Bugünkü Kontroller</h2>
-    <p>Bugünkü kontrol noktaları durumlarına göre ayrılır. Saat geçtiyse sistem otomatik olarak gecikme durumuna alır.</p>
+    <p>Bugünkü kontrol noktaları yetki rolüne göre gösterilir. Personel sadece kendi bölümündeki görevleri görür; saat geçtiyse sistem otomatik olarak gecikme durumuna alır.</p>
 
     <div class="control-summary-grid">
       <div class="control-summary-card"><strong id="taskSummaryTotal">0</strong><span>Toplam</span></div>
@@ -1697,10 +1699,10 @@
       <button id="filterPhoto" onclick="filterTasks('Fotoğraflı', this)">Fotoğraflı</button>
       <button id="filterApproval" onclick="filterTasks('Onay', this)">Onay Bekleyen</button>
       <button id="filterDone" onclick="filterTasks('Tamamlanan', this)">Tamamlanan</button>
-      <button onclick="filterTasks('Mutfak', this)">Mutfak</button>
-      <button onclick="filterTasks('Salon', this)">Salon</button>
-      <button onclick="filterTasks('Bar', this)">Bar</button>
-      <button onclick="filterTasks('Depo', this)">Depo</button>
+      <button data-zone-filter="Mutfak" onclick="filterTasks('Mutfak', this)">Mutfak</button>
+      <button data-zone-filter="Salon" onclick="filterTasks('Salon', this)">Salon</button>
+      <button data-zone-filter="Bar" onclick="filterTasks('Bar', this)">Bar</button>
+      <button data-zone-filter="Depo" onclick="filterTasks('Depo', this)">Depo</button>
     </div>
 
     <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
@@ -2004,6 +2006,7 @@
     }
 
     function showDepartmentsScreen() {
+  if (!requireManagementPermission("Bölümler")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2175,6 +2178,7 @@
     }
 
     function showEmployeesScreen() {
+  if (!requireManagementPermission("Çalışanlar")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2375,6 +2379,7 @@
     }
 
     function showTemplateScreen() {
+  if (!requireManagementPermission("Checklist Şablonları")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2455,6 +2460,7 @@
 
 
     function showTemplateAssignScreen(templateKey) {
+  if (!requireManagementPermission("Kontrol Atama")) return;
       currentAssignTemplateKey = templateKey || currentTemplateDetailKey || "mutfak_acilis";
       const data = checklistTemplateDetails[currentAssignTemplateKey] || checklistTemplateDetails.mutfak_acilis;
 
@@ -2499,6 +2505,7 @@
 
 
     function showCreateBusiness() {
+  if (!requireManagementPermission("İşletme Ayarları")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.remove("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2531,6 +2538,7 @@
 
 
     function showPlanScreen() {
+  if (!requireManagementPermission("Plan ve Ödeme")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2549,6 +2557,7 @@
     }
 
     function showChecklistScreen() {
+  if (!requireManagementPermission("Hazır Checklistler")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2565,6 +2574,7 @@
     }
 
     function showCleanupScreen() {
+  if (!requireManagementPermission("Başlangıç Temizliği")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2582,6 +2592,7 @@
     }
 
     function showAddTaskScreen() {
+  if (!requireManagementPermission("Manuel Görev Ekle")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -2635,6 +2646,73 @@ function displayCount(value) {
   const numberValue = Number(value);
   if (Number.isFinite(numberValue)) return String(numberValue);
   return String(value);
+}
+
+let currentAccessProfile = null;
+
+function applyPermissionProfile(profile) {
+  if (!profile) return;
+  currentAccessProfile = profile;
+
+  const canManage = profile.can_manage !== false;
+  document.querySelectorAll('[data-management-only="1"]').forEach(function(element) {
+    element.classList.toggle("hidden", !canManage);
+  });
+
+  const manualButton = document.getElementById("manualTaskButton");
+  if (manualButton) manualButton.classList.toggle("hidden", !canManage);
+
+  const banner = document.getElementById("personelAccessBanner");
+  if (banner) {
+    const roleText = profile.role_label || profile.role || "-";
+    const zoneText = profile.zone || "Tüm Bölümler";
+    if (canManage) {
+      banner.classList.remove("hidden", "warning");
+      banner.classList.add("success");
+      banner.innerText = "Yönetici modu: " + roleText + " · " + zoneText + ". Tüm yönetim ekranları açık.";
+    } else {
+      banner.classList.remove("hidden", "success");
+      banner.classList.add("warning");
+      banner.innerText = "Personel modu: " + roleText + " · " + zoneText + ". Sadece kendi bölümünüzdeki görevleri görebilirsiniz.";
+    }
+  }
+
+  updateZoneFilterVisibility(profile);
+}
+
+function updateZoneFilterVisibility(profile) {
+  const zone = profile && profile.zone ? profile.zone : "";
+  const limited = profile && profile.role === "staff" && zone && zone !== "Tüm Bölümler";
+  document.querySelectorAll('[data-zone-filter]').forEach(function(button) {
+    const buttonZone = button.getAttribute("data-zone-filter") || "";
+    button.classList.toggle("hidden", limited && buttonZone !== zone);
+  });
+}
+
+function requireManagementPermission(screenTitle) {
+  if (currentAccessProfile && currentAccessProfile.can_manage === false) {
+    showMessage((screenTitle || "Bu ekran") + " için yetkiniz yok.");
+    return false;
+  }
+  return true;
+}
+
+async function loadAccessProfileOnly() {
+  if (!API_BASE_URL) return;
+  const userId = getTelegramUserId();
+  if (!userId) return;
+
+  try {
+    const response = await fetch(API_BASE_URL + "/api/tasks?telegram_user_id=" + encodeURIComponent(userId));
+    const result = await response.json();
+    if (result && result.ok) {
+      applyPermissionProfile(result.access_profile || { role: result.role || "" });
+      renderDynamicTasks(result.tasks || []);
+      updateTaskStates();
+    }
+  } catch (error) {
+    console.log("Access profile load error", error);
+  }
 }
 
 
@@ -2950,7 +3028,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v22.0.1: Bölümler görev sayısı 0 değerini boş göstermeden çalışır.
+  // v23.0: Personel yetki sınırları ve bölüm bazlı görev görünümü çalışır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2971,6 +3049,7 @@ async function loadDynamicTasks() {
       throw new Error(result.error || "Görevler alınamadı.");
     }
 
+    applyPermissionProfile(result.access_profile || { role: result.role || "" });
     renderDynamicTasks(result.tasks || []);
     return true;
   } catch (error) {
@@ -3429,6 +3508,7 @@ function getCurrentMinutes() {
     }
 
     function showApprovalScreen() {
+  if (!requireManagementPermission("Onay Bekleyenler")) return;
       document.getElementById("homeScreen").classList.add("hidden");
       document.getElementById("businessScreen").classList.add("hidden");
       document.getElementById("employeeScreen").classList.add("hidden");
@@ -4423,6 +4503,7 @@ function completeTask(taskId, status) {
       tg.close();
     }
 
+    loadAccessProfileOnly();
     updateTaskStates();
   </script>
 </body>
