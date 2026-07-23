@@ -788,6 +788,40 @@
       background: #f3f4f6;
       margin: 10px 0 12px;
     }
+    .reject-reason-box {
+      border: 1px solid #fecaca;
+      background: #fff7f7;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 10px 0 12px;
+    }
+    .reject-reason-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      color: #991b1b;
+      margin-bottom: 7px;
+    }
+    .reject-reason-box textarea {
+      min-height: 70px;
+      border-color: #fecaca;
+      background: #ffffff;
+    }
+    .quick-reason-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .quick-reason-row button {
+      width: auto;
+      padding: 7px 9px;
+      margin-top: 0;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #fee2e2;
+      color: #991b1b;
+    }
     .approval-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -891,7 +925,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v20.7.1 Kamera Önizleme Düzeltmesi: fotoğraf çekildikten sonra ekranda tek önizleme görünür; canlı kamera görüntüsü kapanır.</p>
+    <p>v20.8 İade Nedeni Zorunlu: müdür iade ederken nedeni yazmak zorundadır; personel iade sebebini görür.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -980,10 +1014,11 @@
         <li>v20.4: Müdür Onayı ✅</li>
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
+        <li>v20.8: İade nedeni zorunlu ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v20.7.1 kamera önizleme düzeltmesi. Fotoğraf çekimi sonrası ekranda sadece çekilen fotoğraf önizlemesi görünür.</p>
+    <p class="small">dashboard v20.8 iade nedeni zorunlu. Müdür iade ederken sebep yazar, personel görevi neden geri aldığını görür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1115,7 +1150,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.7.1 ile fotoğraf çekimi gerçek kamera ekranına alındı. Sonraki adım iade nedeni yazma alanını müdür tarafında zorunlu hale getirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v20.8 ile iade nedeni zorunlu hale getirildi. Sonraki adım personel ve davet akışını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -2212,6 +2247,7 @@ function renderDynamicTasks(tasks) {
     const completionStatus = escapeHtml(completionStatusRaw);
     const completedAt = escapeHtml(task.completed_at || "");
     const completionComment = escapeHtml(task.completion_comment || "");
+    const completionReviewReason = escapeHtml(task.completion_review_reason || "");
     const completionStaffName = escapeHtml(task.completion_staff_name || "");
     const isApproved = isApprovedCompletionStatus(completionStatusRaw);
     const isPendingApproval = isPendingApprovalStatus(completionStatusRaw);
@@ -2223,7 +2259,8 @@ function renderDynamicTasks(tasks) {
         <div class="task-rejected-box">
           <strong>İade edildi</strong><br>
           Bu kontrol müdür tarafından iade edildi. Yeni fotoğrafla tekrar gönderin.
-          ${completionComment ? `<br>Yorum: ${completionComment}` : ``}
+          ${completionReviewReason ? `<br><strong>İade nedeni:</strong> ${completionReviewReason}` : `<br><strong>İade nedeni:</strong> Belirtilmemiş`}
+          ${completionComment ? `<br>Personel yorumu: ${completionComment}` : ``}
         </div>
       ` : ``;
 
@@ -2284,7 +2321,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v20.7.1: Gerçek kamera modu eklendi; galeri sadece kamera açılamazsa yedek olarak kullanılır.
+  // v20.8: İade nedeni zorunlu hale getirildi; reject işlemi sebep yazılmadan gönderilmez.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
@@ -2847,6 +2884,16 @@ function getCurrentMinutes() {
               Gönderen: ${escapeHtml(item.staff_name || "-")}<br>
               Zaman: ${escapeHtml(item.completed_at || "-")}${roleLine}${zoneLine}${commentLine}
             </div>
+            <div class="reject-reason-box">
+              <label>İade Nedeni <span class="small">(İade Et için zorunlu)</span></label>
+              <textarea id="rejectReason${completionId}" placeholder="Örn: Fotoğraf net değil, etiket görünmüyor, yanlış alan çekilmiş"></textarea>
+              <div class="quick-reason-row">
+                <button type="button" onclick="setRejectReason(${completionId}, 'Fotoğraf net değil')">Fotoğraf net değil</button>
+                <button type="button" onclick="setRejectReason(${completionId}, 'Yanlış alan çekilmiş')">Yanlış alan</button>
+                <button type="button" onclick="setRejectReason(${completionId}, 'Etiket / tarih görünmüyor')">Etiket görünmüyor</button>
+                <button type="button" onclick="setRejectReason(${completionId}, 'Temizlik standarda uygun değil')">Temizlik uygun değil</button>
+              </div>
+            </div>
             <div class="approval-actions">
               <button class="primary" onclick="reviewApproval(${completionId}, 'approve')">Kabul Et</button>
               <button class="danger" onclick="reviewApproval(${completionId}, 'reject')">İade Et</button>
@@ -2854,6 +2901,11 @@ function getCurrentMinutes() {
           </div>
         `;
       }).join("");
+    }
+
+    function setRejectReason(completionId, reason) {
+      const input = document.getElementById("rejectReason" + completionId);
+      if (input) input.value = reason;
     }
 
     async function reviewApproval(completionId, action) {
@@ -2867,6 +2919,17 @@ function getCurrentMinutes() {
         return;
       }
 
+      let reviewReason = "";
+      if (action === "reject") {
+        const input = document.getElementById("rejectReason" + completionId);
+        reviewReason = input ? input.value.trim() : "";
+        if (reviewReason.length < 3) {
+          setApprovalStatus("İade nedeni zorunlu. Lütfen nedeni yazın.", true);
+          if (input) input.focus();
+          return;
+        }
+      }
+
       const label = action === "approve" ? "kabul" : "iade";
       setApprovalStatus("Kontrol " + label + " işlemi gönderiliyor...", false);
 
@@ -2878,6 +2941,7 @@ function getCurrentMinutes() {
             telegram_user_id: userId,
             completion_id: completionId,
             action: action,
+            review_reason: reviewReason,
             reviewer_name: (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) ? tg.initDataUnsafe.user.first_name : "Müdür"
           })
         });
