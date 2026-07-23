@@ -960,7 +960,7 @@
 <body>
   <div id="homeScreen" class="card">
     <h1>RestKontrol</h1>
-    <p>v21.0 Davet / Join Akışı: çalışan daveti, kopyalanabilir davet mesajı ve join süreci Mini App içinde daha net yönetilir.</p>
+    <p>v21.0.1 Davet / Join Buton Düzeltmesi: çalışan daveti, kopyalanabilir davet mesajı ve join süreci Mini App içinde daha net yönetilir.</p>
 
     <div class="dashboard-grid">
       <div class="metric">
@@ -1050,11 +1050,11 @@
         <li>v20.5: Onay Bekleyenler Mini App ✅</li>
         <li>v20.7.1: Gerçek kamera modu ✅</li>
         <li>v20.8.1: İade nedeni kayıt düzeltmesi ✅</li>
-        <li>v21.0: Davet / Join akışı ✅</li>
+        <li>v21.0.1: Davet / Join buton düzeltmesi ✅</li>
       </ul>
     </div>
 
-    <p class="small">dashboard v21.0 davet / join akışı. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
+    <p class="small">dashboard v21.0.1 davet / join buton düzeltmesi. Çalışan listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde görünür.</p>
   </div>
 
   <div id="templateScreen" class="card hidden">
@@ -1186,7 +1186,7 @@
       </div>
     </div>
 
-    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v21.0 ile davet/join akışı temizlendi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
+    <button class="secondary" onclick="showV20InfoScreen('Sonraki Adım', 'v21.0.1 ile davet/join butonları düzeltildi. Sonraki adım bölümler ekranını ve personel yetki sınırlarını güzelleştirmektir.')">Sonraki Adımı Göster</button>
     <button class="light" onclick="showHome()">Ana Menüye Dön</button>
   </div>
 
@@ -1533,7 +1533,7 @@
   <div id="employeesScreen" class="card hidden">
     <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
     <h2>Çalışanlar</h2>
-    <p class="small">v21.0: personel listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde yönetilir.</p>
+    <p class="small">v21.0.1: personel listesi, rol, bölüm, bağlantı durumu, davet kodu ve kopyalanabilir davet mesajı Mini App içinde yönetilir.</p>
 
     <div class="template-summary-grid">
       <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
@@ -1984,13 +1984,9 @@
     }
 
     async function copyInviteMessage(code, fullName, roleLabel, zone) {
-      const text = "Merhaba " + (fullName || "") + ", RestKontrol'e katılmak için Telegram botuna şu komutu yaz:
-" +
-        "/join " + code + "
-
-" +
-        "Rol: " + (roleLabel || "-") + "
-" +
+      const text = "Merhaba " + (fullName || "") + ", RestKontrol'e katılmak için Telegram botuna şu komutu yaz:\n" +
+        "/join " + code + "\n\n" +
+        "Rol: " + (roleLabel || "-") + "\n" +
         "Bölüm: " + (zone || "-");
       try {
         if (navigator.clipboard) {
@@ -2602,7 +2598,7 @@ function renderDynamicTasks(tasks) {
 }
 
 async function loadDynamicTasks() {
-  // v21.0: Davet / Join akışı Mini App içinde liste, özet, davet kodu ve davet mesajı ile çalışır.
+  // v21.0.1: Davet / Join akışı Mini App içinde liste, özet, davet kodu ve davet mesajı ile çalışır.
   // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
   if (!API_BASE_URL) {
     renderDynamicTasks([]);
