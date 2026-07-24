@@ -1,0 +1,4664 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RestKontrol Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #111827;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    p { margin: 0 0 10px; color: #4b5563; line-height: 1.4; }
+    label { display: block; font-size: 14px; font-weight: 700; margin: 14px 0 6px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #ffffff;
+    }
+    textarea { min-height: 78px; resize: vertical; }
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .primary { background: #16a34a; color: #ffffff; }
+    .danger { background: #dc2626; color: #ffffff; }
+    .secondary { background: #111827; color: #ffffff; }
+    .light { background: #e5e7eb; color: #111827; }
+    .settings-note {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px;
+      background: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .check-row input {
+      width: auto;
+      padding: 0;
+      margin: 0;
+    }
+
+    .menu-section {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 14px;
+      background: #ffffff;
+    }
+    .menu-section h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      color: #111827;
+    }
+    .menu-section p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .menu-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .menu-actions button {
+      margin-top: 0;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 12px;
+    }
+    .menu-actions.single {
+      grid-template-columns: 1fr;
+    }
+
+
+    .top-back {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin-bottom: 12px;
+      border: 1px solid #d1d5db;
+    }
+
+
+    .template-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 12px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
+    }
+    .template-card.locked {
+      background: #f9fafb;
+      opacity: 0.9;
+    }
+    .template-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .template-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+      margin: 0 0 4px;
+    }
+    .template-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin: 0 0 10px;
+      line-height: 1.4;
+    }
+    .template-badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .template-free {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .template-premium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .template-items {
+      margin: 10px 0;
+      padding-left: 18px;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .premium-offer {
+      border: 1px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 18px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+    .premium-price {
+      font-size: 26px;
+      font-weight: 900;
+      color: #111827;
+      margin: 6px 0 2px;
+    }
+    .premium-list {
+      margin: 10px 0;
+      padding-left: 18px;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .premium-selected {
+      display: inline-block;
+      padding: 7px 10px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      margin: 6px 0 10px;
+    }
+    .plan-status-box {
+      background: #f0f9ff;
+      color: #075985;
+      border: 1px solid #bae6fd;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 13px;
+      margin: 12px 0;
+      line-height: 1.45;
+    }
+    .plan-status-box.warning {
+      background: #fff7ed;
+      color: #9a3412;
+      border-color: #fed7aa;
+    }
+    .plan-status-box.success {
+      background: #f0fdf4;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+    .plan-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .plan-summary-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .plan-kicker {
+      font-size: 12px;
+      font-weight: 900;
+      color: #6b7280;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .plan-big {
+      font-size: 20px;
+      font-weight: 900;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .plan-muted {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+    .plan-feature-list {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .plan-checklist-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid #e5e7eb;
+      padding: 10px 0;
+      font-size: 13px;
+    }
+    .plan-checklist-row:first-child {
+      border-top: none;
+    }
+    .plan-checklist-name {
+      font-weight: 800;
+      color: #111827;
+    }
+    .plan-checklist-note {
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .plan-badge-open {
+      background: #dcfce7;
+      color: #166534;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .plan-badge-locked {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .plan-badge-installed {
+      background: #e0f2fe;
+      color: #075985;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    @media (max-width: 420px) {
+      .plan-grid { grid-template-columns: 1fr; }
+      .plan-checklist-row { align-items: flex-start; }
+    }
+
+    .single-action { grid-column: 1 / -1; }
+    .hidden-action { display: none !important; }
+
+    .control-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
+    .control-summary-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .control-summary-card strong {
+      display: block;
+      font-size: 22px;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .control-summary-card span {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 800;
+    }
+    .task-completed-box {
+      border: 1px solid #bbf7d0;
+      background: #f0fdf4;
+      color: #166534;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+    .task-completed-box.late-completed {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: #9a3412;
+    }
+    .task.is-completed {
+      opacity: 0.92;
+    }
+
+    .template-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .template-summary-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .template-summary-card strong {
+      display: block;
+      font-size: 24px;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .template-summary-card span {
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .template-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .template-meta-box {
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .template-meta-box span {
+      display: block;
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .template-meta-box strong {
+      font-size: 14px;
+      color: #111827;
+    }
+    .template-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .template-action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .template-action-row button {
+      margin-top: 0;
+      padding: 12px;
+      font-size: 14px;
+    }
+    @media (max-width: 420px) {
+      .template-summary-grid, .template-meta-grid, .template-action-row { grid-template-columns: 1fr; }
+    }
+
+    .detail-header-box {
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 18px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+    .detail-point-card {
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 12px;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
+    }
+    .detail-point-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .detail-point-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.3;
+    }
+    .detail-point-instruction {
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.45;
+      margin: 8px 0 0;
+    }
+    .detail-mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .detail-mini-box {
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .detail-mini-box span {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      color: #9ca3af;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .detail-mini-box strong {
+      font-size: 14px;
+      color: #111827;
+    }
+    @media (max-width: 420px) {
+      .detail-mini-grid { grid-template-columns: 1fr; }
+    }
+
+    .hidden { display: none; }
+    .small { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .metric {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .metric .number {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .metric .label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 700;
+    }
+    .zone-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .zone-card {
+      border: 1px solid transparent;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    }
+    .zone-mutfak {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+    .zone-salon {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+    .zone-bar {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+    }
+    .zone-paket {
+      background: #ecfdf5;
+      border-color: #bbf7d0;
+    }
+    .zone-card strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .zone-card span { color: #6b7280; font-size: 13px; }
+    .task {
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 14px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+    }
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 7px;
+      background: #eef2ff;
+      color: #3730a3;
+      letter-spacing: 0.2px;
+    }
+    .task-id {
+      font-size: 12px;
+      font-weight: 800;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .task-title {
+      font-size: 18px;
+      line-height: 1.3;
+      margin: 8px 0 12px;
+      color: #111827;
+    }
+    .state {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .state-ok { background: #dcfce7; color: #166534; }
+    .state-late { background: #fee2e2; color: #991b1b; }
+    .task-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .task-meta-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+      background: #f9fafb;
+    }
+    .task-meta-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+    .task-meta-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+    }
+    .photo-required { color: #b45309; }
+    .photo-optional { color: #047857; }
+    .comment-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #374151;
+      margin-top: 10px;
+    }
+    .task textarea {
+      min-height: 68px;
+      font-size: 15px;
+      background: #f9fafb;
+    }
+    .task-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .task-actions button, .upload-button, .camera-action {
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+    }
+    .upload-button.primary { background: #16a34a; color: #ffffff; }
+    .upload-button.danger { background: #dc2626; color: #ffffff; }
+    .upload-button.disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .camera-action {
+      position: relative;
+      overflow: hidden;
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      border: none;
+    }
+    .camera-action.primary { background: #16a34a; color: #ffffff; }
+    .camera-action.danger { background: #dc2626; color: #ffffff; }
+    .camera-action.disabled { opacity: 0.45; cursor: not-allowed; }
+    .camera-action.disabled input[type="file"] { pointer-events: none; cursor: not-allowed; }
+    .camera-action input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .camera-action span {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hidden-photo-input {
+      display: none !important;
+    }
+    .photo-debug {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.35;
+      display: none;
+    }
+    .photo-debug.ok {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+      display: block;
+    }
+    .photo-debug.warn {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+      display: block;
+    }
+    .photo-debug.error {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+    .photo-debug.info {
+      display: block;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+    .filter-grid button {
+      margin-top: 0;
+      padding: 11px;
+      font-size: 14px;
+      border-radius: 12px;
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .filter-grid button.active { background: #111827; color: #ffffff; }
+    .empty-box {
+      display: none;
+      border: 1px dashed #d1d5db;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      color: #6b7280;
+      background: #fafafa;
+      margin-top: 12px;
+    }
+    .approval-pending {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+    }
+    .task-rejected-box {
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+    .employee-card {
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .employee-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .employee-name {
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+    }
+    .employee-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      border: 1px dashed #9ca3af;
+      border-radius: 12px;
+      padding: 9px 10px;
+      margin-top: 8px;
+      color: #111827;
+      font-weight: 900;
+      letter-spacing: .4px;
+    }
+    .employee-form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .approval-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .approval-card {
+      border: 1px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .approval-photo {
+      width: 100%;
+      max-height: 360px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid #fde68a;
+      background: #f3f4f6;
+      margin: 10px 0 12px;
+    }
+    .reject-reason-box {
+      border: 1px solid #fecaca;
+      background: #fff7f7;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 10px 0 12px;
+    }
+    .reject-reason-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      color: #991b1b;
+      margin-bottom: 7px;
+    }
+    .reject-reason-box textarea {
+      min-height: 70px;
+      border-color: #fecaca;
+      background: #ffffff;
+    }
+    .quick-reason-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .quick-reason-row button {
+      width: auto;
+      padding: 7px 9px;
+      margin-top: 0;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .approval-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .approval-message {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #eef2ff;
+      color: #3730a3;
+      display: none;
+      font-size: 14px;
+    }
+    .approval-message:not(:empty):not(.hidden) {
+      display: block;
+    }
+    .approval-message.error {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+
+    .live-camera-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(17, 24, 39, 0.92);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .live-camera-modal.hidden {
+      display: none !important;
+    }
+    .live-camera-panel {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+    .live-camera-panel h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      color: #111827;
+    }
+    .live-camera-panel p {
+      margin: 0 0 12px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .live-camera-view {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      background: #111827;
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    #liveCameraVideo,
+    #liveCameraPreview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    #liveCameraVideo.hidden,
+    #liveCameraPreview.hidden,
+    #liveCameraCanvas.hidden {
+      display: none !important;
+    }
+    .live-camera-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .live-camera-actions button {
+      margin-top: 0;
+      padding: 13px;
+      border-radius: 13px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .live-camera-actions .full {
+      grid-column: 1 / -1;
+    }
+    .live-camera-fallback {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="homeScreen" class="card">
+    <h1>RestKontrol</h1>
+    <p><strong>Restoran operasyon kontrol sistemi</strong>: personel sadece kendi bölümündeki görevleri görür, yönetim ekranları sadece yetkili rollere açıktır.</p>
+
+    <div class="dashboard-grid">
+      <div class="metric">
+        <div id="metricTotal" class="number">0</div>
+        <div class="label">Bugünkü kontrol</div>
+      </div>
+      <div class="metric">
+        <div id="metricLate" class="number">0</div>
+        <div class="label">Geciken</div>
+      </div>
+      <div class="metric">
+        <div id="metricWaiting" class="number">0</div>
+        <div class="label">Onay Bekleyen</div>
+      </div>
+      <div class="metric">
+        <div id="metricRate" class="number">%0</div>
+        <div class="label">Tamamlanan</div>
+      </div>
+    </div>
+
+    <div id="personelAccessBanner" class="status-box hidden"></div>
+
+    <div class="menu-section">
+      <h3>Bugünkü Kontroller</h3>
+      <p>Günlük kontrol noktalarını, gecikenleri ve bekleyen işleri takip et.</p>
+      <div class="menu-actions">
+        <button class="secondary" onclick="showTasks()">Bugünkü Kontroller</button>
+        <button class="danger" onclick="showLateTasks()">Gecikenler</button>
+        <button class="primary" onclick="showWaitingTasks()">Bekleyenler</button>
+        <button id="manualTaskButton" class="light" onclick="showAddTaskScreen()">Manuel Görev Ekle</button>
+      </div>
+    </div>
+
+    <div class="menu-section" data-management-only="1">
+      <h3>Checklist Yönetimi</h3>
+      <p>Hazır checklistleri yönetin, şablonları inceleyin ve günlük kontrollere atayın.</p>
+      <div class="menu-actions">
+        <button class="light" onclick="showChecklistScreen()">Hazır Checklistler</button>
+        <button class="light" onclick="showTemplateScreen()">Checklist Şablonları</button>
+        <button class="light" onclick="showTemplateScreen()">Kontrol Atama</button>
+        <button class="light" onclick="showApprovalScreen()">Müdür Onayı</button>
+      </div>
+    </div>
+
+    <div class="menu-section" data-management-only="1">
+      <h3>Ekip ve Bölümler</h3>
+      <p>Personel, roller, davet kodları ve aktif restoran bölümleri.</p>
+      <div class="menu-actions">
+        <button class="light" onclick="showEmployeesScreen()">Çalışanlar</button>
+        <button class="light" onclick="showDepartmentsScreen()">Bölümler</button>
+        <button class="light" onclick="showCreateBusiness()">İşletme Ayarları</button>
+        <button class="light" onclick="sendMyRoleRequest()">Yetki Bilgilerim</button>
+      </div>
+    </div>
+
+    <div class="menu-section" data-management-only="1">
+      <h3>Raporlar ve Bildirimler</h3>
+      <p>Yönetim, fotoğraf, bölüm, personel raporları ve bekleyen uyarılar.</p>
+      <div class="menu-actions">
+        <button class="light" onclick="sendManagementReportRequest()">Yönetim Raporu</button>
+        <button class="light" onclick="sendPhotoReportRequest()">Fotoğraflı Rapor</button>
+        <button class="light" onclick="sendZoneReportRequest()">Bölüm Raporu</button>
+        <button class="light" onclick="sendStaffReportRequest()">Personel Raporu</button>
+        <button class="light" onclick="showApprovalScreen()">Onay Bekleyenler</button>
+        <button class="light" onclick="showInfoScreen('Bildirimler', 'Geciken görevler, fotoğraflı onay talepleri ve iade sonuçları Telegram üzerinden ilgili kullanıcıya gönderilir.')">Bildirimler</button>
+      </div>
+    </div>
+
+    <div class="menu-section" data-management-only="1">
+      <h3>Plan, Ödeme ve Kurulum</h3>
+      <p>Trial/Premium durumu, ödeme talebi ve telefona kurulum bilgileri.</p>
+      <div class="menu-actions">
+        <button class="light" onclick="showPlanScreen()">Plan ve Ödeme</button>
+        <button class="light" onclick="showInfoScreen('Telefona Kurulum', 'Telegram içinden Mini App’i açın. Android Chrome menüsünden Ana ekrana ekle; iPhone Safari paylaş menüsünden Ana Ekrana Ekle seçeneğini kullanın.')">Telefona Kur</button>
+        <button class="light" onclick="showCleanupScreen()">Pilot Hazırlığı</button>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <h3>Çalışma Kuralları</h3>
+      <p>Restoran kontrolleri aşağıdaki kurallara göre yürütülür.</p>
+      <ul class="template-items">
+        <li>Görevler yalnızca atandığı gün Bugünkü Kontroller içinde görünür.</li>
+        <li>Personel yalnızca yetkili olduğu bölümün görevlerini görür.</li>
+        <li>Fotoğraflı görevler müdür kabulü olmadan tamamlanmış sayılmaz.</li>
+        <li>Aynı checklist aynı gün ikinci kez eklenmez.</li>
+      </ul>
+    </div>
+
+    <p class="small">RestKontrol v23.2.1 · günlük görev, fotoğraf, gecikme nedeni ve yönetici onayı.</p>
+  </div>
+
+  <div id="templateScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Checklist Şablonları</h2>
+    <p>Restoranın kendi operasyon standartları için kullanılacak şablonlar. Detay ekranında kontrol noktaları, saat, fotoğraf zorunluluğu ve standart açıklaması görülebilir.</p>
+
+    <div class="template-summary-grid">
+      <div class="template-summary-card"><strong>6</strong><span>Şablon</span></div>
+      <div class="template-summary-card"><strong>4</strong><span>Bölüm</span></div>
+      <div class="template-summary-card"><strong>6</strong><span>Fotoğraflı şablon</span></div>
+      <div class="template-summary-card"><strong>Detay</strong><span>Nokta listesi açık</span></div>
+    </div>
+
+    <div class="settings-note">
+      Akış: Şablon hazırlanır → bugüne atanır → kontrol noktaları oluşur → personel fotoğraf gönderir → müdür onaylar.
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Mutfak Açılış Checklist</div>
+          <p class="template-desc">Hijyen, soğuk zincir, ürün hazırlığı, ekipman ve servis öncesi son kontrol.</p>
+        </div>
+        <span class="template-badge template-free">Temel</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Mutfak</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Açılış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>5 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>4 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugüne atanabilir</span>
+        <span class="plan-badge-installed">Aynı gün tekrar eklenmez</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showTemplateDetailScreen('mutfak_acilis')">Detay</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('mutfak_acilis')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Mutfak Kapanış Checklist</div>
+          <p class="template-desc">Ürün kaldırma, temizlik, çöp, soğuk dolap ve kapanış sorumlusu kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Mutfak</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Kapanış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>5 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>4 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugüne atanabilir</span>
+        <span class="plan-badge-installed">Aynı gün tekrar eklenmez</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showTemplateDetailScreen('mutfak_kapanis')">Detay</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('mutfak_kapanis')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Salon Açılış Checklist</div>
+          <p class="template-desc">Masa düzeni, servis ekipmanı, personel görünümü, rezervasyon ve son salon kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Salon</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Açılış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>5 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>3 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugüne atanabilir</span>
+        <span class="plan-badge-installed">Aynı gün tekrar eklenmez</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showTemplateDetailScreen('salon_acilis')">Detay</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('salon_acilis')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Salon Kapanış Checklist</div>
+          <p class="template-desc">Masa ve servis alanı, kasa çevresi, ortak alan hijyeni ve kapanış onayı.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Salon</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Kapanış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>5 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>3 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugüne atanabilir</span>
+        <span class="plan-badge-installed">Aynı gün tekrar eklenmez</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showTemplateDetailScreen('salon_kapanis')">Detay</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('salon_kapanis')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Bar Açılış Checklist</div>
+          <p class="template-desc">Bar hijyeni, içecek stoku, buz-garnitür hazırlığı ve servis ekipmanı kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Bar</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Açılış</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>4 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>3 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugüne atanabilir</span>
+        <span class="plan-badge-installed">Aynı gün tekrar eklenmez</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showTemplateDetailScreen('bar_acilis')">Detay</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('bar_acilis')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <div class="template-title">Depo Kontrol Checklist</div>
+          <p class="template-desc">Depo düzeni, kritik stok, son kullanma tarihi, sıcaklık ve hijyen kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong>Depo</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong>Günlük</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong>4 kontrol</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong>3 zorunlu</strong></div>
+      </div>
+      <div class="template-status-row">
+        <span class="plan-badge-open">Bugüne atanabilir</span>
+        <span class="plan-badge-installed">Aynı gün tekrar eklenmez</span>
+      </div>
+      <div class="template-action-row">
+        <button class="light" onclick="showTemplateDetailScreen('depo_kontrol')">Detay</button>
+        <button class="secondary" onclick="showTemplateAssignScreen('depo_kontrol')">Bugüne Ata</button>
+      </div>
+    </div>
+
+    <button class="light" onclick="showHome()">Ana Menüye Dön</button>
+  </div>
+
+
+  <div id="templateDetailScreen" class="card hidden">
+    <button class="light top-back" onclick="showTemplateScreen()">← Şablonlara Dön</button>
+    <h2 id="templateDetailTitle">Checklist Detayı</h2>
+    <p id="templateDetailDesc">Şablon içindeki kontrol noktaları.</p>
+
+    <div class="detail-header-box">
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong id="templateDetailZone">-</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong id="templateDetailType">-</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong id="templateDetailCount">-</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong id="templateDetailPhoto">-</strong></div>
+      </div>
+    </div>
+
+    <div class="settings-note">
+      Bu ekran şablonun standart kontrol noktalarını gösterir. Görev saatleri işletmenin açılış veya kapanış saatine göre otomatik hesaplanır.
+    </div>
+
+    <div id="templateDetailPoints"></div>
+
+    <button class="secondary" onclick="showTemplateAssignScreen(currentTemplateDetailKey)">Bugüne Ata</button>
+    <button class="light" onclick="showTemplateScreen()">Şablonlara Dön</button>
+  </div>
+
+  <div id="templateAssignScreen" class="card hidden">
+    <button class="light top-back" onclick="showTemplateScreen()">← Şablonlara Dön</button>
+    <h2 id="templateAssignTitle">Bugüne Ata</h2>
+    <p id="templateAssignDesc">Seçilen checklist şablonu bugünkü kontrol görevlerine dönüştürülür.</p>
+
+    <div class="detail-header-box">
+      <div class="template-meta-grid">
+        <div class="template-meta-box"><span>Bölüm</span><strong id="templateAssignZone">-</strong></div>
+        <div class="template-meta-box"><span>Tür</span><strong id="templateAssignType">-</strong></div>
+        <div class="template-meta-box"><span>Nokta</span><strong id="templateAssignCount">-</strong></div>
+        <div class="template-meta-box"><span>Fotoğraf</span><strong id="templateAssignPhoto">-</strong></div>
+      </div>
+    </div>
+
+    <div class="settings-note">
+      Sistem işletme açılış/kapanış saatlerine göre görev saatlerini oluşturur. Daha önce eklenen aynı şablon tekrar eklenmez.
+    </div>
+
+    <div class="menu-section">
+      <h3>Atama akışı</h3>
+      <ul class="template-items">
+        <li>Şablondaki kontrol noktaları Bugünkü Kontroller ekranına görev olarak eklenir.</li>
+        <li>Fotoğraf zorunlu noktalar personelden yeni fotoğraf ister.</li>
+        <li>Saat geçtiyse sistem görevi otomatik Geç Kaldı durumunda işler.</li>
+        <li>Fotoğraflı gönderimler müdürün Kabul Et / İade Et ekranına düşer.</li>
+      </ul>
+    </div>
+
+    <div id="templateAssignStatusMessage" class="approval-message hidden"></div>
+    <button id="templateAssignConfirmButton" class="primary" onclick="confirmAssignTemplateToday()">Bugüne Ata ve Görevleri Oluştur</button>
+    <button class="light" onclick="showTemplateScreen()">Vazgeç</button>
+  </div>
+
+  <div id="infoScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2 id="infoTitle">Bilgi</h2>
+    <p id="infoText" class="small">RestKontrol bilgisi.</p>
+    <div class="menu-section">
+      <h3>Operasyon akışı</h3>
+      <ul class="template-items">
+        <li>Checklist şablonu hazırlanır.</li>
+        <li>Şablon tarih, bölüm, müdür ve personele atanır.</li>
+        <li>Personel fotoğraf ile kontrol noktasını gönderir.</li>
+        <li>Müdür kabul eder veya iade eder.</li>
+      </ul>
+    </div>
+    <button class="secondary" onclick="showHome()">Ana Menüye Dön</button>
+  </div>
+
+  <div id="businessScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>İşletme Ayarları</h2>
+    <p class="small">Bu ayarlar Hazır Checklistler için temel alınacak. Açılış, kapanış, aktif bölümler ve minimum personel burada yönetilir.</p>
+    <div id="businessSettingsStatus" class="settings-note">Mevcut ayarlar kontrol ediliyor...</div>
+
+    <label>İşletme adı</label>
+    <input id="businessName" placeholder="Örn: Matryoshka" />
+    <label>İşletme türü</label>
+    <select id="businessType">
+      <option value="Restoran">Restoran</option>
+      <option value="Cafe">Cafe</option>
+      <option value="Fast Food">Fast Food</option>
+      <option value="Fırın">Fırın</option>
+      <option value="Paket Servis Mutfağı">Paket Servis Mutfağı</option>
+    </select>
+    <label>Açılış saati</label>
+    <input id="openTime" type="time" value="09:00" />
+    <label>Kapanış saati</label>
+    <input id="closeTime" type="time" value="21:00" />
+
+    <label>Aktif bölümler</label>
+    <div class="checkbox-grid">
+      <label class="check-row"><input id="zoneMutfak" type="checkbox" checked /> Mutfak</label>
+      <label class="check-row"><input id="zoneSalon" type="checkbox" checked /> Salon</label>
+      <label class="check-row"><input id="zoneBar" type="checkbox" checked /> Bar</label>
+      <label class="check-row"><input id="zoneDepo" type="checkbox" checked /> Depo</label>
+    </div>
+
+    <label>Mutfak minimum personel</label>
+    <input id="kitchenMin" type="number" min="0" value="1" />
+    <label>Salon minimum personel</label>
+    <input id="hallMin" type="number" min="0" value="1" />
+    <label>Bar minimum personel</label>
+    <input id="barMin" type="number" min="0" value="1" />
+    <label>Depo minimum personel</label>
+    <input id="depotMin" type="number" min="0" value="1" />
+
+    <label>Varsayılan sorumlu rol</label>
+    <select id="defaultResponsibleRole">
+      <option value="manager">Müdür / Vardiya Şefi</option>
+      <option value="director">Genel Müdür</option>
+      <option value="owner">İşletme Sahibi</option>
+    </select>
+
+    <button class="primary" onclick="sendBusinessSettings()">Ayarları Kaydet</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+
+
+
+  <div id="cleanupScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Pilot Hazırlığı</h2>
+    <p class="small">Gerçek kullanıma geçmeden önce deneme görevlerini ve eski tamamlanma kayıtlarını sıfırlamak için kullanılır.</p>
+
+    <div class="settings-note">
+      Bu işlem görevleri, fotoğraflı tamamlanma kayıtlarını ve hazır checklist ekleme kayıtlarını temizler.
+      İşletme ayarları, çalışanlar, roller ve plan durumu korunur.
+    </div>
+
+    <div class="menu-actions single" style="margin-top:14px;">
+      <button class="secondary" onclick="sendCleanupSummaryRequest()">Mevcut Verileri Kontrol Et</button>
+    </div>
+
+    <div class="menu-actions single" style="margin-top:10px;">
+      <button class="danger" onclick="sendCleanupBusinessData()">Test Görev ve Raporlarını Temizle</button>
+    </div>
+
+    <div class="menu-actions single" style="margin-top:10px;">
+      <button class="primary" onclick="sendPrepareDemoDay()">Demo Gününü Yeniden Hazırla</button>
+    </div>
+
+    <p class="small">Pilot öncesi temizlik yalnızca test görevlerini, raporları ve bekleyen fotoğraf kayıtlarını siler. İşletme ayarları, çalışanlar, roller ve plan korunur.</p>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+  <div id="checklistScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Hazır Checklistler</h2>
+    <p class="small">Checklist saatleri İşletme Ayarları içindeki açılış / kapanış saatine göre otomatik hesaplanır.</p>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Demo Operasyon Checklist</h3>
+          <p class="template-desc">Trial içinde açık 5 örnek operasyon görevi.</p>
+        </div>
+        <span class="template-badge template-free">Temel</span>
+      </div>
+      <ul class="template-items">
+        <li>Açılış öncesi genel temizlik kontrolü</li>
+        <li>Personel üniforma kontrolü</li>
+        <li>Masa / servis alanı düzen kontrolü</li>
+        <li>Ürün etiket ve tarih kontrolü</li>
+        <li>Kapanış hijyen kontrolü</li>
+      </ul>
+      <button class="primary" onclick="sendChecklistTemplate('demo_basic')">Demo Checklist'i Ekle</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Mutfak Açılış Checklist</h3>
+          <p class="template-desc">Açılış saatinden önce mutfak hijyeni, soğuk dolap, ürün tarihi ve servis hazırlığı.</p>
+        </div>
+        <span class="template-badge template-free">Temel</span>
+      </div>
+      <ul class="template-items">
+        <li>Açılıştan 30 dk önce başlar</li>
+        <li>5 görev oluşturur</li>
+        <li>4 görevde fotoğraf zorunlu</li>
+      </ul>
+      <button class="primary" onclick="sendChecklistTemplate('mutfak_acilis')">Mutfak Açılış'ı Ekle</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Mutfak Kapanış Checklist</h3>
+          <p class="template-desc">Kapanış öncesi ürün kaldırma, tezgah temizliği, soğuk dolap ve son sorumlu onayı.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Kapanış saatinden 30 dk önce görevleri oluşturur.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Mutfak Kapanış Checklist', 'mutfak_kapanis')">Premium Aç</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Salon Açılış Checklist</h3>
+          <p class="template-desc">Masa düzeni, servis ekipmanı, personel görünümü ve rezervasyon kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Açılış saatine göre 5 salon görevi oluşturur.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Salon Açılış Checklist', 'salon_acilis')">Premium Aç</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Salon Kapanış Checklist</h3>
+          <p class="template-desc">Salon kapanış düzeni, ortak alan hijyeni ve servis ekipmanı kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Kapanış saatine göre 5 salon görevi oluşturur.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Salon Kapanış Checklist', 'salon_kapanis')">Premium Aç</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Bar Açılış Checklist</h3>
+          <p class="template-desc">Bar hijyeni, stok, buz, garnitür ve servis ekipmanı hazırlığı.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Açılış saatine göre 4 bar görevi oluşturur.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Bar Açılış Checklist', 'bar_acilis')">Premium Aç</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Depo Kontrol Checklist</h3>
+          <p class="template-desc">Depo düzeni, stok seviyesi, ürün tarihi, kalite ve hijyen kontrolü.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Açılıştan sonra depo için 4 kontrol görevi oluşturur.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Depo Kontrol Checklist', 'depo_kontrol')">Premium Aç</button>
+    </div>
+
+    <div class="template-card">
+      <div class="template-top">
+        <div>
+          <h3 class="template-title">Full Servis Restoran</h3>
+          <p class="template-desc">Mutfak, salon, bar ve depo için gün boyu ana operasyon kontrolleri.</p>
+        </div>
+        <span class="template-badge template-premium">Premium</span>
+      </div>
+      <p class="small">Aktif bölümlere göre 10 görev oluşturur.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Full Servis Restoran', 'premium_full_service')">Premium Aç</button>
+    </div>
+  </div>
+
+  <div id="planScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Plan Durumu</h2>
+    <p class="small">Plan durumunu, açık paketleri ve ödeme sürecini buradan kontrol edin.</p>
+
+    <div id="planStatusBox" class="plan-status-box">Plan bilgisi yükleniyor...</div>
+
+    <div class="plan-grid">
+      <div class="plan-summary-card">
+        <div class="plan-kicker">Mevcut plan</div>
+        <div id="planLabel" class="plan-big">Kontrol ediliyor</div>
+        <div id="planBusiness" class="plan-muted">İşletme bilgisi bekleniyor.</div>
+      </div>
+      <div class="plan-summary-card">
+        <div class="plan-kicker">Erişim</div>
+        <div id="planAccessLabel" class="plan-big">-</div>
+        <div id="planAccessText" class="plan-muted">Açık özellikler kontrol ediliyor.</div>
+      </div>
+    </div>
+
+    <div class="template-card">
+      <h3 class="template-title">Açık Özellikler</h3>
+      <ul id="openFeaturesList" class="plan-feature-list">
+        <li>Plan bilgisi yükleniyor...</li>
+      </ul>
+    </div>
+
+    <div class="template-card">
+      <h3 class="template-title">Kilitli / Premium Özellikler</h3>
+      <ul id="lockedFeaturesList" class="plan-feature-list">
+        <li>Plan bilgisi yükleniyor...</li>
+      </ul>
+    </div>
+
+    <div class="template-card">
+      <h3 class="template-title">Checklist Erişimi</h3>
+      <div id="planChecklistList" class="small">Checklistler yükleniyor...</div>
+    </div>
+
+    <div class="premium-offer">
+      <span class="template-badge template-premium">Premium</span>
+      <h3 class="template-title" style="margin-top:10px;">Premium Paket</h3>
+      <div class="premium-price">400 TL / ay</div>
+      <p class="small">Tanıtım fiyatı. Ödeme talebi Telegram sohbetine gönderilir.</p>
+      <button class="primary" onclick="showPremiumPaymentScreen('Premium Hazır Checklistler', 'premium_full_service')">Premium Paketleri Aç</button>
+      <button class="secondary" onclick="sendPlanStatusRequest()">Telegram'a Plan Özeti Gönder</button>
+    </div>
+  </div>
+
+  <div id="premiumScreen" class="card hidden">
+    <button class="light top-back" onclick="showChecklistScreen()">← Hazır Checklistlere Dön</button>
+    <h2>Premium Paket</h2>
+    <p class="small">Premium paket ile tüm hazır checklistler ve operasyon paketleri açılır.</p>
+
+    <div class="premium-offer">
+      <span class="template-badge template-premium">Premium</span>
+      <h3 class="template-title" style="margin-top:10px;">Seçilen paket</h3>
+      <div id="premiumSelectedPackage" class="premium-selected">Premium Hazır Checklistler</div>
+      <p class="template-desc">Seçilen paket Premium kapsamındadır. Premium aktif olunca işletmeye eklenebilir.</p>
+      <div class="premium-price">400 TL / ay</div>
+      <p class="small">Tanıtım fiyatı. Ödeme talebi gönderildiğinde işletme bilgileri yöneticinize iletilir.</p>
+    </div>
+
+    <div class="template-card">
+      <h3 class="template-title">Premium ile açılacaklar</h3>
+      <ul class="premium-list">
+        <li>Mutfak Kapanış Checklist</li>
+        <li>Salon Açılış / Kapanış Checklist</li>
+        <li>Bar Açılış Checklist</li>
+        <li>Depo Kontrol Checklist</li>
+        <li>Full Servis Restoran operasyon paketi</li>
+      </ul>
+      <button class="primary" onclick="sendSelectedPremiumChecklist()">Premium Aktifse Paketi Ekle</button>
+      <button class="secondary" onclick="sendPremiumPaymentRequest()">Ödeme Talebi Oluştur</button>
+      <button class="secondary" onclick="sendPlanStatusRequest()">Plan Durumunu Göster</button>
+      <button class="light" onclick="showChecklistScreen()">Geri Dön</button>
+      <p class="small">Premium aktifse paketi direkt ekleyebilirsiniz. Aktif değilse ödeme talebi oluşturun.</p>
+    </div>
+  </div>
+
+  <div id="departmentsScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Bölümler</h2>
+    <p class="small">Restoran bölümlerini aktif/pasif yönetin, çalışan ve görev kullanımını görün. Kullanımda olan bölüm silinemez.</p>
+
+    <div class="template-summary-grid">
+      <div class="template-summary-card"><strong id="departmentSummaryTotal">0</strong><span>Toplam bölüm</span></div>
+      <div class="template-summary-card"><strong id="departmentSummaryActive">0</strong><span>Aktif</span></div>
+      <div class="template-summary-card"><strong id="departmentSummaryPassive">0</strong><span>Pasif</span></div>
+      <div class="template-summary-card"><strong id="departmentSummaryCustom">0</strong><span>Özel bölüm</span></div>
+    </div>
+
+    <div id="departmentStatusMessage" class="approval-message"></div>
+    <div id="departmentEmptyBox" class="empty-box">Henüz bölüm bulunamadı.</div>
+    <div id="departmentList" class="approval-list"></div>
+
+    <div class="menu-section">
+      <h3>Yeni Bölüm Ekle</h3>
+      <p class="small">Örn: Teras, Paket Servis, Kasap, Pastane. Bölüm eklendikten sonra çalışan ve görev formlarında görünür.</p>
+      <div class="employee-form-grid">
+        <label>Bölüm adı</label>
+        <input id="newDepartmentName" placeholder="Örn: Teras" />
+      </div>
+      <button class="primary" onclick="createDepartmentFromMiniApp()">Bölüm Ekle</button>
+      <button class="light" onclick="loadDepartments()">Listeyi Yenile</button>
+      <button class="secondary" onclick="showCreateBusiness()">İşletme Ayarları</button>
+    </div>
+  </div>
+
+
+  <div id="employeesScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Çalışanlar</h2>
+    <p class="small">Personel listesi, rol, bölüm, bağlantı durumu, davet mesajı ve Telegram bağlantısı sıfırlama Mini App içinde yönetilir.</p>
+
+    <div class="template-summary-grid">
+      <div class="template-summary-card"><strong id="employeeSummaryTotal">0</strong><span>Toplam çalışan</span></div>
+      <div class="template-summary-card"><strong id="employeeSummaryActive">0</strong><span>Aktif</span></div>
+      <div class="template-summary-card"><strong id="employeeSummaryConnected">0</strong><span>Bağlandı</span></div>
+      <div class="template-summary-card"><strong id="employeeSummaryWaiting">0</strong><span>Davet bekliyor</span></div>
+    </div>
+
+    <div id="employeeStatusMessage" class="approval-message"></div>
+    <div id="employeeEmptyBox" class="empty-box">Henüz çalışan eklenmemiş.</div>
+    <div id="employeeList" class="approval-list"></div>
+
+    <div class="menu-section">
+      <h3>Yeni Çalışan Daveti</h3>
+      <p class="small">Davet kodu oluşturulur. Çalışan kendi telefonundan bota girip bu kodla işletmeye bağlanır.</p>
+
+      <div class="employee-form-grid">
+        <label>Ad Soyad</label>
+        <input id="employeeFormName" placeholder="Örn: Ahmet Yılmaz" />
+
+        <label>Rol</label>
+        <select id="employeeFormRole">
+          <option value="staff">Personel</option>
+          <option value="manager">Müdür / Vardiya Şefi</option>
+          <option value="director">Genel Müdür</option>
+        </select>
+
+        <label>Bölüm</label>
+        <select id="employeeFormZone">
+          <option value="Mutfak">Mutfak</option>
+          <option value="Salon">Salon</option>
+          <option value="Bar">Bar</option>
+          <option value="Depo">Depo</option>
+          <option value="Tüm Bölümler">Tüm Bölümler</option>
+        </select>
+      </div>
+
+      <button class="primary" onclick="createEmployeeFromMiniApp()">Davet Kodu Oluştur</button>
+      <button class="light" onclick="loadEmployees()">Listeyi Yenile</button>
+    </div>
+  </div>
+
+
+  <div id="employeeScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Çalışan Ekle</h2>
+    <p class="small">Owner, director ve manager çalışan ekleyebilir. Manager sadece staff ekleyebilir.</p>
+
+    <label>Ad Soyad</label>
+    <input id="employeeName" placeholder="Örn: Ahmet Yılmaz" />
+
+    <label>Rol</label>
+    <select id="employeeRole">
+      <option value="staff">Personel</option>
+      <option value="manager">Müdür / Vardiya Şefi</option>
+      <option value="director">Genel Müdür</option>
+    </select>
+
+    <label>Bölüm</label>
+    <select id="employeeZone">
+      <option value="Mutfak">Mutfak</option>
+      <option value="Salon">Salon</option>
+      <option value="Bar">Bar</option>
+      <option value="Depo">Depo</option>
+      <option value="Tüm Bölümler">Tüm Bölümler</option>
+    </select>
+
+    <button class="primary" onclick="sendEmployee()">Davet Kodu Oluştur</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+  <div id="addTaskScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Görev Ekle</h2>
+    <p class="small">Owner, director ve manager yeni kontrol görevi oluşturabilir.</p>
+
+    <label>Bölüm</label>
+    <select id="newTaskZone">
+      <option value="Mutfak">Mutfak</option>
+      <option value="Salon">Salon</option>
+      <option value="Bar">Bar</option>
+      <option value="Depo">Depo</option>
+    </select>
+
+    <label>Görev başlığı</label>
+    <input id="newTaskTitle" placeholder="Örn: Soğuk dolap sıcaklığını kontrol et" />
+
+    <label>Kontrol tipi</label>
+    <select id="newTaskType">
+      <option value="Açılış kontrolü">Açılış kontrolü</option>
+      <option value="Operasyon kontrolü">Operasyon kontrolü</option>
+      <option value="Kapanış kontrolü">Kapanış kontrolü</option>
+      <option value="Stok kontrolü">Stok kontrolü</option>
+      <option value="Temizlik kontrolü">Temizlik kontrolü</option>
+      <option value="Depo kontrolü">Depo kontrolü</option>
+    </select>
+
+    <label>Planlanan saat</label>
+    <input id="newTaskTime" type="time" value="09:00" />
+
+    <label>Fotoğraf zorunlu mu?</label>
+    <select id="newTaskPhoto">
+      <option value="1">Evet, zorunlu</option>
+      <option value="0">Hayır</option>
+    </select>
+
+    <button class="primary" onclick="sendNewTask()">Görev Oluştur</button>
+  </div>
+
+  <div id="tasksScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2 id="taskScreenTitle">Bugünkü Kontroller</h2>
+    <p>Bugünkü kontrol noktaları yetki rolüne göre gösterilir. Personel sadece kendi bölümündeki görevleri görür; saat geçtiyse sistem otomatik olarak gecikme durumuna alır.</p>
+    <div id="assignmentResultMessage" class="approval-message hidden"></div>
+
+    <div class="control-summary-grid">
+      <div class="control-summary-card"><strong id="taskSummaryTotal">0</strong><span>Toplam</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryOpen">0</strong><span>Açık</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryLate">0</strong><span>Geciken</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryPhoto">0</strong><span>Fotoğraf Bekleyen</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryApproval">0</strong><span>Onay Bekleyen</span></div>
+      <div class="control-summary-card"><strong id="taskSummaryDone">0</strong><span>Tamamlanan</span></div>
+    </div>
+
+    <p class="small">Sorumlu kişi Telegram hesabına ve yetki rolüne göre otomatik kaydedilir.</p>
+
+    <div class="filter-grid">
+      <button id="filterAll" class="active" onclick="filterTasks('Tümü', this)">Tümü</button>
+      <button id="filterOpen" onclick="filterTasks('Açık', this)">Açık</button>
+      <button id="filterLate" onclick="filterTasks('Geciken', this)">Geciken</button>
+      <button id="filterPhoto" onclick="filterTasks('Fotoğraflı', this)">Fotoğraflı</button>
+      <button id="filterApproval" onclick="filterTasks('Onay', this)">Onay Bekleyen</button>
+      <button id="filterDone" onclick="filterTasks('Tamamlanan', this)">Tamamlanan</button>
+      <button data-zone-filter="Mutfak" onclick="filterTasks('Mutfak', this)">Mutfak</button>
+      <button data-zone-filter="Salon" onclick="filterTasks('Salon', this)">Salon</button>
+      <button data-zone-filter="Bar" onclick="filterTasks('Bar', this)">Bar</button>
+      <button data-zone-filter="Depo" onclick="filterTasks('Depo', this)">Depo</button>
+    </div>
+
+    <div id="emptyBox" class="empty-box">Bu filtrede gösterilecek görev yok.</div>
+
+    <div id="dynamicTasks"></div>
+
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+  <div id="approvalScreen" class="card hidden">
+    <button class="light top-back" onclick="showHome()">← Ana Menüye Dön</button>
+    <h2>Onay Bekleyenler</h2>
+    <p>Personelin gönderdiği fotoğraflı kontroller burada görünür. Müdür fotoğrafı kontrol eder, sonra kabul veya iade eder.</p>
+
+    <div class="control-summary-grid">
+      <div class="control-summary-card"><strong id="approvalSummaryTotal">0</strong><span>Bekleyen</span></div>
+      <div class="control-summary-card"><strong id="approvalSummaryPhoto">0</strong><span>Fotoğraflı</span></div>
+      <div class="control-summary-card"><strong id="approvalSummaryLate">0</strong><span>Geç</span></div>
+    </div>
+
+    <div id="approvalStatusMessage" class="approval-message"></div>
+    <div id="approvalEmptyBox" class="empty-box">Onay bekleyen kontrol yok.</div>
+    <div id="approvalList" class="approval-list"></div>
+
+    <button class="secondary" onclick="loadPendingApprovals()">Yenile</button>
+    <button class="light" onclick="showHome()">Geri Dön</button>
+  </div>
+
+
+
+  <div id="liveCameraModal" class="live-camera-modal hidden" role="dialog" aria-modal="true" aria-labelledby="liveCameraTitle">
+    <div class="live-camera-panel">
+      <h2 id="liveCameraTitle">Kamera ile Fotoğraf Çek</h2>
+      <p id="liveCameraHelp">Görev fotoğrafı şimdi çekilmelidir. Galeri ana yol değildir.</p>
+      <div class="live-camera-view">
+        <video id="liveCameraVideo" autoplay playsinline muted></video>
+        <canvas id="liveCameraCanvas" class="hidden"></canvas>
+        <img id="liveCameraPreview" class="hidden" alt="Çekilen görev fotoğrafı önizlemesi">
+      </div>
+      <div class="live-camera-actions">
+        <button id="liveCameraShootButton" type="button" class="primary" onclick="captureLiveCameraPhoto()">Fotoğrafı Çek</button>
+        <button id="liveCameraRetakeButton" type="button" class="secondary hidden" onclick="retakeLiveCameraPhoto()">Tekrar Çek</button>
+        <button id="liveCameraSendButton" type="button" class="primary hidden" onclick="sendLiveCameraPhoto()">Onaya Gönder</button>
+        <button type="button" class="danger" onclick="closeLiveCameraModal(true)">İptal</button>
+      </div>
+      <div id="liveCameraFallbackBox" class="live-camera-fallback hidden">
+        Kamera açılamazsa yedek dosya seçici kullanılabilir.
+        <button type="button" class="light" onclick="openLiveCameraFallback()">Yedek: Dosya Seç</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let currentTemplateDetailKey = "mutfak_acilis";
+    let currentAssignTemplateKey = "mutfak_acilis";
+
+    const checklistTemplateDetails = {
+      mutfak_acilis: {
+        title: "Mutfak Açılış Checklist",
+        desc: "Hijyen, soğuk zincir, ürün hazırlığı, ekipman ve servis öncesi son kontrol.",
+        zone: "Mutfak", type: "Açılış", photo: "4 zorunlu",
+        points: [
+          { title: "Açılış öncesi genel mutfak hijyen kontrolü", time: "Açılıştan 30 dk önce", photo: "Zorunlu", instruction: "Zemin, tezgâh, çöp alanı ve genel hijyen kontrol edilir." },
+          { title: "Soğuk dolap sıcaklık ve kapak kontrolü", time: "Açılıştan 25 dk önce", photo: "Zorunlu", instruction: "Dolap derecesi, kapak kapanması ve ürün düzeni kontrol edilir." },
+          { title: "Hazırlık ürünlerinin etiket ve tarih kontrolü", time: "Açılıştan 20 dk önce", photo: "Zorunlu", instruction: "Hazırlık ürünlerinin etiketi, tarihi ve kapalı saklanması kontrol edilir." },
+          { title: "Ekipman çalışma ve güvenlik kontrolü", time: "Açılıştan 15 dk önce", photo: "Opsiyonel", instruction: "Ocak, fritöz, fırın ve küçük ekipmanların güvenli çalışması kontrol edilir." },
+          { title: "Servis öncesi son mutfak kontrolü", time: "Açılıştan 5 dk önce", photo: "Zorunlu", instruction: "Mutfak servis başlangıcına hazır olarak son kez kontrol edilir." }
+        ]
+      },
+      mutfak_kapanis: {
+        title: "Mutfak Kapanış Checklist",
+        desc: "Ürün kaldırma, temizlik, çöp, soğuk dolap ve kapanış sorumlusu kontrolü.",
+        zone: "Mutfak", type: "Kapanış", photo: "4 zorunlu",
+        points: [
+          { title: "Kapanış öncesi ürün kaldırma ve etiket kontrolü", time: "Kapanıştan 30 dk önce", photo: "Zorunlu", instruction: "Açık ürünler kapatılır, etiketlenir ve uygun dolaba kaldırılır." },
+          { title: "Tezgah, ekipman ve çalışma alanı temizlik kontrolü", time: "Kapanıştan 25 dk önce", photo: "Zorunlu", instruction: "Tezgâhlar, ekipman ve istasyon çevresi temiz bırakılır." },
+          { title: "Çöp alanı ve gider kontrolü", time: "Kapanıştan 20 dk önce", photo: "Zorunlu", instruction: "Çöpler çıkarılır, gider ve çöp alanı temizlenir." },
+          { title: "Soğuk dolap kapanış düzeni kontrolü", time: "Kapanıştan 15 dk önce", photo: "Zorunlu", instruction: "Dolap kapakları, sıcaklık ve ürün düzeni kontrol edilir." },
+          { title: "Kapanış sorumlusu son kontrol onayı", time: "Kapanıştan 5 dk önce", photo: "Opsiyonel", instruction: "Kapanış sorumlusu güvenlik ve genel düzen için son kontrolü yapar." }
+        ]
+      },
+      salon_acilis: {
+        title: "Salon Açılış Checklist",
+        desc: "Masa düzeni, servis ekipmanı, personel görünümü, rezervasyon ve son salon kontrolü.",
+        zone: "Salon", type: "Açılış", photo: "3 zorunlu",
+        points: [
+          { title: "Salon genel temizlik ve masa düzeni kontrolü", time: "Açılıştan 30 dk önce", photo: "Zorunlu", instruction: "Masa, sandalye, zemin ve misafir alanı temiz ve düzenli olmalıdır." },
+          { title: "Masa üstü ekipman, menü ve peçete eksik kontrolü", time: "Açılıştan 25 dk önce", photo: "Zorunlu", instruction: "Menü, peçete, çatal-kaşık ve masa ekipmanları tamamlanır." },
+          { title: "Personel üniforma ve kişisel görünüm kontrolü", time: "Açılıştan 20 dk önce", photo: "Opsiyonel", instruction: "Salon ekibinin üniforma ve kişisel görünümü kontrol edilir." },
+          { title: "Rezervasyon ve masa planı kontrolü", time: "Açılıştan 15 dk önce", photo: "Opsiyonel", instruction: "Rezervasyonlar, masa planı ve özel notlar kontrol edilir." },
+          { title: "Servis öncesi son salon kontrolü", time: "Açılıştan 5 dk önce", photo: "Zorunlu", instruction: "Salon misafir kabulüne hazır olarak son kez kontrol edilir." }
+        ]
+      },
+      salon_kapanis: {
+        title: "Salon Kapanış Checklist",
+        desc: "Masa ve servis alanı, kasa çevresi, ortak alan hijyeni ve kapanış onayı.",
+        zone: "Salon", type: "Kapanış", photo: "3 zorunlu",
+        points: [
+          { title: "Salon masa, sandalye ve servis alanı kapanış düzeni", time: "Kapanıştan 25 dk önce", photo: "Zorunlu", instruction: "Masa, sandalye ve servis alanı kapanış düzenine getirilir." },
+          { title: "Kasa çevresi ve misafir alanı kontrolü", time: "Kapanıştan 20 dk önce", photo: "Opsiyonel", instruction: "Kasa çevresi ve görünür misafir alanları kontrol edilir." },
+          { title: "Tuvalet ve ortak alan son hijyen kontrolü", time: "Kapanıştan 15 dk önce", photo: "Zorunlu", instruction: "Tuvalet ve ortak alanlar son kez hijyen açısından kontrol edilir." },
+          { title: "Servis ekipmanlarının eksik ve temizlik kontrolü", time: "Kapanıştan 10 dk önce", photo: "Zorunlu", instruction: "Servis ekipmanları sayılır, temizliği ve yerleşimi kontrol edilir." },
+          { title: "Kapanış sorumlusu salon onayı", time: "Kapanıştan 5 dk önce", photo: "Opsiyonel", instruction: "Kapanış sorumlusu salonun son onayını verir." }
+        ]
+      },
+      bar_acilis: {
+        title: "Bar Açılış Checklist",
+        desc: "Bar hijyeni, içecek stoku, buz-garnitür hazırlığı ve servis ekipmanı kontrolü.",
+        zone: "Bar", type: "Açılış", photo: "3 zorunlu",
+        points: [
+          { title: "Bar tezgahı ve ekipman hijyen kontrolü", time: "Açılıştan 25 dk önce", photo: "Zorunlu", instruction: "Bar tezgâhı, lavabo ve ekipman temizliği kontrol edilir." },
+          { title: "İçecek stok ve eksik ürün kontrolü", time: "Açılıştan 20 dk önce", photo: "Opsiyonel", instruction: "İçecekler ve kritik eksikler kontrol edilerek sorumluya bildirilir." },
+          { title: "Buz, garnitür ve servis hazırlık kontrolü", time: "Açılıştan 15 dk önce", photo: "Zorunlu", instruction: "Buz, garnitür ve servis hazırlıkları tamamlanır." },
+          { title: "Cam bardak ve servis ekipmanı kontrolü", time: "Açılıştan 10 dk önce", photo: "Zorunlu", instruction: "Bardak ve bar servis ekipmanlarının temizliği kontrol edilir." }
+        ]
+      },
+      depo_kontrol: {
+        title: "Depo Kontrol Checklist",
+        desc: "Depo düzeni, kritik stok, son kullanma tarihi, sıcaklık ve hijyen kontrolü.",
+        zone: "Depo", type: "Günlük", photo: "3 zorunlu",
+        points: [
+          { title: "Depo düzeni ve stok yerleşimi kontrolü", time: "Açılıştan 60 dk sonra", photo: "Zorunlu", instruction: "Raflar, geçiş alanları ve ürün yerleşimi kontrol edilir." },
+          { title: "Kritik ürün ve eksik stok kontrolü", time: "Açılıştan 75 dk sonra", photo: "Opsiyonel", instruction: "Kritik ve düşük stok ürünler belirlenir." },
+          { title: "Son kullanma tarihi ve ürün kalite kontrolü", time: "Açılıştan 90 dk sonra", photo: "Zorunlu", instruction: "Tarih, ambalaj ve görünür kalite sorunları kontrol edilir." },
+          { title: "Depo sıcaklık ve hijyen kontrolü", time: "Açılıştan 105 dk sonra", photo: "Zorunlu", instruction: "Depo sıcaklığı, temizlik ve hijyen koşulları kontrol edilir." }
+        ]
+      }
+    };
+
+
+    function setTelegramBackButton(visible) {
+      if (!tg.BackButton) return;
+
+      if (visible) {
+        tg.BackButton.show();
+      } else {
+        tg.BackButton.hide();
+      }
+    }
+
+    if (tg.BackButton) {
+      tg.BackButton.onClick(function() {
+        showHome();
+      });
+    }
+
+
+    function setEmployeeStatus(message, isError) {
+      const box = document.getElementById("employeeStatusMessage");
+      if (!box) return;
+      box.innerText = message || "";
+      box.classList.toggle("error", !!isError);
+      box.style.display = message ? "block" : "none";
+    }
+
+    function updateEmployeeSummary(summary) {
+      summary = summary || { total: 0, active: 0, connected: 0, waiting: 0 };
+      document.getElementById("employeeSummaryTotal").innerText = summary.total || 0;
+      document.getElementById("employeeSummaryActive").innerText = summary.active || 0;
+      document.getElementById("employeeSummaryConnected").innerText = summary.connected || 0;
+      document.getElementById("employeeSummaryWaiting").innerText = summary.waiting || 0;
+    }
+
+    function renderEmployees(items) {
+      const list = document.getElementById("employeeList");
+      const empty = document.getElementById("employeeEmptyBox");
+      if (!list || !empty) return;
+
+      list.innerHTML = "";
+
+      if (!items || !items.length) {
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      items.forEach(function(item) {
+        const code = item.invite_code || "";
+        const connected = String(item.connection_label || "").toLowerCase().indexOf("bağlandı") >= 0 || String(item.connection_label || "").toLowerCase().indexOf("baglandi") >= 0;
+        const card = document.createElement("div");
+        card.className = "employee-card";
+        card.innerHTML = `
+          <div class="employee-top">
+            <div>
+              <div class="task-id">Çalışan #${escapeHtml(item.id)}</div>
+              <div class="employee-name">${escapeHtml(item.full_name)}</div>
+            </div>
+            <span class="state">${escapeHtml(item.status_label || "Aktif")}</span>
+          </div>
+          <div class="task-meta">
+            <div class="task-meta-item"><span class="task-meta-label">Rol</span><span class="task-meta-value">${escapeHtml(item.role_label || item.role)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Bölüm</span><span class="task-meta-value">${escapeHtml(item.zone)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Bağlantı</span><span class="task-meta-value ${connected ? 'photo-ok' : 'photo-bad'}">${escapeHtml(item.connection_label)}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Katılım</span><span class="task-meta-value">${escapeHtml(item.joined_at || '-')}</span></div>
+          </div>
+          ${!connected && code ? `
+            <div class="employee-code">/join ${escapeHtml(code)}</div>
+            <button class="light" onclick="copyJoinCode('${escapeHtml(code)}')">Kodu Kopyala</button>
+            <button class="secondary" onclick="copyInviteMessage('${escapeHtml(code)}', '${escapeHtml(item.full_name)}', '${escapeHtml(item.role_label || item.role)}', '${escapeHtml(item.zone)}')">Davet Mesajını Kopyala</button>
+          ` : ``}
+          ${connected ? `
+            <button class="light" onclick="resetEmployeeTelegram(${Number(item.id) || 0})">Telegram Bağlantısını Sıfırla</button>
+            <p class="small">Yanlış Telegram hesabı bağlandıysa bu butonla çalışanı yeniden davet edilebilir hale getirebilirsiniz.</p>
+          ` : ``}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+
+    function setDepartmentStatus(message, isError) {
+      const el = document.getElementById("departmentStatusMessage");
+      if (!el) return;
+      el.innerText = message || "";
+      el.className = isError ? "approval-message error" : "approval-message";
+    }
+
+    function updateDepartmentSummary(summary) {
+      summary = summary || {};
+      document.getElementById("departmentSummaryTotal").innerText = summary.total || 0;
+      document.getElementById("departmentSummaryActive").innerText = summary.active || 0;
+      document.getElementById("departmentSummaryPassive").innerText = summary.passive || 0;
+      document.getElementById("departmentSummaryCustom").innerText = summary.custom || 0;
+    }
+
+    function updateDepartmentSelectOptions(items) {
+      const activeItems = (items || []).filter(function(item) { return Number(item.is_active) === 1; });
+      const selectIds = ["employeeFormZone", "employeeZone", "newTaskZone"];
+
+      selectIds.forEach(function(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        const current = select.value;
+        select.innerHTML = "";
+
+        activeItems.forEach(function(item) {
+          const option = document.createElement("option");
+          option.value = item.name;
+          option.textContent = item.name;
+          select.appendChild(option);
+        });
+
+        if (selectId === "employeeFormZone" || selectId === "employeeZone") {
+          const option = document.createElement("option");
+          option.value = "Tüm Bölümler";
+          option.textContent = "Tüm Bölümler";
+          select.appendChild(option);
+        }
+
+        if (current) {
+          const exists = Array.from(select.options).some(function(option) { return option.value === current; });
+          if (exists) select.value = current;
+        }
+      });
+    }
+
+    function renderDepartments(items) {
+      const list = document.getElementById("departmentList");
+      const empty = document.getElementById("departmentEmptyBox");
+      list.innerHTML = "";
+
+      if (!items || !items.length) {
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      items.forEach(function(item) {
+        const active = Number(item.is_active) === 1;
+        const canDeactivate = Number(item.can_deactivate) === 1;
+        const canActivate = Number(item.can_activate) === 1;
+        const canDelete = Number(item.can_delete) === 1;
+        const defaultBadge = Number(item.is_default) === 1 ? "Temel" : "Özel";
+        const lockedText = item.lock_reason ? `<p class="small">${escapeHtml(item.lock_reason)} Silme/pasifleştirme için önce kullanım temizlenmeli.</p>` : "";
+
+        const card = document.createElement("div");
+        card.className = "employee-card";
+        card.innerHTML = `
+          <div class="employee-top">
+            <div>
+              <div class="task-id">Bölüm #${escapeHtml(item.id)}</div>
+              <div class="employee-name">${escapeHtml(item.name)}</div>
+            </div>
+            <span class="state">${escapeHtml(item.status_label || (active ? "Aktif" : "Pasif"))}</span>
+          </div>
+          <div class="task-meta">
+            <div class="task-meta-item"><span class="task-meta-label">Tür</span><span class="task-meta-value">${defaultBadge}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Çalışan</span><span class="task-meta-value">${escapeHtml(displayCount(item.employee_count))}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Görev</span><span class="task-meta-value">${escapeHtml(displayCount(item.task_count))}</span></div>
+            <div class="task-meta-item"><span class="task-meta-label">Durum</span><span class="task-meta-value ${active ? 'photo-ok' : 'photo-bad'}">${active ? 'Aktif' : 'Pasif'}</span></div>
+          </div>
+          <div class="menu-actions single" style="margin-top:10px;">
+            ${canActivate ? `<button class="primary" onclick="toggleDepartmentStatus(${Number(item.id) || 0}, 1)">Aktif Et</button>` : ``}
+            ${active ? `<button class="light" onclick="toggleDepartmentStatus(${Number(item.id) || 0}, 0)" ${canDeactivate ? '' : 'disabled'}>Pasifleştir</button>` : ``}
+            ${canDelete ? `<button class="danger" onclick="deleteDepartmentFromMiniApp(${Number(item.id) || 0})">Sil</button>` : ``}
+          </div>
+          ${lockedText}
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function showDepartmentsScreen() {
+  if (!requireManagementPermission("Bölümler")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.remove("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+      loadDepartments();
+    }
+
+    async function loadDepartments() {
+      if (!API_BASE_URL) {
+        updateDepartmentSummary({ total: 0, active: 0, passive: 0, custom: 0 });
+        renderDepartments([]);
+        setDepartmentStatus("Backend URL yok. PUBLIC_BASE_URL kontrol edilmeli.", true);
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        updateDepartmentSummary({ total: 0, active: 0, passive: 0, custom: 0 });
+        renderDepartments([]);
+        setDepartmentStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      setDepartmentStatus("Bölümler yükleniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölümler alınamadı.");
+        }
+        updateDepartmentSummary(result.summary || {});
+        renderDepartments(result.items || []);
+        updateDepartmentSelectOptions(result.items || []);
+        setDepartmentStatus((result.items || []).length ? "Bölümler yüklendi." : "Henüz bölüm yok.", false);
+      } catch (error) {
+        updateDepartmentSummary({ total: 0, active: 0, passive: 0, custom: 0 });
+        renderDepartments([]);
+        setDepartmentStatus(safeErrorText(error) || "Bölümler alınamadı.", true);
+      }
+    }
+
+    async function loadDepartmentOptionsForSelects() {
+      if (!API_BASE_URL) return;
+      const userId = getTelegramUserId();
+      if (!userId) return;
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (response.ok && result.ok) updateDepartmentSelectOptions(result.items || []);
+      } catch (error) {
+        console.log("Department options load error", error);
+      }
+    }
+
+    async function createDepartmentFromMiniApp() {
+      const name = document.getElementById("newDepartmentName").value.trim();
+      const userId = getTelegramUserId();
+
+      if (!name) {
+        setDepartmentStatus("Bölüm adı boş olamaz.", true);
+        return;
+      }
+
+      if (!API_BASE_URL || !userId) {
+        setDepartmentStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      setDepartmentStatus("Bölüm ekleniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            action: "add",
+            name: name
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölüm eklenemedi.");
+        }
+        document.getElementById("newDepartmentName").value = "";
+        setDepartmentStatus(result.message || "Bölüm eklendi.", false);
+        await loadDepartments();
+      } catch (error) {
+        setDepartmentStatus(safeErrorText(error) || "Bölüm eklenemedi.", true);
+      }
+    }
+
+    async function toggleDepartmentStatus(departmentId, makeActive) {
+      const userId = getTelegramUserId();
+      if (!API_BASE_URL || !userId) {
+        setDepartmentStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      setDepartmentStatus(makeActive ? "Bölüm aktif ediliyor..." : "Bölüm pasifleştiriliyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            action: "toggle",
+            department_id: departmentId,
+            is_active: makeActive ? 1 : 0
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölüm durumu değiştirilemedi.");
+        }
+        setDepartmentStatus(result.message || "Bölüm durumu güncellendi.", false);
+        await loadDepartments();
+      } catch (error) {
+        setDepartmentStatus(safeErrorText(error) || "Bölüm durumu değiştirilemedi.", true);
+      }
+    }
+
+    async function deleteDepartmentFromMiniApp(departmentId) {
+      const userId = getTelegramUserId();
+      if (!API_BASE_URL || !userId) {
+        setDepartmentStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      const confirmed = window.confirm("Bu bölüm silinsin mi? Kullanımda olan bölüm silinemez.");
+      if (!confirmed) return;
+
+      setDepartmentStatus("Bölüm siliniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/departments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            action: "delete",
+            department_id: departmentId
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Bölüm silinemedi.");
+        }
+        setDepartmentStatus(result.message || "Bölüm silindi.", false);
+        await loadDepartments();
+      } catch (error) {
+        setDepartmentStatus(safeErrorText(error) || "Bölüm silinemedi.", true);
+      }
+    }
+
+    function showEmployeesScreen() {
+  if (!requireManagementPermission("Çalışanlar")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+      loadDepartmentOptionsForSelects();
+      loadEmployees();
+    }
+
+    async function loadEmployees() {
+      if (!API_BASE_URL) {
+        updateEmployeeSummary({ total: 0, active: 0, connected: 0, waiting: 0 });
+        renderEmployees([]);
+        setEmployeeStatus("Backend URL yok. PUBLIC_BASE_URL kontrol edilmeli.", true);
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        updateEmployeeSummary({ total: 0, active: 0, connected: 0, waiting: 0 });
+        renderEmployees([]);
+        setEmployeeStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      setEmployeeStatus("Çalışan listesi yükleniyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/employees?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Çalışan listesi alınamadı.");
+        }
+        updateEmployeeSummary(result.summary || {});
+        renderEmployees(result.items || []);
+        setEmployeeStatus((result.items || []).length ? "Çalışan listesi yüklendi." : "Henüz çalışan eklenmemiş.", false);
+      } catch (error) {
+        updateEmployeeSummary({ total: 0, active: 0, connected: 0, waiting: 0 });
+        renderEmployees([]);
+        setEmployeeStatus(safeErrorText(error) || "Çalışan listesi alınamadı.", true);
+      }
+    }
+
+    async function createEmployeeFromMiniApp() {
+      const fullName = document.getElementById("employeeFormName").value.trim();
+      const role = document.getElementById("employeeFormRole").value;
+      const zone = document.getElementById("employeeFormZone").value;
+      const userId = getTelegramUserId();
+
+      if (!fullName) {
+        setEmployeeStatus("Ad Soyad boş olamaz.", true);
+        return;
+      }
+
+      if (!API_BASE_URL || !userId) {
+        setEmployeeStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      setEmployeeStatus("Davet kodu oluşturuluyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/employees", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            full_name: fullName,
+            role: role,
+            zone: zone
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Çalışan eklenemedi.");
+        }
+        document.getElementById("employeeFormName").value = "";
+        const createdMessage = result.invite_message || result.join_command || "";
+        setEmployeeStatus((result.message || "Çalışan daveti oluşturuldu.") + " " + createdMessage, false);
+        await loadEmployees();
+      } catch (error) {
+        setEmployeeStatus(safeErrorText(error) || "Çalışan eklenemedi.", true);
+      }
+    }
+
+    async function copyJoinCode(code) {
+      const text = "/join " + code;
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        }
+        setEmployeeStatus("Davet kodu kopyalandı: " + text, false);
+      } catch (error) {
+        setEmployeeStatus("Davet kodu: " + text, false);
+      }
+    }
+
+    async function copyInviteMessage(code, fullName, roleLabel, zone) {
+      const text = "Merhaba " + (fullName || "") + ", RestKontrol'e katılmak için Telegram botuna şu komutu yaz:\n" +
+        "/join " + code + "\n\n" +
+        "Rol: " + (roleLabel || "-") + "\n" +
+        "Bölüm: " + (zone || "-");
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        }
+        setEmployeeStatus("Davet mesajı kopyalandı.", false);
+      } catch (error) {
+        setEmployeeStatus("Davet mesajı: " + text, false);
+      }
+    }
+
+    async function resetEmployeeTelegram(employeeId) {
+      const userId = getTelegramUserId();
+      if (!API_BASE_URL || !userId) {
+        setEmployeeStatus("Backend veya Telegram kullanıcı bilgisi yok.", true);
+        return;
+      }
+
+      const confirmed = window.confirm("Bu çalışanın Telegram bağlantısı sıfırlansın mı? Çalışan tekrar davet kodu ile bağlanabilecek.");
+      if (!confirmed) return;
+
+      setEmployeeStatus("Telegram bağlantısı sıfırlanıyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/reset_employee_telegram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            employee_id: employeeId
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Telegram bağlantısı sıfırlanamadı.");
+        }
+        setEmployeeStatus((result.message || "Telegram bağlantısı sıfırlandı.") + " Yeni kod: " + (result.join_command || "-"), false);
+        await loadEmployees();
+      } catch (error) {
+        setEmployeeStatus(safeErrorText(error) || "Telegram bağlantısı sıfırlanamadı.", true);
+      }
+    }
+
+    function showHome() {
+      document.getElementById("homeScreen").classList.remove("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      updateTaskStates();
+      setTelegramBackButton(false);
+    }
+
+    function showInfoScreen(title, detail) {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.remove("hidden");
+      document.getElementById("infoTitle").innerText = title;
+      document.getElementById("infoText").innerText = detail;
+      setTelegramBackButton(true);
+    }
+
+    function showTemplateScreen() {
+  if (!requireManagementPermission("Checklist Şablonları")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+    }
+
+
+    function showTemplateDetailScreen(templateKey) {
+      currentTemplateDetailKey = templateKey || "mutfak_acilis";
+      const data = checklistTemplateDetails[currentTemplateDetailKey] || checklistTemplateDetails.mutfak_acilis;
+
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.remove("hidden");
+
+      document.getElementById("templateDetailTitle").innerText = data.title;
+      document.getElementById("templateDetailDesc").innerText = data.desc;
+      document.getElementById("templateDetailZone").innerText = data.zone;
+      document.getElementById("templateDetailType").innerText = data.type;
+      document.getElementById("templateDetailCount").innerText = data.points.length + " kontrol";
+      document.getElementById("templateDetailPhoto").innerText = data.photo;
+
+      const pointsBox = document.getElementById("templateDetailPoints");
+      pointsBox.innerHTML = "";
+
+      data.points.forEach(function(point, index) {
+        const card = document.createElement("div");
+        card.className = "detail-point-card";
+        card.innerHTML = `
+          <div class="detail-point-top">
+            <div>
+              <div class="task-id">Kontrol noktası #${index + 1}</div>
+              <div class="detail-point-title"></div>
+            </div>
+            <span class="state">Şablon</span>
+          </div>
+          <p class="detail-point-instruction"></p>
+          <div class="detail-mini-grid">
+            <div class="detail-mini-box"><span>Varsayılan saat</span><strong></strong></div>
+            <div class="detail-mini-box"><span>Fotoğraf</span><strong></strong></div>
+          </div>
+        `;
+        card.querySelector(".detail-point-title").innerText = point.title;
+        card.querySelector(".detail-point-instruction").innerText = point.instruction;
+        const strongs = card.querySelectorAll(".detail-mini-box strong");
+        strongs[0].innerText = point.time;
+        strongs[1].innerText = point.photo;
+        pointsBox.appendChild(card);
+      });
+
+      setTelegramBackButton(true);
+    }
+
+
+    function showTemplateAssignScreen(templateKey) {
+  if (!requireManagementPermission("Kontrol Atama")) return;
+      currentAssignTemplateKey = templateKey || currentTemplateDetailKey || "mutfak_acilis";
+      const data = checklistTemplateDetails[currentAssignTemplateKey] || checklistTemplateDetails.mutfak_acilis;
+
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.remove("hidden");
+
+      document.getElementById("templateAssignTitle").innerText = data.title + " — Bugüne Ata";
+      document.getElementById("templateAssignDesc").innerText = data.desc;
+      document.getElementById("templateAssignZone").innerText = data.zone;
+      document.getElementById("templateAssignType").innerText = data.type;
+      document.getElementById("templateAssignCount").innerText = data.points.length + " kontrol";
+      document.getElementById("templateAssignPhoto").innerText = data.photo;
+      setTemplateAssignStatus("", false);
+
+      setTelegramBackButton(true);
+    }
+
+    function confirmAssignTemplateToday() {
+      if (!currentAssignTemplateKey) {
+        if (tg.showAlert) {
+          tg.showAlert("Önce bir checklist şablonu seçin.");
+        } else {
+          alert("Önce bir checklist şablonu seçin.");
+        }
+        return;
+      }
+
+      sendChecklistAssignToday(currentAssignTemplateKey);
+    }
+
+
+    function showCreateBusiness() {
+  if (!requireManagementPermission("İşletme Ayarları")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.remove("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+      loadBusinessSettings();
+    }
+
+    function showEmployeeScreen() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.remove("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+
+
+    function showPlanScreen() {
+  if (!requireManagementPermission("Plan ve Ödeme")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.remove("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+      loadPlanStatus();
+    }
+
+    function showChecklistScreen() {
+  if (!requireManagementPermission("Hazır Checklistler")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.remove("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+    }
+
+    function showCleanupScreen() {
+  if (!requireManagementPermission("Pilot Hazırlığı")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+    }
+
+    function showAddTaskScreen() {
+  if (!requireManagementPermission("Manuel Görev Ekle")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.remove("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      setTelegramBackButton(true);
+      loadDepartmentOptionsForSelects();
+    }
+
+function getApiBaseUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("api_base") || "").replace(/\/$/, "");
+}
+
+const API_BASE_URL = getApiBaseUrl();
+
+function getTelegramUserId() {
+  const params = new URLSearchParams(window.location.search);
+  const urlUserId = params.get("telegram_user_id") || params.get("user_id") || "";
+
+  if (urlUserId) {
+    return urlUserId;
+  }
+
+  if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+    return tg.initDataUnsafe.user.id;
+  }
+
+  return "";
+}
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function displayCount(value) {
+  if (value === null || value === undefined || value === "") return "0";
+  const numberValue = Number(value);
+  if (Number.isFinite(numberValue)) return String(numberValue);
+  return String(value);
+}
+
+let currentAccessProfile = null;
+
+function applyPermissionProfile(profile) {
+  if (!profile) return;
+  currentAccessProfile = profile;
+
+  const canManage = profile.can_manage !== false;
+  document.querySelectorAll('[data-management-only="1"]').forEach(function(element) {
+    element.classList.toggle("hidden", !canManage);
+  });
+
+  const manualButton = document.getElementById("manualTaskButton");
+  if (manualButton) manualButton.classList.toggle("hidden", !canManage);
+
+  const banner = document.getElementById("personelAccessBanner");
+  if (banner) {
+    const roleText = profile.role_label || profile.role || "-";
+    const zoneText = profile.zone || "Tüm Bölümler";
+    if (canManage) {
+      banner.classList.remove("hidden", "warning");
+      banner.classList.add("success");
+      banner.innerText = "Yönetici modu: " + roleText + " · " + zoneText + ". Tüm yönetim ekranları açık.";
+    } else {
+      banner.classList.remove("hidden", "success");
+      banner.classList.add("warning");
+      banner.innerText = "Personel modu: " + roleText + " · " + zoneText + ". Sadece kendi bölümünüzdeki görevleri görebilirsiniz.";
+    }
+  }
+
+  updateZoneFilterVisibility(profile);
+}
+
+function updateZoneFilterVisibility(profile) {
+  const zone = profile && profile.zone ? profile.zone : "";
+  const limited = profile && profile.role === "staff" && zone && zone !== "Tüm Bölümler";
+  document.querySelectorAll('[data-zone-filter]').forEach(function(button) {
+    const buttonZone = button.getAttribute("data-zone-filter") || "";
+    button.classList.toggle("hidden", limited && buttonZone !== zone);
+  });
+}
+
+function requireManagementPermission(screenTitle) {
+  if (currentAccessProfile && currentAccessProfile.can_manage === false) {
+    showMessage((screenTitle || "Bu ekran") + " için yetkiniz yok.");
+    return false;
+  }
+  return true;
+}
+
+async function loadAccessProfileOnly() {
+  if (!API_BASE_URL) return;
+  const userId = getTelegramUserId();
+  if (!userId) return;
+
+  try {
+    const response = await fetch(API_BASE_URL + "/api/tasks?telegram_user_id=" + encodeURIComponent(userId));
+    const result = await response.json();
+    if (result && result.ok) {
+      applyPermissionProfile(result.access_profile || { role: result.role || "" });
+      renderDynamicTasks(result.tasks || []);
+      updateTaskStates();
+    }
+  } catch (error) {
+    console.log("Access profile load error", error);
+  }
+}
+
+
+function setPlanStatusMessage(text, type) {
+  const box = document.getElementById("planStatusBox");
+  if (!box) return;
+
+  box.innerText = text;
+  box.classList.remove("warning", "success");
+
+  if (type) {
+    box.classList.add(type);
+  }
+}
+
+function renderPlanFeatureList(elementId, items, emptyText) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  if (!items || items.length === 0) {
+    element.innerHTML = "<li>" + escapeHtml(emptyText || "Kayıt yok.") + "</li>";
+    return;
+  }
+
+  element.innerHTML = items.map(function(item) {
+    return "<li>" + escapeHtml(item) + "</li>";
+  }).join("");
+}
+
+function renderPlanChecklistList(items) {
+  const container = document.getElementById("planChecklistList");
+  if (!container) return;
+
+  if (!items || items.length === 0) {
+    container.innerHTML = "Checklist bilgisi bulunamadı.";
+    return;
+  }
+
+  container.innerHTML = items.map(function(item) {
+    let badgeClass = item.installed ? "plan-badge-installed" : (item.opened ? "plan-badge-open" : "plan-badge-locked");
+    let badgeText = item.installed ? "Eklendi" : (item.opened ? "Açık" : "Kilitli");
+    let note = item.access === "premium" ? "Premium paket" : "Temel / Trial paketi";
+
+    return `
+      <div class="plan-checklist-row">
+        <div>
+          <div class="plan-checklist-name">${escapeHtml(item.name)}</div>
+          <div class="plan-checklist-note">${escapeHtml(note)}</div>
+        </div>
+        <span class="${badgeClass}">${badgeText}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderPlanStatus(result) {
+  if (!result || !result.ok) {
+    setPlanStatusMessage((result && result.error) ? result.error : "Plan bilgisi alınamadı.", "warning");
+    return;
+  }
+
+  if (!result.has_business) {
+    document.getElementById("planLabel").innerText = "İşletme yok";
+    document.getElementById("planBusiness").innerText = "Önce İşletme Ayarları bölümünü kaydedin.";
+    document.getElementById("planAccessLabel").innerText = "Kapalı";
+    document.getElementById("planAccessText").innerText = "Plan için işletme kaydı gerekiyor.";
+    renderPlanFeatureList("openFeaturesList", [], "Önce işletme oluşturun.");
+    renderPlanFeatureList("lockedFeaturesList", [], "Önce işletme oluşturun.");
+    renderPlanChecklistList([]);
+    setPlanStatusMessage("Plan ekranı için önce İşletme Ayarları kaydedilmelidir.", "warning");
+    return;
+  }
+
+  document.getElementById("planLabel").innerText = result.plan_label || "Trial";
+  document.getElementById("planBusiness").innerText = (result.business_name || "-") + " · İşletme ID: #" + result.business_id;
+  document.getElementById("planAccessLabel").innerText = result.is_paid ? "Tüm Premium Açık" : "Temel Açık";
+  document.getElementById("planAccessText").innerText = result.access_text || "";
+
+  renderPlanFeatureList("openFeaturesList", result.open_features || [], "Açık özellik yok.");
+  renderPlanFeatureList("lockedFeaturesList", result.locked_features || [], "Kilitli özellik yok.");
+  renderPlanChecklistList(result.checklist_templates || []);
+
+  if (result.is_paid) {
+    setPlanStatusMessage("Premium aktif. Premium checklistler eklenebilir.", "success");
+  } else {
+    setPlanStatusMessage("Trial aktif. Premium paketler ödeme sonrası açılır.", "warning");
+  }
+}
+
+async function fetchJsonSafe(url) {
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch (error) {
+    console.log("Plan fetch error", error);
+    return null;
+  }
+}
+
+function buildPlanFallbackFromBusinessSettings(result) {
+  if (!result || !result.ok) return null;
+
+  if (!result.has_business || !result.business) {
+    return {
+      ok: true,
+      has_business: false,
+      business_id: null,
+      business_name: "",
+      plan_type: "trial",
+      plan_label: "İşletme yok",
+      is_paid: false,
+      access_text: "Önce İşletme Ayarları kaydedilmelidir.",
+      open_features: [],
+      locked_features: [],
+      checklist_templates: []
+    };
+  }
+
+  const business = result.business;
+  const isPaid = !!business.isPaid || business.planType === "paid";
+
+  return {
+    ok: true,
+    has_business: true,
+    business_id: business.id,
+    business_name: business.businessName || "-",
+    plan_type: isPaid ? "paid" : "trial",
+    plan_label: isPaid ? "Paid / Premium aktif" : "Trial",
+    is_paid: isPaid,
+    access_text: isPaid ? "Demo, Temel ve Premium checklistler açık." : "Trial sürecinde Demo Operasyon Checklist ve Mutfak Açılış Checklist açık. Premium içerik kapalı.",
+    open_features: isPaid ? [
+      "Demo Operasyon Checklist",
+      "Mutfak Açılış Checklist",
+      "Tüm Premium checklist paketleri",
+      "Premium paketleri işletmeye ekleme",
+      "Fotoğraflı raporlar ve gecikme yorumları"
+    ] : [
+      "Demo Operasyon Checklist",
+      "Mutfak Açılış Checklist",
+      "Görev tamamlama ve fotoğraflı kontrol",
+      "Temel raporlar"
+    ],
+    locked_features: isPaid ? [] : [
+      "Mutfak Kapanış Checklist",
+      "Salon Açılış / Kapanış Checklist",
+      "Bar Açılış Checklist",
+      "Depo Kontrol Checklist",
+      "Full Servis Restoran operasyon paketi"
+    ],
+    checklist_templates: [
+      { name: "Demo Operasyon Checklist", access: "free", opened: true, installed: false },
+      { name: "Mutfak Açılış Checklist", access: "free", opened: true, installed: false },
+      { name: "Mutfak Kapanış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Salon Açılış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Salon Kapanış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Bar Açılış Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Depo Kontrol Checklist", access: "premium", opened: isPaid, installed: false },
+      { name: "Full Servis Restoran", access: "premium", opened: isPaid, installed: false }
+    ]
+  };
+}
+
+async function loadPlanStatus() {
+  // v19.22: Plan ekranı v1.0 için temiz Telegram özeti akışıyla gösterilir.
+  // Bot tarafındaki Plan Özeti güncel plan bilgisini gönderir.
+  document.getElementById("planLabel").innerText = "Telegram özeti";
+  document.getElementById("planBusiness").innerText = "Plan bilgisini Telegram sohbetinde görüntüleyin.";
+  document.getElementById("planAccessLabel").innerText = "Kontrol hazır";
+  document.getElementById("planAccessText").innerText = "Aşağıdaki butona basınca bot güncel plan özetini gönderir.";
+
+  renderPlanFeatureList("openFeaturesList", [
+    "Güncel plan özeti Telegram sohbetine gönderilir",
+    "Premium paket ekranı açık",
+    "Premium aktifse checklist ekleme açık",
+    "Hazır Checklistler ekranından paket ekleme açık"
+  ], "Güncel plan özeti için Telegram butonunu kullanın.");
+
+  renderPlanFeatureList("lockedFeaturesList", [
+    "Online ödeme bağlantısı hazırlanıyor",
+    "Ödeme talebi şu an Telegram üzerinden manuel takip edilir"
+  ], "Kilitli özellik yok.");
+
+  renderPlanChecklistList([
+    { name: "Demo Operasyon Checklist", access: "free", opened: true, installed: false },
+    { name: "Mutfak Açılış Checklist", access: "free", opened: true, installed: false },
+    { name: "Premium Checklistler", access: "premium", opened: true, installed: false }
+  ]);
+
+  setPlanStatusMessage("Güncel plan özeti için 'Telegram'a Plan Özeti Gönder' butonunu kullanın.", "success");
+}
+
+function isApprovedCompletionStatus(status) {
+  return status === "completed" || status === "late";
+}
+
+function isPendingApprovalStatus(status) {
+  return status === "pending_completed" || status === "pending_late";
+}
+
+function isRejectedCompletionStatus(status) {
+  return status === "rejected" || status === "rejected_late";
+}
+
+function getCompletionStatusText(status) {
+  if (status === "late") return "Geç tamamlandı";
+  if (status === "completed") return "Tamamlandı";
+  if (status === "pending_late") return "Geç tamamlandı · Onay bekliyor";
+  if (status === "pending_completed") return "Onay bekliyor";
+  if (isRejectedCompletionStatus(status)) return "İade edildi";
+  return "Kontrol";
+}
+
+function renderDynamicTasks(tasks) {
+  const container = document.getElementById("dynamicTasks");
+  if (!container) return;
+
+  const oldStaticTasks = document.querySelectorAll("#tasksScreen > .task");
+  oldStaticTasks.forEach(function(task) { task.remove(); });
+
+  if (!tasks || tasks.length === 0) {
+    container.innerHTML = "";
+    updateDashboard({ total: 0, open: 0, late: 0, photo: 0, approval: 0, done: 0 });
+    return;
+  }
+
+  container.innerHTML = tasks.map(function(task) {
+    const photoRequired = parseInt(task.requires_photo || 0, 10) === 1;
+    const photoText = photoRequired ? "Zorunlu" : "Zorunlu değil";
+    const photoClass = photoRequired ? "photo-required" : "photo-optional";
+    const safeTitle = escapeHtml(task.task_title);
+    const safeZone = escapeHtml(task.zone);
+    const safeType = escapeHtml(task.task_type);
+    const safeTime = escapeHtml(task.scheduled_time);
+    const id = parseInt(task.id, 10);
+    const completionStatusRaw = String(task.completion_status || "");
+    const completionStatus = escapeHtml(completionStatusRaw);
+    const completedAt = escapeHtml(task.completed_at || "");
+    const completionComment = escapeHtml(task.completion_comment || "");
+    const cachedRejectReason = localStorage.getItem("rk_reject_reason_task_" + id) || "";
+    const completionReviewReason = escapeHtml(task.completion_review_reason || cachedRejectReason || "");
+    const completionStaffName = escapeHtml(task.completion_staff_name || "");
+    const isApproved = isApprovedCompletionStatus(completionStatusRaw);
+    const isPendingApproval = isPendingApprovalStatus(completionStatusRaw);
+    const isRejected = isRejectedCompletionStatus(completionStatusRaw);
+    const completedBoxClass = completionStatusRaw === "late" ? "task-completed-box late-completed" : (isPendingApproval ? "task-completed-box approval-pending" : "task-completed-box");
+    const completedText = getCompletionStatusText(completionStatusRaw);
+    const isLateNow = !isApproved && !isPendingApproval && getCurrentMinutes() > getTaskMinutes(String(task.scheduled_time || "00:00"));
+    let initialStateText = "Açık";
+    let initialStateClass = "state-ok";
+    if (isPendingApproval) {
+      initialStateText = "Onay Bekliyor";
+    } else if (isApproved) {
+      initialStateText = completionStatusRaw === "late" ? "Geç Tamamlandı" : "Tamamlandı";
+    } else if (isRejected) {
+      initialStateText = "İade Edildi";
+      initialStateClass = "state-late";
+    } else if (isLateNow) {
+      initialStateText = "Gecikti";
+      initialStateClass = "state-late";
+    }
+
+    const reviewBoxHtml = isRejected ? `
+        <div class="task-rejected-box">
+          <strong>İade edildi</strong><br>
+          Bu kontrol müdür tarafından iade edildi. Yeni fotoğrafla tekrar gönderin.
+          ${completionReviewReason ? `<br><strong>İade nedeni:</strong> ${completionReviewReason}` : `<br><strong>İade nedeni:</strong> Belirtilmemiş`}
+          ${completionComment ? `<br>Personel yorumu: ${completionComment}` : ``}
+        </div>
+      ` : ``;
+
+    const actionHtml = (isApproved || isPendingApproval) ? `
+        <div class="${completedBoxClass}">
+          <strong>${completedText}</strong><br>
+          ${completedAt ? `Zaman: ${completedAt}<br>` : ``}
+          ${completionStaffName ? `Sorumlu: ${completionStaffName}<br>` : ``}
+          ${completionComment ? `Yorum: ${completionComment}` : (isPendingApproval ? `Müdür Kabul Et / İade Et yapana kadar görev tamamlanmış sayılmaz.` : `Bu kontrol bugün kaydedildi.`)}
+        </div>
+      ` : `
+        ${reviewBoxHtml}
+        <label class="comment-label">Yorum / Gecikme nedeni</label>
+        <textarea id="comment${id}" placeholder="Gecikme varsa nedeni yazın"></textarea>
+
+        ${photoRequired ? `<p class="small">Fotoğraf zorunlu. Saat geçtiyse sistem otomatik olarak geç kaydeder. Gönderilen fotoğraf müdür onayına düşer.</p>` : ``}
+
+        <div class="task-actions">
+          ${photoRequired ? `
+            <button id="done${id}" type="button" class="camera-action primary" style="grid-column:1 / -1;" onclick="openLiveCamera(${id}, 'completed')">
+              <span>Kamerayı Aç ve Fotoğraf Çek</span>
+            </button>
+            <input id="photoInput${id}" class="photo-input hidden-photo-input" data-task-id="${id}" data-status="completed" type="file" accept="image/*" capture="environment" onchange="handlePhotoInputEvent(this)" oninput="handlePhotoInputEvent(this)">
+            <div id="photoDebug${id}" class="photo-debug"></div>
+          ` : `
+            <button id="done${id}" class="primary" style="grid-column:1 / -1;" onclick="completeTask(${id}, 'completed')">Tamamlandı</button>
+          `}
+        </div>
+      `;
+
+    return `
+      <div class="task${isApproved ? ' is-completed' : ''}" data-task-id="${id}" data-zone="${safeZone}" data-time="${safeTime}" data-photo-required="${photoRequired ? 1 : 0}" data-completed="${isApproved ? 1 : 0}" data-approval-pending="${isPendingApproval ? 1 : 0}" data-rejected="${isRejected ? 1 : 0}" data-completion-status="${completionStatus}">
+        <div class="task-top">
+          <div>
+            <div class="badge">${safeZone} · ${safeTime}</div>
+            <div class="task-id">Görev #${id}</div>
+          </div>
+          <div id="state${id}" class="state ${initialStateClass}">${initialStateText}</div>
+        </div>
+
+        <h2 class="task-title">${safeTitle}</h2>
+
+        <div class="task-meta">
+          <div class="task-meta-item">
+            <span class="task-meta-label">Kontrol Tipi</span>
+            <span class="task-meta-value">${safeType}</span>
+          </div>
+          <div class="task-meta-item">
+            <span class="task-meta-label">Fotoğraf</span>
+            <span class="task-meta-value ${photoClass}">${photoText}</span>
+          </div>
+        </div>
+
+        ${actionHtml}
+      </div>
+    `;
+  }).join("");
+}
+
+async function loadDynamicTasks() {
+  // v23.2.1: Mini App içi checklist atama sonucu görünür ve görev ekranı üstten açılır.
+  // API yoksa veya kullanıcı bilgisi alınamazsa ekran boş kalır.
+  if (!API_BASE_URL) {
+    renderDynamicTasks([]);
+    return false;
+  }
+
+  const userId = getTelegramUserId();
+  if (!userId) {
+    renderDynamicTasks([]);
+    return false;
+  }
+
+  try {
+    const response = await fetch(API_BASE_URL + "/api/tasks?telegram_user_id=" + encodeURIComponent(userId));
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(result.error || "Görevler alınamadı.");
+    }
+
+    applyPermissionProfile(result.access_profile || { role: result.role || "" });
+    renderDynamicTasks(result.tasks || []);
+    return true;
+  } catch (error) {
+    console.log("Dynamic task load error", error);
+    renderDynamicTasks([]);
+    return false;
+  }
+}
+
+function openTasksScreen(title, filterValue, button, keepAssignmentMessage) {
+  document.getElementById("homeScreen").classList.add("hidden");
+  document.getElementById("businessScreen").classList.add("hidden");
+  document.getElementById("employeeScreen").classList.add("hidden");
+  document.getElementById("employeesScreen").classList.add("hidden");
+  document.getElementById("departmentsScreen").classList.add("hidden");
+  document.getElementById("addTaskScreen").classList.add("hidden");
+  document.getElementById("checklistScreen").classList.add("hidden");
+  document.getElementById("planScreen").classList.add("hidden");
+  document.getElementById("premiumScreen").classList.add("hidden");
+  document.getElementById("cleanupScreen").classList.add("hidden");
+  document.getElementById("infoScreen").classList.add("hidden");
+  document.getElementById("templateScreen").classList.add("hidden");
+  document.getElementById("templateDetailScreen").classList.add("hidden");
+  document.getElementById("templateAssignScreen").classList.add("hidden");
+  document.getElementById("approvalScreen").classList.add("hidden");
+  document.getElementById("tasksScreen").classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "auto" });
+  if (!keepAssignmentMessage) {
+    const assignmentMessage = document.getElementById("assignmentResultMessage");
+    if (assignmentMessage) {
+      assignmentMessage.textContent = "";
+      assignmentMessage.className = "approval-message hidden";
+    }
+  }
+  setTelegramBackButton(true);
+  document.getElementById("taskScreenTitle").innerText = title;
+
+  loadDynamicTasks().then(function() {
+    updateTaskStates();
+    filterTasks(filterValue, button || document.getElementById("filterAll"));
+  });
+}
+
+function showTasks() {
+  openTasksScreen("Bugünkü Kontroller", "Tümü", document.getElementById("filterAll"));
+}
+
+function showLateTasks() {
+  openTasksScreen("Geciken Görevler", "Geciken", document.getElementById("filterLate"));
+}
+
+function showZoneTasks(zone) {
+  const buttons = document.querySelectorAll(".filter-grid button");
+  let targetButton = null;
+
+  buttons.forEach(function(btn) {
+    if (btn.innerText === zone) {
+      targetButton = btn;
+    }
+  });
+
+  openTasksScreen(zone + " Görevleri", zone, targetButton);
+}
+
+function showWaitingTasks() {
+  openTasksScreen("Açık Kontroller", "Açık", document.getElementById("filterOpen"));
+}
+
+function getCurrentMinutes() {
+      const now = new Date();
+      return now.getHours() * 60 + now.getMinutes();
+    }
+
+    function getTaskMinutes(timeText) {
+      const parts = timeText.split(":");
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+
+    function getTaskElement(taskId) {
+      return document.querySelector('.task[data-task-id="' + taskId + '"]') ||
+        (document.querySelector('.task button[onclick*="' + taskId + '"]') || {}).closest?.(".task");
+    }
+
+    function isTaskLate(taskId) {
+      const task = getTaskElement(taskId);
+      if (!task) return false;
+      return getCurrentMinutes() > getTaskMinutes(task.dataset.time);
+    }
+
+    function isTaskEarly(taskId) {
+      const task = getTaskElement(taskId);
+      if (!task) return false;
+      return getCurrentMinutes() < getTaskMinutes(task.dataset.time);
+    }
+
+    function setSummaryValue(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.innerText = value;
+    }
+
+    function updateDashboard(summary) {
+      summary = summary || { total: 0, open: 0, late: 0, photo: 0, approval: 0, done: 0 };
+      setSummaryValue("metricTotal", summary.total || 0);
+      setSummaryValue("metricLate", summary.late || 0);
+      setSummaryValue("metricWaiting", summary.approval || 0);
+      setSummaryValue("metricRate", summary.done || 0);
+      setSummaryValue("taskSummaryTotal", summary.total || 0);
+      setSummaryValue("taskSummaryOpen", summary.open || 0);
+      setSummaryValue("taskSummaryLate", summary.late || 0);
+      setSummaryValue("taskSummaryPhoto", summary.photo || 0);
+      setSummaryValue("taskSummaryApproval", summary.approval || 0);
+      setSummaryValue("taskSummaryDone", summary.done || 0);
+    }
+
+    function setActionState(actionEl, text, disabled) {
+      if (!actionEl) return;
+
+      const label = actionEl.querySelector("span");
+      if (label) {
+        label.innerText = text;
+      } else {
+        actionEl.innerText = text;
+      }
+
+      const fileInput = actionEl.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.disabled = !!disabled;
+      } else {
+        actionEl.disabled = !!disabled;
+      }
+
+      if (disabled) {
+        actionEl.classList.add("disabled");
+      } else {
+        actionEl.classList.remove("disabled");
+      }
+    }
+
+    function setMainActionVisual(actionEl, mode) {
+      if (!actionEl) return;
+      actionEl.classList.add("single-action");
+      actionEl.style.gridColumn = "1 / -1";
+
+      if (mode === "late") {
+        actionEl.classList.remove("primary");
+        actionEl.classList.add("danger");
+      } else {
+        actionEl.classList.remove("danger");
+        actionEl.classList.add("primary");
+      }
+    }
+
+    function hideManualLateButton(lateButton) {
+      if (!lateButton) return;
+      lateButton.classList.add("hidden-action");
+      lateButton.style.display = "none";
+      const fileInput = lateButton.querySelector('input[type="file"]');
+      if (fileInput) fileInput.disabled = true;
+    }
+
+    function updateTaskStates() {
+      const tasks = document.querySelectorAll(".task");
+      const summary = { total: tasks.length, open: 0, late: 0, photo: 0, approval: 0, done: 0 };
+
+      tasks.forEach(function(task) {
+        const taskIdText = task.querySelector(".task-id").innerText.replace("Görev #", "");
+        const taskId = parseInt(taskIdText, 10);
+        const isCompleted = task.dataset.completed === "1";
+        const approvalPending = task.dataset.approvalPending === "1";
+        const isRejected = task.dataset.rejected === "1";
+        const completionStatus = task.dataset.completionStatus || "";
+        const late = getCurrentMinutes() > getTaskMinutes(task.dataset.time);
+        const photoRequired = task.dataset.photoRequired === "1";
+
+        const state = document.getElementById("state" + taskId);
+        const doneButton = document.getElementById("done" + taskId);
+        const lateButton = document.getElementById("late" + taskId);
+
+        hideManualLateButton(lateButton);
+
+        if (approvalPending) {
+          summary.approval += 1;
+          task.dataset.status = "approval";
+          if (state) {
+            state.innerText = "Onay Bekliyor";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
+          return;
+        }
+
+        if (isCompleted) {
+          summary.done += 1;
+          task.dataset.status = "completed";
+          if (state) {
+            state.innerText = completionStatus === "late" ? "Geç Tamamlandı" : "Tamamlandı";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
+          return;
+        }
+
+        summary.open += 1;
+        if (photoRequired) summary.photo += 1;
+
+        if (isRejected && state) {
+          state.innerText = "İade Edildi";
+          state.classList.remove("state-ok");
+          state.classList.add("state-late");
+        }
+
+        if (late) {
+          summary.late += 1;
+          task.dataset.status = "late";
+          if (state) {
+            state.innerText = "Gecikti";
+            state.classList.remove("state-ok");
+            state.classList.add("state-late");
+          }
+          setMainActionVisual(doneButton, "late");
+          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Onaya Gönder" : "Geç Bildir", false);
+        } else {
+          task.dataset.status = "waiting";
+          if (state) {
+            state.innerText = "Açık";
+            state.classList.remove("state-late");
+            state.classList.add("state-ok");
+          }
+          setMainActionVisual(doneButton, "completed");
+          setActionState(doneButton, photoRequired ? "Fotoğraf Çek ve Onaya Gönder" : "Tamamlandı", false);
+        }
+      });
+
+      updateDashboard(summary);
+    }
+
+    function filterTasks(filterValue, button) {
+      updateTaskStates();
+
+      let visibleCount = 0;
+      const tasks = document.querySelectorAll(".task");
+
+      tasks.forEach(function(task) {
+        let shouldShow = false;
+        const isCompleted = task.dataset.completed === "1";
+        const approvalPending = task.dataset.approvalPending === "1";
+        const photoRequired = task.dataset.photoRequired === "1";
+
+        if (filterValue === "Tümü") {
+          shouldShow = true;
+        } else if (filterValue === "Açık") {
+          shouldShow = !isCompleted;
+        } else if (filterValue === "Geciken") {
+          shouldShow = !isCompleted && task.dataset.status === "late";
+        } else if (filterValue === "Bekleyen") {
+          shouldShow = !isCompleted && task.dataset.status === "waiting";
+        } else if (filterValue === "Fotoğraflı") {
+          shouldShow = !isCompleted && !approvalPending && photoRequired;
+        } else if (filterValue === "Onay") {
+          shouldShow = approvalPending;
+        } else if (filterValue === "Tamamlanan") {
+          shouldShow = isCompleted;
+        } else {
+          shouldShow = task.dataset.zone === filterValue;
+        }
+
+        if (shouldShow) {
+          task.classList.remove("hidden");
+          visibleCount += 1;
+        } else {
+          task.classList.add("hidden");
+        }
+      });
+
+      const buttons = document.querySelectorAll(".filter-grid button");
+      buttons.forEach(function(btn) { btn.classList.remove("active"); });
+      if (button) button.classList.add("active");
+
+      document.getElementById("emptyBox").style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+
+
+
+
+
+
+    let selectedPremiumPackageName = "Premium Hazır Checklistler";
+    let selectedPremiumTemplateId = "premium";
+
+    function showPremiumPaymentScreen(packageName, templateId) {
+      selectedPremiumPackageName = packageName || "Premium Hazır Checklistler";
+      selectedPremiumTemplateId = templateId || "premium";
+
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.remove("hidden");
+      document.getElementById("premiumSelectedPackage").innerText = selectedPremiumPackageName;
+      setTelegramBackButton(true);
+    }
+
+    function sendSelectedPremiumChecklist() {
+      sendChecklistTemplate(selectedPremiumTemplateId);
+    }
+
+    function sendPremiumPaymentRequest() {
+      const data = {
+        action: "request_premium_payment",
+        templateId: selectedPremiumTemplateId,
+        packageName: selectedPremiumPackageName
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+
+    function sendCleanupSummaryRequest() {
+      const data = {
+        action: "cleanup_summary"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendCleanupBusinessData() {
+      const message = "Test görevleri, tamamlanma kayıtları ve eklenmiş checklist kayıtları temizlenecek. İşletme ayarları, çalışanlar, roller ve plan korunacak. Devam edilsin mi?";
+      const approved = confirm(message);
+
+      if (!approved) {
+        return;
+      }
+
+      const data = {
+        action: "cleanup_business_data"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPrepareDemoDay() {
+      const message = "Mevcut görev ve rapor kayıtları temizlenecek, ardından bugüne 5 demo görevi atanacak. İşletme ayarları ve çalışanlar korunacak. Devam edilsin mi?";
+      const approved = confirm(message);
+
+      if (!approved) {
+        return;
+      }
+
+      const data = {
+        action: "prepare_demo_day"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function showPremiumLocked() {
+      const message = "Bu checklist premium pakete dahildir. Tam içerik ödeme sonrası açılır.";
+      if (tg.showAlert) {
+        tg.showAlert(message);
+      } else {
+        alert(message);
+      }
+    }
+
+    function setTemplateAssignStatus(message, isError) {
+      const el = document.getElementById("templateAssignStatusMessage");
+      if (!el) return;
+      el.textContent = message || "";
+      el.className = message ? (isError ? "approval-message error" : "approval-message") : "approval-message hidden";
+    }
+
+    function showAssignmentResult(result) {
+      const el = document.getElementById("assignmentResultMessage");
+      if (!el) return;
+
+      const created = Number(result.created_count || 0);
+      const existing = Number(result.existing_count || 0);
+      const timeText = (result.time_start || "-") + " - " + (result.time_end || "-");
+      const mainText = created > 0
+        ? (result.template_name + ": " + created + " yeni görev bugüne atandı.")
+        : (result.template_name + ": bugün zaten atanmış, " + existing + " görev mevcut.");
+
+      el.textContent = mainText + " Saatler: " + timeText;
+      el.className = "approval-message";
+    }
+
+    async function sendChecklistAssignToday(templateId) {
+      const button = document.getElementById("templateAssignConfirmButton");
+      const originalText = button ? button.textContent : "";
+
+      try {
+        if (!API_BASE_URL) {
+          throw new Error("Backend bağlantısı bulunamadı. Mini App'i yeniden açın.");
+        }
+
+        const userId = getTelegramUserId();
+        if (!userId) {
+          throw new Error("Telegram kullanıcı bilgisi alınamadı. Mini App'i bot içinden yeniden açın.");
+        }
+
+        if (button) {
+          button.disabled = true;
+          button.textContent = "Atanıyor...";
+        }
+        setTemplateAssignStatus("Checklist bugüne atanıyor...", false);
+
+        const response = await fetch(API_BASE_URL + "/api/assign_checklist_today", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            template_id: templateId
+          })
+        });
+
+        let result = {};
+        try {
+          result = await response.json();
+        } catch (jsonError) {
+          throw new Error("Sunucu yanıtı okunamadı.");
+        }
+
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Checklist bugüne atanamadı.");
+        }
+
+        setTemplateAssignStatus("", false);
+        showAssignmentResult(result);
+        openTasksScreen("Bugünkü Kontroller", "Tümü", document.getElementById("filterAll"), true);
+        requestAnimationFrame(function() {
+          const resultBox = document.getElementById("assignmentResultMessage");
+          if (resultBox) resultBox.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      } catch (error) {
+        const message = error && error.message ? error.message : "Checklist bugüne atanamadı.";
+        setTemplateAssignStatus(message, true);
+        showMessage(message);
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = originalText || "Bugüne Ata ve Görevleri Oluştur";
+        }
+      }
+    }
+
+    function sendChecklistTemplate(templateId) {
+      const data = {
+        action: "add_checklist_template",
+        templateId: templateId
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendNewTask() {
+      const zone = document.getElementById("newTaskZone").value;
+      const title = document.getElementById("newTaskTitle").value.trim();
+      const taskType = document.getElementById("newTaskType").value;
+      const scheduledTime = document.getElementById("newTaskTime").value;
+      const requiresPhoto = document.getElementById("newTaskPhoto").value;
+
+      if (!title) {
+        if (tg.showAlert) {
+          tg.showAlert("Görev başlığı boş olamaz.");
+        } else {
+          alert("Görev başlığı boş olamaz.");
+        }
+        return;
+      }
+
+      if (!scheduledTime) {
+        if (tg.showAlert) {
+          tg.showAlert("Planlanan saat seçilmelidir.");
+        } else {
+          alert("Planlanan saat seçilmelidir.");
+        }
+        return;
+      }
+
+      const data = {
+        action: "add_task",
+        zone: zone,
+        taskTitle: title,
+        taskType: taskType,
+        scheduledTime: scheduledTime,
+        requiresPhoto: requiresPhoto
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPlanStatusRequest() {
+      const data = {
+        action: "get_plan_status"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendManagementReportRequest() {
+      const data = {
+        action: "get_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendPhotoReportRequest() {
+      const data = {
+        action: "get_photo_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendZoneReportRequest() {
+      const data = {
+        action: "get_zone_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendStaffReportRequest() {
+      const data = {
+        action: "get_staff_report"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+
+    function setApprovalStatus(message, isError) {
+      const box = document.getElementById("approvalStatusMessage");
+      if (!box) return;
+      box.innerText = message || "";
+      box.classList.toggle("error", !!isError);
+      box.style.display = message ? "block" : "none";
+    }
+
+    function showApprovalScreen() {
+  if (!requireManagementPermission("Onay Bekleyenler")) return;
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("businessScreen").classList.add("hidden");
+      document.getElementById("employeeScreen").classList.add("hidden");
+      document.getElementById("employeesScreen").classList.add("hidden");
+      document.getElementById("departmentsScreen").classList.add("hidden");
+      document.getElementById("addTaskScreen").classList.add("hidden");
+      document.getElementById("checklistScreen").classList.add("hidden");
+      document.getElementById("planScreen").classList.add("hidden");
+      document.getElementById("premiumScreen").classList.add("hidden");
+      document.getElementById("cleanupScreen").classList.add("hidden");
+      document.getElementById("tasksScreen").classList.add("hidden");
+      document.getElementById("infoScreen").classList.add("hidden");
+      document.getElementById("templateScreen").classList.add("hidden");
+      document.getElementById("templateDetailScreen").classList.add("hidden");
+      document.getElementById("templateAssignScreen").classList.add("hidden");
+      document.getElementById("approvalScreen").classList.remove("hidden");
+      setTelegramBackButton(true);
+      loadPendingApprovals();
+    }
+
+    async function loadPendingApprovals() {
+      const list = document.getElementById("approvalList");
+      const empty = document.getElementById("approvalEmptyBox");
+      if (!list || !empty) return;
+
+      setApprovalStatus("Onay bekleyen kontroller yükleniyor...", false);
+      list.innerHTML = "";
+      empty.style.display = "none";
+
+      if (!API_BASE_URL) {
+        setApprovalStatus("Backend URL yok. PUBLIC_BASE_URL kontrol edilmeli.", true);
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        setApprovalStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/pending_approvals?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Onay listesi alınamadı.");
+        }
+        renderPendingApprovals(result.items || []);
+        setApprovalStatus((result.items || []).length ? "Onay bekleyen kontroller yüklendi." : "Onay bekleyen kontrol yok.", false);
+      } catch (error) {
+        renderPendingApprovals([]);
+        setApprovalStatus(safeErrorText(error) || "Onay listesi alınamadı.", true);
+      }
+    }
+
+    function renderPendingApprovals(items) {
+      const list = document.getElementById("approvalList");
+      const empty = document.getElementById("approvalEmptyBox");
+      document.getElementById("approvalSummaryTotal").innerText = items.length;
+      document.getElementById("approvalSummaryPhoto").innerText = items.filter(function(item) { return item.has_photo; }).length;
+      document.getElementById("approvalSummaryLate").innerText = items.filter(function(item) { return String(item.status || "").indexOf("late") >= 0; }).length;
+
+      if (!items.length) {
+        list.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+      list.innerHTML = items.map(function(item) {
+        const completionId = parseInt(item.completion_id || 0, 10);
+        const photoHtml = item.photo_url ? `<img class="approval-photo" src="${escapeHtml(item.photo_url)}" alt="Kontrol fotoğrafı">` : `<div class="task-rejected-box">Fotoğraf Mini App içinde gösterilemiyor. Telegram raporundan kontrol edin.</div>`;
+        const roleLine = item.actor_role_label ? `<br>Rol: ${escapeHtml(item.actor_role_label)}` : "";
+        const zoneLine = item.actor_zone ? `<br>Yetki Bölümü: ${escapeHtml(item.actor_zone)}` : "";
+        const commentLine = item.comment ? `<br>Yorum: ${escapeHtml(item.comment)}` : "";
+        return `
+          <div class="approval-card" id="approvalCard${completionId}">
+            <div class="task-top">
+              <div>
+                <div class="badge">${escapeHtml(item.zone)} · ${escapeHtml(item.scheduled_time)}</div>
+                <div class="task-id">Kayıt #${completionId} · Görev #${escapeHtml(item.task_id)}</div>
+              </div>
+              <div class="state state-ok">Onay Bekliyor</div>
+            </div>
+            <h2 class="task-title">${escapeHtml(item.task_title)}</h2>
+            ${photoHtml}
+            <div class="task-completed-box approval-pending">
+              <strong>${escapeHtml(item.status_text)}</strong><br>
+              Gönderen: ${escapeHtml(item.staff_name || "-")}<br>
+              Zaman: ${escapeHtml(item.completed_at || "-")}${roleLine}${zoneLine}${commentLine}
+            </div>
+            <div class="reject-reason-box">
+              <label>İade Nedeni <span class="small">(İade Et için zorunlu)</span></label>
+              <textarea id="rejectReason${completionId}" placeholder="Örn: Fotoğraf net değil, etiket görünmüyor, yanlış alan çekilmiş"></textarea>
+              <div class="quick-reason-row">
+                <button type="button" onclick="setRejectReason(${completionId}, 'Fotoğraf net değil')">Fotoğraf net değil</button>
+                <button type="button" onclick="setRejectReason(${completionId}, 'Yanlış alan çekilmiş')">Yanlış alan</button>
+                <button type="button" onclick="setRejectReason(${completionId}, 'Etiket / tarih görünmüyor')">Etiket görünmüyor</button>
+                <button type="button" onclick="setRejectReason(${completionId}, 'Temizlik standarda uygun değil')">Temizlik uygun değil</button>
+              </div>
+            </div>
+            <div class="approval-actions">
+              <button class="primary" onclick="reviewApproval(${completionId}, 'approve')">Kabul Et</button>
+              <button class="danger" onclick="reviewApproval(${completionId}, 'reject')">İade Et</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setRejectReason(completionId, reason) {
+      const input = document.getElementById("rejectReason" + completionId);
+      if (input) input.value = reason;
+    }
+
+    async function reviewApproval(completionId, action) {
+      if (!API_BASE_URL) {
+        setApprovalStatus("Backend URL yok.", true);
+        return;
+      }
+      const userId = getTelegramUserId();
+      if (!userId) {
+        setApprovalStatus("Telegram kullanıcı bilgisi alınamadı.", true);
+        return;
+      }
+
+      let reviewReason = "";
+      if (action === "reject") {
+        const input = document.getElementById("rejectReason" + completionId);
+        reviewReason = input ? input.value.trim() : "";
+        if (reviewReason.length < 3) {
+          setApprovalStatus("İade nedeni zorunlu. Lütfen nedeni yazın.", true);
+          if (input) input.focus();
+          return;
+        }
+      }
+
+      const label = action === "approve" ? "kabul" : "iade";
+      setApprovalStatus("Kontrol " + label + " işlemi gönderiliyor...", false);
+
+      try {
+        const response = await fetch(API_BASE_URL + "/api/review_completion", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_user_id: userId,
+            completion_id: completionId,
+            action: action,
+            review_reason: reviewReason,
+            reviewer_name: (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) ? tg.initDataUnsafe.user.first_name : "Müdür"
+          })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Onay işlemi tamamlanamadı.");
+        }
+        if (action === "reject" && result.task_id) {
+          localStorage.setItem("rk_reject_reason_task_" + result.task_id, reviewReason);
+        }
+        if (action === "approve" && result.task_id) {
+          localStorage.removeItem("rk_reject_reason_task_" + result.task_id);
+        }
+        setApprovalStatus(result.message || "İşlem tamamlandı.", false);
+        await loadPendingApprovals();
+        await loadDynamicTasks();
+      } catch (error) {
+        setApprovalStatus(safeErrorText(error) || "Onay işlemi tamamlanamadı.", true);
+      }
+    }
+
+    function sendPendingApprovalRequest() {
+      showApprovalScreen();
+    }
+
+    function sendEmployeeListRequest() {
+      const data = {
+        action: "get_employees"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendMyRoleRequest() {
+      const data = {
+        action: "get_me"
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function sendEmployee() {
+      const fullName = document.getElementById("employeeName").value.trim();
+      const role = document.getElementById("employeeRole").value;
+      const zone = document.getElementById("employeeZone").value;
+
+      if (!fullName) {
+        if (tg.showAlert) {
+          tg.showAlert("Ad Soyad boş olamaz.");
+        } else {
+          alert("Ad Soyad boş olamaz.");
+        }
+        return;
+      }
+
+      const data = {
+        action: "add_employee",
+        fullName: fullName,
+        role: role,
+        zone: zone
+      };
+
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    function setBusinessSettingsStatus(message) {
+      const el = document.getElementById("businessSettingsStatus");
+      if (el) el.innerText = message;
+    }
+
+    function getCheckedActiveZones() {
+      const zones = [];
+      if (document.getElementById("zoneMutfak").checked) zones.push("Mutfak");
+      if (document.getElementById("zoneSalon").checked) zones.push("Salon");
+      if (document.getElementById("zoneBar").checked) zones.push("Bar");
+      if (document.getElementById("zoneDepo").checked) zones.push("Depo");
+      return zones;
+    }
+
+    function applyBusinessSettings(business) {
+      if (!business) return;
+      document.getElementById("businessName").value = business.businessName || "";
+      document.getElementById("businessType").value = business.businessType || "Restoran";
+      document.getElementById("openTime").value = business.openTime || "09:00";
+      document.getElementById("closeTime").value = business.closeTime || "21:00";
+      document.getElementById("kitchenMin").value = business.kitchenMin ?? 1;
+      document.getElementById("hallMin").value = business.hallMin ?? 1;
+      document.getElementById("barMin").value = business.barMin ?? 1;
+      document.getElementById("depotMin").value = business.depotMin ?? business.deliveryMin ?? 1;
+      document.getElementById("defaultResponsibleRole").value = business.defaultResponsibleRole || "manager";
+
+      const activeZones = String(business.activeZones || "Mutfak,Salon,Bar,Depo").split(",").map(function(x) { return x.trim(); });
+      document.getElementById("zoneMutfak").checked = activeZones.includes("Mutfak");
+      document.getElementById("zoneSalon").checked = activeZones.includes("Salon");
+      document.getElementById("zoneBar").checked = activeZones.includes("Bar");
+      document.getElementById("zoneDepo").checked = activeZones.includes("Depo");
+    }
+
+    async function loadBusinessSettings() {
+      if (!API_BASE_URL) {
+        setBusinessSettingsStatus("Mevcut ayarlar yüklenemedi. Backend URL yok. Yeni ayar kaydedebilirsiniz.");
+        return;
+      }
+
+      const userId = getTelegramUserId();
+      if (!userId) {
+        setBusinessSettingsStatus("Telegram kullanıcı bilgisi alınamadı. Yeni ayar kaydedebilirsiniz.");
+        return;
+      }
+
+      try {
+        setBusinessSettingsStatus("Mevcut ayarlar yükleniyor...");
+        const response = await fetch(API_BASE_URL + "/api/business_settings?telegram_user_id=" + encodeURIComponent(userId));
+        const result = await response.json();
+
+        if (!result.ok) {
+          throw new Error(result.error || "Ayarlar alınamadı.");
+        }
+
+        if (result.has_business && result.business) {
+          applyBusinessSettings(result.business);
+          setBusinessSettingsStatus("Mevcut işletme ayarları yüklendi. Değiştirip kaydedebilirsiniz.");
+        } else {
+          setBusinessSettingsStatus("Henüz kayıtlı işletme yok. İlk kurulumu buradan yapın.");
+        }
+      } catch (error) {
+        console.log("Business settings load error", error);
+        setBusinessSettingsStatus("Ayarlar yüklenemedi. Formu doldurup kaydedebilirsiniz.");
+      }
+    }
+
+    function sendBusinessSettings() {
+      const activeZones = getCheckedActiveZones();
+      if (activeZones.length === 0) {
+        showMessage("En az bir aktif bölüm seçilmelidir.");
+        return;
+      }
+
+      const businessName = document.getElementById("businessName").value.trim();
+      if (!businessName) {
+        showMessage("İşletme adı boş olamaz.");
+        return;
+      }
+
+      const data = {
+        action: "save_business_settings",
+        businessName: businessName,
+        businessType: document.getElementById("businessType").value,
+        openTime: document.getElementById("openTime").value,
+        closeTime: document.getElementById("closeTime").value,
+        kitchenMin: document.getElementById("kitchenMin").value,
+        hallMin: document.getElementById("hallMin").value,
+        barMin: document.getElementById("barMin").value,
+        depotMin: document.getElementById("depotMin").value,
+        activeZones: activeZones.join(","),
+        defaultResponsibleRole: document.getElementById("defaultResponsibleRole").value
+      };
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+function showMessage(message) {
+  if (tg.showAlert) {
+    tg.showAlert(message);
+  } else {
+    alert(message);
+  }
+}
+
+async function refreshTasksAfterPhotoUpload(taskId, successMessage) {
+  try {
+    await loadDynamicTasks();
+    updateTaskStates();
+    filterTasks("Tümü", document.getElementById("filterAll"));
+    if (taskId) {
+      const taskEl = document.querySelector('[data-task-id="' + taskId + '"]');
+      if (taskEl && typeof taskEl.scrollIntoView === "function") {
+        taskEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  } catch (refreshError) {
+    console.log("Photo upload refresh error", refreshError);
+  }
+}
+
+function setPhotoDebug(taskId, message, type) {
+  const el = document.getElementById("photoDebug" + taskId);
+  if (!el) return;
+  el.className = "photo-debug " + (type || "info");
+  el.textContent = message;
+}
+
+function clearPhotoDebug(taskId) {
+  const el = document.getElementById("photoDebug" + taskId);
+  if (!el) return;
+  el.className = "photo-debug";
+  el.textContent = "";
+}
+
+function safeErrorText(error) {
+  if (!error) return "Bilinmeyen hata";
+  if (error.message) return error.message;
+  return String(error);
+}
+
+window.addEventListener("error", function(event) {
+  const text = "Teknik hata: " + (event.message || "JavaScript hatası");
+  const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
+  if (taskId) setPhotoDebug(taskId, text, "error");
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+  const text = "Teknik hata: " + safeErrorText(event.reason);
+  const taskId = pendingCameraTask && pendingCameraTask.taskId ? pendingCameraTask.taskId : 0;
+  if (taskId) setPhotoDebug(taskId, text, "error");
+});
+
+let pendingCameraTask = null;
+
+let liveCameraStream = null;
+let liveCameraTaskId = 0;
+let liveCameraStatus = "completed";
+let liveCameraInput = null;
+let liveCameraPreviewUrl = "";
+let liveCameraFile = null;
+
+
+let photoWatcherTimer = null;
+
+function stopPhotoInputWatcher() {
+  if (photoWatcherTimer) {
+    clearInterval(photoWatcherTimer);
+    photoWatcherTimer = null;
+  }
+}
+
+function startPhotoInputWatcher(input, taskId) {
+  stopPhotoInputWatcher();
+  if (!input || !taskId) return;
+
+  let ticks = 0;
+  setPhotoDebug(taskId, "Yedek dosya seçici açılıyor...", "info");
+
+  photoWatcherTimer = setInterval(function() {
+    ticks += 1;
+
+    try {
+      if (input.files && input.files.length > 0) {
+        stopPhotoInputWatcher();
+        setPhotoDebug(taskId, "Fotoğraf seçildi. İşlem başlıyor...", "info");
+        handlePhotoInputEvent(input);
+        return;
+      }
+    } catch (error) {
+      stopPhotoInputWatcher();
+      setPhotoDebug(taskId, "Fotoğraf kontrol hatası: " + safeErrorText(error), "error");
+      return;
+    }
+
+    if (ticks >= 40) {
+      stopPhotoInputWatcher();
+      setPhotoDebug(taskId, "Fotoğraf seçilmedi veya Telegram seçim bilgisini göndermedi. Tekrar deneyin.", "warn");
+    }
+  }, 500);
+}
+
+
+function getTaskComment(taskId, task) {
+  const fields = [];
+
+  const byId = document.getElementById("comment" + taskId);
+  if (byId) fields.push(byId);
+
+  if (task) {
+    const exactInside = task.querySelector('#comment' + taskId);
+    if (exactInside) fields.push(exactInside);
+
+    const insideTask = task.querySelector("textarea");
+    if (insideTask) fields.push(insideTask);
+  }
+
+  const byDataId = document.querySelector('.task[data-task-id="' + taskId + '"] textarea');
+  if (byDataId) fields.push(byDataId);
+
+  for (const field of fields) {
+    if (!field) continue;
+    const value = typeof field.value !== "undefined" ? field.value : field.textContent;
+    if (String(value || "").trim() !== "") {
+      return String(value || "").trim();
+    }
+  }
+
+  return "";
+}
+
+function buildCompletionData(taskId, status) {
+  const taskBeforeUpdate = getTaskElement(taskId);
+  if (!taskBeforeUpdate) {
+    return { ok: false, message: "Görev bulunamadı." };
+  }
+
+  const commentBeforeUpdate = getTaskComment(taskId, taskBeforeUpdate);
+
+  updateTaskStates();
+
+  const task = getTaskElement(taskId) || taskBeforeUpdate;
+  const early = isTaskEarly(taskId);
+  const late = isTaskLate(taskId);
+  let comment = getTaskComment(taskId, task) || commentBeforeUpdate;
+
+  if (early && status === "late") {
+    return {
+      ok: false,
+      message: "Bu görev henüz gecikmedi. Planlanan saat: " + task.dataset.time
+    };
+  }
+
+  if (early && status === "completed") {
+    return {
+      ok: false,
+      message: "Bu görev henüz tamamlanamaz. Planlanan saat: " + task.dataset.time
+    };
+  }
+
+  if (late) {
+    status = "late";
+    if (comment.trim() === "") {
+      return { ok: false, message: "Geç kalma nedeni yazılmalıdır." };
+    }
+  }
+
+  return {
+    ok: true,
+    data: {
+      taskId: taskId,
+      status: status,
+      comment: comment,
+      staffName: ""
+    }
+  };
+}
+
+
+function setLiveCameraHelp(message, isError) {
+  const help = document.getElementById("liveCameraHelp");
+  if (!help) return;
+  help.innerText = message;
+  help.style.color = isError ? "#b91c1c" : "#6b7280";
+}
+
+function stopLiveCameraStream() {
+  if (liveCameraStream) {
+    try {
+      liveCameraStream.getTracks().forEach(function(track) { track.stop(); });
+    } catch (error) {}
+  }
+  liveCameraStream = null;
+}
+
+function resetLiveCameraPreview() {
+  const video = document.getElementById("liveCameraVideo");
+  const preview = document.getElementById("liveCameraPreview");
+  const shootButton = document.getElementById("liveCameraShootButton");
+  const retakeButton = document.getElementById("liveCameraRetakeButton");
+  const sendButton = document.getElementById("liveCameraSendButton");
+
+  if (liveCameraPreviewUrl) {
+    try { URL.revokeObjectURL(liveCameraPreviewUrl); } catch (error) {}
+  }
+  liveCameraPreviewUrl = "";
+  liveCameraFile = null;
+
+  if (preview) {
+    preview.src = "";
+    preview.classList.add("hidden");
+  }
+  if (video) video.classList.remove("hidden");
+  if (shootButton) shootButton.classList.remove("hidden");
+  if (retakeButton) retakeButton.classList.add("hidden");
+  if (sendButton) sendButton.classList.add("hidden");
+}
+
+function closeLiveCameraModal(clearPending) {
+  stopLiveCameraStream();
+  const modal = document.getElementById("liveCameraModal");
+  if (modal) modal.classList.add("hidden");
+  resetLiveCameraPreview();
+  if (clearPending) {
+    pendingCameraTask = null;
+  }
+  liveCameraTaskId = 0;
+  liveCameraStatus = "completed";
+  liveCameraInput = null;
+}
+
+async function openLiveCamera(taskId, status) {
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+  if (!result.ok) {
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+  liveCameraTaskId = taskId;
+  liveCameraStatus = pendingCameraTask.status || status || "completed";
+  liveCameraInput = document.getElementById("photoInput" + taskId);
+
+  if (liveCameraInput && liveCameraInput.dataset) {
+    liveCameraInput.dataset.taskId = String(taskId);
+    liveCameraInput.dataset.status = liveCameraStatus;
+    liveCameraInput.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+    liveCameraInput.dataset.lastHandledMarker = "";
+    liveCameraInput.value = "";
+  }
+
+  const modal = document.getElementById("liveCameraModal");
+  const video = document.getElementById("liveCameraVideo");
+  const fallback = document.getElementById("liveCameraFallbackBox");
+  if (modal) modal.classList.remove("hidden");
+  if (fallback) fallback.classList.add("hidden");
+  resetLiveCameraPreview();
+  setLiveCameraHelp("Kamera açılıyor. Fotoğrafı şimdi çekin; galeri ana yol değildir.", false);
+  setPhotoDebug(taskId, "Kamera açılıyor...", "info");
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setLiveCameraHelp("Bu cihazda Mini App içi kamera açılamadı. Yedek dosya seçici kullanılabilir.", true);
+    if (fallback) fallback.classList.remove("hidden");
+    setPhotoDebug(taskId, "Mini App içi kamera desteklenmiyor.", "warn");
+    return;
+  }
+
+  try {
+    stopLiveCameraStream();
+    liveCameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 1600 }
+      }
+    });
+    if (video) {
+      video.srcObject = liveCameraStream;
+      await video.play();
+    }
+    setLiveCameraHelp("Kamera hazır. Fotoğrafı çekip onaya gönderin.", false);
+    setPhotoDebug(taskId, "Kamera hazır. Fotoğraf çekin.", "ok");
+  } catch (error) {
+    setLiveCameraHelp("Kamera izni alınamadı veya kamera açılamadı. Kamera iznini açıp tekrar deneyin.", true);
+    if (fallback) fallback.classList.remove("hidden");
+    setPhotoDebug(taskId, "Kamera açılamadı: " + safeErrorText(error), "error");
+  }
+}
+
+function captureLiveCameraPhoto() {
+  const video = document.getElementById("liveCameraVideo");
+  const canvas = document.getElementById("liveCameraCanvas");
+  const preview = document.getElementById("liveCameraPreview");
+  const shootButton = document.getElementById("liveCameraShootButton");
+  const retakeButton = document.getElementById("liveCameraRetakeButton");
+  const sendButton = document.getElementById("liveCameraSendButton");
+
+  if (!video || !canvas || !video.videoWidth || !video.videoHeight) {
+    setLiveCameraHelp("Kamera görüntüsü hazır değil. Birkaç saniye bekleyip tekrar deneyin.", true);
+    if (liveCameraTaskId) setPhotoDebug(liveCameraTaskId, "Kamera görüntüsü hazır değil.", "warn");
+    return;
+  }
+
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, width, height);
+
+  canvas.toBlob(function(blob) {
+    if (!blob) {
+      setLiveCameraHelp("Fotoğraf alınamadı. Tekrar deneyin.", true);
+      return;
+    }
+
+    const fileName = "kamera_gorev_" + liveCameraTaskId + "_" + Date.now() + ".jpg";
+    liveCameraFile = new File([blob], fileName, { type: "image/jpeg", lastModified: Date.now() });
+
+    if (liveCameraPreviewUrl) {
+      try { URL.revokeObjectURL(liveCameraPreviewUrl); } catch (error) {}
+    }
+    liveCameraPreviewUrl = URL.createObjectURL(blob);
+    if (preview) {
+      preview.src = liveCameraPreviewUrl;
+      preview.classList.remove("hidden");
+    }
+    if (video) video.classList.add("hidden");
+    if (shootButton) shootButton.classList.add("hidden");
+    if (retakeButton) retakeButton.classList.remove("hidden");
+    if (sendButton) sendButton.classList.remove("hidden");
+
+    setLiveCameraHelp("Fotoğraf çekildi. Kontrol edip onaya gönderin.", false);
+    if (liveCameraTaskId) setPhotoDebug(liveCameraTaskId, "Fotoğraf çekildi. Onaya gönderebilirsiniz.", "ok");
+  }, "image/jpeg", 0.88);
+}
+
+function retakeLiveCameraPhoto() {
+  resetLiveCameraPreview();
+  setLiveCameraHelp("Kamera hazır. Yeni fotoğraf çekin.", false);
+  if (liveCameraTaskId) setPhotoDebug(liveCameraTaskId, "Tekrar fotoğraf çekiliyor.", "info");
+}
+
+function sendLiveCameraPhoto() {
+  if (!liveCameraFile) {
+    setLiveCameraHelp("Önce fotoğraf çekin.", true);
+    return;
+  }
+
+  const taskId = liveCameraTaskId;
+  const file = liveCameraFile;
+  const input = liveCameraInput || document.getElementById("photoInput" + taskId);
+
+  if (input && input.dataset) {
+    input.dataset.taskId = String(taskId);
+    input.dataset.status = liveCameraStatus;
+    input.dataset.startedAtMs = String((pendingCameraTask && pendingCameraTask.startedAtMs) || Date.now());
+    input.dataset.lastHandledMarker = "";
+  }
+
+  closeLiveCameraModal(false);
+  if (taskId) setPhotoDebug(taskId, "Kamera fotoğrafı onaya gönderiliyor...", "info");
+  uploadCameraPhoto(file, input);
+}
+
+function openLiveCameraFallback() {
+  const taskId = liveCameraTaskId;
+  const status = liveCameraStatus || "completed";
+  closeLiveCameraModal(false);
+  if (taskId) {
+    setPhotoDebug(taskId, "Yedek dosya seçici açılıyor. Normal kullanımda kamera tercih edilir.", "warn");
+    openPhotoPicker(taskId, status);
+  }
+}
+
+function openPhotoPicker(taskId, status) {
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+
+  const input = document.getElementById("photoInput" + taskId);
+  if (!input) {
+    const message = "Kamera alanı bulunamadı. Sayfayı kapatıp tekrar açın.";
+    setPhotoDebug(taskId, message, "error");
+    showMessage(message);
+    return;
+  }
+
+  input.dataset.taskId = String(taskId);
+  input.dataset.status = pendingCameraTask.status;
+  input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+  input.dataset.lastHandledMarker = "";
+  input.value = "";
+
+  setPhotoDebug(taskId, "Yedek dosya seçici açılıyor...", "info");
+  startPhotoInputWatcher(input, taskId);
+
+  try {
+    input.click();
+  } catch (error) {
+    const message = "Fotoğraf seçici açılamadı: " + safeErrorText(error);
+    setPhotoDebug(taskId, message, "error");
+    showMessage(message);
+  }
+}
+
+function prepareCameraInput(taskId, status, event) {
+  if (document.activeElement && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+  clearPhotoDebug(taskId);
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    if (event) event.preventDefault();
+    setPhotoDebug(taskId, result.message, "warn");
+    showMessage(result.message);
+    return false;
+  }
+
+  pendingCameraTask = result.data;
+  pendingCameraTask.startedAtMs = Date.now();
+
+  const input = event && event.target ? event.target : null;
+  if (input && input.dataset) {
+    input.dataset.taskId = String(taskId);
+    input.dataset.status = pendingCameraTask.status;
+    input.dataset.startedAtMs = String(pendingCameraTask.startedAtMs);
+    input.dataset.lastHandledMarker = "";
+    input.value = "";
+  }
+
+  setPhotoDebug(taskId, "Yedek dosya seçici açılıyor...", "info");
+  startPhotoInputWatcher(input, taskId);
+  return true;
+}
+
+function handlePhotoInputEvent(input) {
+  if (!input) return;
+
+  const file = input.files && input.files[0];
+  const marker = file ? [file.name, file.size, file.lastModified].join(":") : "no-file";
+
+  if (input.dataset.lastHandledMarker === marker) {
+    return;
+  }
+  input.dataset.lastHandledMarker = marker;
+
+  handleCameraInput(input);
+}
+
+document.addEventListener("change", function(event) {
+  const target = event.target;
+  if (target && target.classList && target.classList.contains("photo-input")) {
+    handlePhotoInputEvent(target);
+  }
+}, true);
+
+document.addEventListener("input", function(event) {
+  const target = event.target;
+  if (target && target.classList && target.classList.contains("photo-input")) {
+    handlePhotoInputEvent(target);
+  }
+}, true);
+
+function handleCameraInput(input) {
+  const taskIdFromInput = parseInt((input && input.dataset && input.dataset.taskId) || "0", 10);
+  const file = input.files && input.files[0];
+
+  try {
+    if (!file) {
+      if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf seçilmedi.", "warn");
+      return;
+    }
+
+    if (!taskIdFromInput) {
+      showMessage("Görev bilgisi alınamadı. Sayfayı kapatıp tekrar açın.");
+      return;
+    }
+
+    setPhotoDebug(taskIdFromInput, "Fotoğraf seçildi. Yükleme hazırlanıyor...", "info");
+
+    const pendingId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : 0;
+    if (!pendingCameraTask || pendingId !== taskIdFromInput) {
+      const status = (input && input.dataset && input.dataset.status) || "completed";
+      const commentEl = document.getElementById("comment" + taskIdFromInput);
+      pendingCameraTask = {
+        taskId: taskIdFromInput,
+        status: status,
+        comment: commentEl ? commentEl.value : "",
+        staffName: "",
+        startedAtMs: parseInt((input && input.dataset && input.dataset.startedAtMs) || "0", 10) || Date.now()
+      };
+    }
+
+    window.setTimeout(function() {
+      try {
+        uploadCameraPhoto(file, input);
+      } catch (innerError) {
+        setPhotoDebug(taskIdFromInput, "Upload başlatma hatası: " + safeErrorText(innerError), "error");
+        showMessage("Upload başlatma hatası: " + safeErrorText(innerError));
+      }
+    }, 50);
+  } catch (error) {
+    if (taskIdFromInput) setPhotoDebug(taskIdFromInput, "Fotoğraf işlem hatası: " + safeErrorText(error), "error");
+    showMessage("Fotoğraf işlem hatası: " + safeErrorText(error));
+  }
+}
+
+async function calculateFileHash(file) {
+  if (!window.crypto || !window.crypto.subtle) {
+    return "";
+  }
+
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(byte) {
+    return byte.toString(16).padStart(2, "0");
+  }).join("");
+}
+
+function uploadCameraPhoto(file, input) {
+  stopPhotoInputWatcher();
+  const taskIdForDebug = (pendingCameraTask && pendingCameraTask.taskId) || parseInt((input && input.dataset && input.dataset.taskId) || "0", 10) || 0;
+
+  if (!file) {
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Fotoğraf seçilmedi.", "warn");
+    return;
+  }
+
+  if (taskIdForDebug) {
+    setPhotoDebug(taskIdForDebug, "Fotoğraf alındı. Yükleme hazırlanıyor...", "info");
+  }
+
+  setTimeout(function() {
+    uploadCameraPhotoDirect(file, input, taskIdForDebug);
+  }, 120);
+}
+
+async function uploadCameraPhotoDirect(file, input, taskIdForDebug) {
+  try {
+    if (!pendingCameraTask) {
+      const message = "Görev bilgisi bulunamadı.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
+
+    if (!API_BASE_URL) {
+      const message = "Kamera yükleme için backend URL yok. PUBLIC_BASE_URL ayarı gerekli.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
+
+    const userId = getTelegramUserId();
+    if (!userId) {
+      const message = "Telegram kullanıcı bilgisi alınamadı.";
+      if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+      showMessage(message);
+      return;
+    }
+
+    const startedAtMs = pendingCameraTask.startedAtMs || Date.now();
+    const fileLastModifiedMs = Number(file.lastModified || 0);
+    const fileName = file.name || "photo.jpg";
+    const fileSizeKb = Math.round((file.size || 0) / 1024);
+
+    if (taskIdForDebug) {
+      setPhotoDebug(taskIdForDebug, "Fotoğraf yükleniyor: " + fileName + " · " + fileSizeKb + " KB", "info");
+    }
+
+    const formData = new FormData();
+    formData.append("telegram_user_id", userId);
+    formData.append("task_id", pendingCameraTask.taskId);
+    formData.append("status", pendingCameraTask.status);
+    formData.append("comment", pendingCameraTask.comment);
+    formData.append("staff_name", pendingCameraTask.staffName || "");
+    formData.append("started_at_ms", startedAtMs);
+    formData.append("photo_last_modified_ms", fileLastModifiedMs);
+    formData.append("photo_hash", "");
+    formData.append("photo", file);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(function() {
+      controller.abort();
+    }, 30000);
+
+    let response;
+    try {
+      response = await fetch(API_BASE_URL + "/upload_photo", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, "Sunucu cevabı okunuyor...", "info");
+
+    let result = {};
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      throw new Error("Sunucu cevabı okunamadı. HTTP " + response.status);
+    }
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || "Fotoğraf kaydedilemedi.");
+    }
+
+    const successMessage = result.message || "Fotoğraf müdür onayına gönderildi.";
+    const uploadedTaskId = pendingCameraTask && pendingCameraTask.taskId ? parseInt(pendingCameraTask.taskId, 10) : taskIdForDebug;
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, successMessage + " Mini App açık kaldı; görev yenileniyor...", "ok");
+    pendingCameraTask = null;
+    if (input) input.value = "";
+    await refreshTasksAfterPhotoUpload(uploadedTaskId, successMessage);
+    showMessage(successMessage);
+  } catch (error) {
+    if (input) input.value = "";
+    const message = error && error.name === "AbortError" ? "Fotoğraf yükleme süresi doldu. İnternet bağlantısını kontrol edip tekrar deneyin." : (safeErrorText(error) || "Fotoğraf kaydedilemedi.");
+    if (taskIdForDebug) setPhotoDebug(taskIdForDebug, message, "error");
+    showMessage(message);
+  }
+}
+
+function completeTask(taskId, status) {
+  const result = buildCompletionData(taskId, status);
+
+  if (!result.ok) {
+    showMessage(result.message);
+    return;
+  }
+
+  const task = getTaskElement(taskId);
+  const requiresPhoto = task && task.dataset.photoRequired === "1";
+
+  if (requiresPhoto) {
+    openLiveCamera(taskId, result.data.status);
+    return;
+  }
+
+  const data = {
+    action: "complete_task",
+    taskId: taskId,
+    status: result.data.status,
+    comment: result.data.comment,
+    staffName: "",
+    requiresPhotoClient: "0"
+  };
+
+  tg.sendData(JSON.stringify(data));
+  tg.close();
+}
+
+    function sendReport() {
+      const data = { action: "get_report" };
+      tg.sendData(JSON.stringify(data));
+      tg.close();
+    }
+
+    loadAccessProfileOnly();
+    updateTaskStates();
+  </script>
+</body>
+</html>
